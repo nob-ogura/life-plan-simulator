@@ -12,21 +12,23 @@
 ## フェーズ1: 基盤セットアップ
 - 目的: Next.js 14 + TypeScript + Tailwind CSS + shadcn/ui + Supabase クライアントの開発基盤を整備し、VSA で拡張しやすい骨格を作る。
 - 実装内容:
-  - App Router 構成でプロジェクト初期化、`src/features/<module>/<slice>/` で機能を束ねるフォルダ構成と RER 雛形（request/endpoint/response）を準備。横断関心は `src/shared` のみに置く。
+  - App Router 構成でプロジェクト初期化、`src/features/<module>/<slice>/` で機能を束ねるフォルダ構成と RER 雛形（request/endpoint/response）を準備。横断関心とドメイン核（シミュレーションなど共通ドメイン）は `src/shared` に配置する。
+  - RER では「1エンドポイント = 1クラス」の構成を徹底し、Transport と Application の責務を明確に分離する。
   - Tailwind/shadcn/ui の導入とテーマ設定、グローバルレイアウト/ヘッダー/トーストを整備。
-  - Supabase JS クライアント、環境変数テンプレート `.env.example` 整備、型生成（`supabase gen types typescript`）。
-  - Lint/Format/Test (Biome/Vitest) 設定、ローカル検証と GitHub Actions での最小CI（lint + typecheck + unit）の雛形を追加。
+- Supabase JS クライアント、環境変数テンプレート `.env.example` 整備、型生成（`supabase gen types typescript`）。
+  - Lint/Format/Test (Biome/Vitest) 設定。テストは unit を `pnpm test:unit`、Supabase 依存の integration/E2E は後続フェーズのコマンドに分離し、GitHub Actions では最小CI（lint + typecheck + unit）のみを必須として走らせる。Supabase ローカルを `supabase start` で起動するスモーク＋`pnpm test:integration` を try-job（allow-failure）として置き、Phase3 でスキーマが揃い次第必須化する方針を記載。
 - DOD:
-  - `pnpm lint`, `pnpm test` が通り、開発サーバーが起動すること。
+  - `pnpm lint`, `pnpm test:unit` が通り、開発サーバーが起動すること（Supabase 接続を要するテストは対象外）。
   - `.env.example` に必要キーが揃い、README にセットアップ手順を記載。
-  - `src/features` 配下のスライス雛形が存在し、`shared` には横断関心のみが置かれている（ドメイン共有を除く）。
+  - `src/features` 配下のスライス雛形が存在し、`shared` には横断関心とドメイン核（シミュレーション等）が配置される方針が示されている。
 
 ## フェーズ2: 認証・RLS基盤
 - 目的: ログイン必須要件を満たし、ユーザーデータを RLS で隔離できる状態を作る。
 - 実装内容:
   - Supabase Auth (GitHub OAuth) 設定、ログイン/ログアウトフローと保護ルートガードを実装。
-  - `profiles` と `simulation_settings` のスキーマを Supabase migration で先行作成し、`on_auth_user_created` トリガーで初期レコードを自動作成する SQL を配置。
+  - `profiles` と `simulation_settings` のスキーマを Supabase migration で先行作成し、`on_auth_user_created` トリガーで初期レコードを自動作成する SQL を配置。`profiles` には本人/配偶者の生年月 (birth_year/month, spouse_birth_year/month) と年金開始年齢を含める。
   - 上記2テーブルに RLS を有効化し、`auth.uid() = user_id` ポリシーを作成。
+  - 認証プロバイダは GitHub のみに限定し、メール/パスワードは提供しない。Supabase プロジェクト設定で `Enforce TLS` を有効化。
 - DOD:
   - 未ログイン時は `/login` へ誘導され、ログイン後にダッシュボードへ遷移する。
   - Supabase migration が適用済みで、`profiles` と `simulation_settings` に RLS ポリシーが有効。
@@ -35,18 +37,21 @@
 ## フェーズ3: データモデル & CRUD スライス
 - 目的: 入力データを永続化できる最小の API/ストアを揃え、以降の UI/計算の土台にする。
 - 実装内容:
-  - テーブル: `children`, `income_streams`, `expenses`, `rentals`, `assets`, `mortgages`, `life_events`, `retirement_benefits` (退職金受取年・月、金額)、`pensions` (年金開始年齢・モデル月額) のスキーマとインデックスを Supabase migration として作成（`profiles` / `simulation_settings` はフェーズ2で作成済み）。
-  - 制約/標準化: すべての日付は月初 (`YYYY-MM-01`) に正規化、金額は `amount >= 0`、`repeat_interval_years > 0`、`children` は `birth_year_month` または `due_year_month` のどちらか必須、`life_events(year_month)` にインデックスを付与。
+  - テーブル: `children`, `income_streams`, `expenses`, `rentals`, `assets`, `mortgages`, `life_events` のスキーマとインデックスを Supabase migration として作成（`profiles` / `simulation_settings` はフェーズ2で作成済み）。`mortgages` に `target_rental_id` (NULL可, `rentals(id)` への FK, `user_id` と複合インデックス) を追加し、複数 rental 連動ロジックの受け皿を先行して用意する。退職金は `life_events` の category `retirement_bonus` で扱い、年金額・諸係数（諸経費率・固定資産税率・評価額掛目など）は `simulation_settings` に保持する。
+  - 制約/標準化: すべての日付は月初 (`YYYY-MM-01`) に正規化、金額は `amount >= 0`、`repeat_interval_years > 0`、`children` は `birth_year_month` または `due_year_month` のどちらか必須、`life_events(year_month)` にインデックスを付与。`profiles` には本人/配偶者いずれかの生年月入力が必須になるようチェックを検討。
+  - パフォーマンス: 全テーブルの `user_id` に BTREE インデックスを付与し、RLS 下でもクエリ性能を維持する。
+  - セキュリティ: 本フェーズで作成する全テーブルに対し migration で `enable row level security;` と `auth.uid() = user_id` ポリシーを付与する。
   - 各スライスで RER 構成の API エンドポイント/サーバーアクションを用意し、zod で入出力バリデーションを実装。Endpoint は入出力/認証のみ、Handler がオーケストレーション、計算や整合性ルールは Entity/ValueObject に寄せる。
   - CQRS を明示採用: 書き込みは Command Handler、読み取りは Query Handler とし、Query は Supabase の非トラッキング/軽量プロジェクションで最適化。
   - データアクセスはスライス内の小さな Repository/Infrastructure クラスに限定し、他スライスからの直接参照は禁止。
   - 共通 DTO/型は shared ではなくスライス内に保持（計算で共有するドメイン型のみ `shared/domain` に配置）。同種のグルーコードが 3 回以上重複した場合のみ shared への抽出を検討（Rule of Three）。
-  - RLS ポリシーと CRUD API を対象にした integration テスト/手順を整備。
+  - サーバーアクション採用時も Endpoint は Transport 層に限定し、ビジネスロジックは Handler に集約する責務分担を守る。
+  - RLS ポリシーと CRUD API を対象にした integration テスト/手順を整備（`pnpm test:integration`）。Supabase ローカル/CI でのみ実行し、unit テストとコマンドを分離する。
 - DOD:
   - 上記テーブルの CRUD が動作し、RLS 下で自ユーザーのみ読み書きできる。
-  - マイグレーションに日付正規化・金額/繰り返し/children の check constraint と `life_events(year_month)` インデックスが含まれている。
+  - マイグレーションに日付正規化・金額/繰り返し/children の check constraint と `life_events(year_month)` インデックス、全テーブルの RLS 有効化と `auth.uid() = user_id` ポリシーが含まれている。
   - zod によるバリデーションエラー時に 400 を返却し、正常系は 200/204 を返す。
-  - Migration を適用した Supabase プロジェクトで CRUD + RLS を含む `pnpm test:integration`（暫定）が通る。
+  - Migration を適用した Supabase プロジェクトで CRUD + RLS を含む `pnpm test:integration`（暫定）が通る（unit とは別コマンド）。
 
 ## フェーズ4: シミュレーションエンジン（フロント）
 - 目的: 要件に沿った月次キャッシュフロー計算を行う純粋関数を実装し、ドメインロジックを固める。
@@ -54,36 +59,43 @@
   - `shared/domain/simulation` にタイムライン生成、収入/支出/イベント展開、住宅ローン・固定資産税計算、年金・退職金、運用利回り、枯渇月判定を実装。
   - インフレ率は支出に単純乗算、昇給率は手取り収入に乗算し税・社保の再計算は行わない（手取りベース固定）。
   - ボーナスは「毎年同額＋指定月」を基本とし、単一の変化点（指定年以降ゼロまたは増額）のみ許容する。
-  - 退職金: `retirement_benefits` の `year_month` に一致する月に一度だけ手取り収入として計上し、入力起点はフェーズ5の退職金フォームで取得したデータとする。
+  - 住宅ローン定数: principal = (建物+土地)×諸経費率 − 頭金、固定金利は mortgage テーブルの annual_rate（デフォルト1.5%）、諸係数（諸経費率・固定資産税率・評価額掛目）は `simulation_settings` から取得しハードコードしない。
+  - 退職金: `life_events` の category `retirement_bonus` の `year_month` に一致する月に一度だけ手取り収入として計上し、入力起点はフェーズ5の退職金フォームで取得したデータとする。
   - 年金・諸係数は `simulation_settings` の値を参照して適用（デフォルト値は DB 定義を利用しハードコードしない）。
   - 日付を `YYYY-MM` 文字列と経過月数で扱うユーティリティを追加（Date オブジェクトを避ける）。
   - `HOUSING_PURCHASE_STOP_RENT` の auto_toggle ロジックを組み込み、住宅購入月の前月で rental を自動終了させる。
+  - ビジネス中核ロジック（Entity/ValueObject）は `shared/domain` に置き、各スライス固有の入出力モデルはスライス内に閉じ込める方針を明示する。
   - Vitest で境界値テスト（ボーナス変化点、繰り返しイベント、住宅購入時家賃停止、利回りと取り崩し、100歳終端）を作成。
 - DOD:
   - ドメイン関数が副作用なしでデータモデルを入力し、月次配列を返す。
-  - 主要パスとエッジケースの単体テストがグリーン（住宅購入時家賃停止を含む）。
+  - タイムラインは「現在年月 + `start_offset_months` から年齢100歳まで」の月次配列で生成される。
+  - cash_balance は常に利回り0%、investment_balance のみに `(1 + return_rate/12)` を適用することをテストで保証する。
+  - 住宅ローン計算が `simulation_settings` の諸経費率/固定資産税率/評価額掛目を用い、固定資産税を月割り計上することをテストで確認する（ハードコードしない）。
+  - 住宅購入月の前月で rental を停止する `HOUSING_PURCHASE_STOP_RENT` ロジックと枯渇月判定の主要/境界ケースの単体テストがグリーン。
   - 退職金が指定月に一度だけ収入として反映されるテストが通る。
-  - モデル値（年金）と計算係数（インフレ・昇給率・ボーナス変化点等）が `simulation_settings` から参照されている。
-  - 計算に使用する係数が DB (`simulation_settings`) 由来であることを確認できる。
+  - モデル値（年金: 単身65,000円/月・配偶者130,000円/月などの初期値）と計算係数（インフレ・昇給率・ボーナス変化点等）が `simulation_settings` から参照されることをテストで確認できる（初期値はシード/DB定義に依存）。
 
 ## フェーズ5: 入力UI（/inputs）
 - 目的: ユーザーが要件の入力項目を漏れなく登録・更新できるフォームを提供する。
 - 実装内容:
-  - react-hook-form + zod Resolver で各セクション（家族構成/収入/ボーナス/支出/住宅/ライフイベント/退職金/年金開始年齢/投資設定/シミュレーション設定）のフォームを実装。
-  - イベント一覧ページと追加モーダル（繰り返しイベント含む）を実装し、`/events` または `/inputs` 内タブとして提供。
+  - react-hook-form + zod Resolver で各セクション（家族構成/収入/ボーナス/支出/住宅/ライフイベント/退職金/年金開始年齢/投資設定/シミュレーション設定）のフォームを実装。家族構成では本人/配偶者の生年月入力を必須にし、100歳終端計算に必要な情報を確保する。
+  - イベント一覧ページと追加モーダル（繰り返しイベント含む）を実装し、`/events` または `/inputs` 内タブとして提供。退職金は `life_events` の category `retirement_bonus` として 1 レコードのみを許容し、「退職金フォーム」をソース・オブ・トゥルースとする。汎用イベントリストでは同カテゴリの新規追加を禁止し、既存レコード編集時は専用フォームへの導線または警告を表示する排他ルールを明記。
   - 設定ページでモデル年金・係数（simulation_settings）を閲覧・編集できる UI を追加。
   - ステップ型アコーディオン UI、ローカルステート自動保存、明示的な「保存」ボタンで Supabase へ upsert。
   - 繰り返しイベント入力、住宅購入入力（建物/土地/頭金/返済年数）をサポートし、バリデーションメッセージを日本語で表示。
 - DOD:
   - 各フォームで必須項目のバリデーションが機能し、保存後にデータが DB に反映される。
   - ログインユーザーのデータのみ取得・編集できることを UI から確認。
-  - 主要なフォーム操作の Playwright/E2E シナリオが通る（入力→保存→再取得）。
+  - 子ども行は `birth_year_month` または `due_year_month` のいずれか必須で、両方未入力は保存できない。
+  - 退職金データは退職金フォーム経由の単一レコードとし、汎用イベントリストから重複登録できないことを確認。
+  - 入力履歴は保持せず常に最新設定のみを上書き保存する挙動であることを確認。
+  - 主要なフォーム操作の Playwright/E2E シナリオが通る（入力→保存→再取得）。本人/配偶者の生年月を入力しない場合は保存不可であることを確認。
 
 ## フェーズ6: ダッシュボード可視化（/）
 - 目的: シミュレーション結果を直感的に理解できるダッシュボードを提供する。
 - 実装内容:
-  - サマリカード（累計収支・平均月残高・資産寿命）を実装し、表示範囲切替（直近5年/全期間）を実装。
-  - 資産推移ラインチャートと月次キャッシュフロー表（仮想スクロール）を shadcn/ui + chart ライブラリで作成。
+  - サマリカード（累計収支・平均月残高・資産寿命）を実装し、表示範囲切替（直近5年/全期間）を実装。カードは `position: sticky; top: 0;` で固定し、半透明バックドロップでスクロール時の可読性を確保。
+  - 資産推移グラフは cash と investment のスタック表示を持つライン/エリアチャートで実装し、月次キャッシュフロー表は仮想スクロールを採用。
   - フロントで入力データを取得し、フェーズ4のエンジンを実行して描画するフローを構築。
 - DOD:
   - 範囲切替がグラフと表の双方に反映される。
@@ -95,7 +107,7 @@
 - 実装内容:
   - 住宅購入ロジックを拡張: 複数 rental / `target_rental_id` 対応や例外ケース（途中解約など）を扱う。
   - 繰り返しイベントのタイムライン展開と停止条件（回数/年齢）の計算・UIを強化（フェーズ4のベース実装を発展）。
-  - 住宅ローン諸経費率・固定資産税率・評価額掛目を `simulation_settings` から参照し、計算結果への反映を精緻化。
+  - 住宅ローン諸経費率・固定資産税率・評価額掛目を `simulation_settings` から参照し、計算結果への反映を精緻化（フェーズ4でのハードコード排除を前提）。
 - DOD:
   - 複数 rental / target_rental_id など拡張ケースでも家賃停止ロジックが期待通り動作する。
   - 繰り返しイベントの停止条件（回数/年齢）が UI と計算で一致している。
