@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
+import { AuthButton } from "@/shared/cross-cutting/ui/AuthButton";
 
 export function AppHeader() {
   return (
@@ -27,9 +27,7 @@ export function AppHeader() {
           </Link>
         </nav>
         <div className="flex items-center gap-2">
-          <Button variant="secondary" size="sm">
-            Log in
-          </Button>
+          <AuthButton />
         </div>
       </div>
     </header>
