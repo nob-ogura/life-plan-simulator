@@ -4,9 +4,9 @@
 - 目的: 要件定義書5.1の「バードアイ図（画面遷移とデータフロー）」を先行で可視化し、以降の設計で迷子にならないようにする。
 - 実装内容:
   - 画面遷移図（未ログイン→ログイン→入力→ダッシュボード）とデータフロー（入力→計算エンジン→可視化）を作成。
-  - 主要エンティティ（income/expenses/life_events/mortgages 等）と Supabase テーブル対応を紐付けたMermaid図を作成し、 Design.md に追記。
+  - 主要エンティティ（income/expenses/life_events/mortgages 等）と Supabase テーブル対応を紐付けたMermaid図を作成し、 `docs/Diagrams.md` に追記。
 - DOD:
-  - Mermaid図が Design.md に追加される。
+  - Mermaid図が `docs/Diagrams.md` に追加される。
   - 入力→計算→表示の流れをMermaid図だけで把握できる。
 
 ## フェーズ1: 基盤セットアップ
