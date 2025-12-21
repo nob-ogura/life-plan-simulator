@@ -1,0 +1,3 @@
+# Cross-Cutting Concerns
+
+Shared infrastructure helpers live here (logging, auth helpers, date/time utilities, etc.).
