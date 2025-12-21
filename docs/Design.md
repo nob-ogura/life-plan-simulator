@@ -101,6 +101,7 @@
 - Supabase JS ClientでCRUD。再利用のため `@/lib/supabaseClient` を配置。
 - `useQuery` 系の軽量フェッチ（React Server Componentsでは server action + cache revalidate）。
 - オフライン入力中はローカル状態に保持し、`保存` ボタンで upsert。
+- 型生成: `pnpm supabase:gen-types` で `src/types/supabase.ts` を生成・更新する。
 
 ## 8. セキュリティ / RLS ポリシー
 - 全テーブルで `enable row level security`。
