@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
-import { AppHeader } from "@/shared/cross-cutting/ui/AppHeader";
 import { cn } from "@/lib/utils";
+import { AppHeader } from "@/shared/cross-cutting/ui/AppHeader";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -32,9 +32,7 @@ export default function RootLayout({
         <div className="flex min-h-screen flex-col bg-background text-foreground">
           <AppHeader />
           <main className="flex-1">
-            <div className="mx-auto w-full max-w-6xl px-6 py-10">
-              {children}
-            </div>
+            <div className="mx-auto w-full max-w-6xl px-6 py-10">{children}</div>
           </main>
         </div>
         <Toaster />

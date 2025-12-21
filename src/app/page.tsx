@@ -7,9 +7,7 @@ export default function Home() {
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           Base UI Ready
         </p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight">
-          Life Plan Simulator
-        </h1>
+        <h1 className="mt-3 text-3xl font-semibold tracking-tight">Life Plan Simulator</h1>
         <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
           Tailwind CSS + shadcn/ui の基盤が整った状態です。今後は入力 UI
           とシミュレーション表示をここに積み上げていきます。
