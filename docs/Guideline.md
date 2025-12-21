@@ -32,9 +32,31 @@
 ### 3.2 Endpoint と Handler の責務分担
 スライス内を以下の役割で構成します。
 
-*   Endpoint (Transport Layer): HTTPリクエストの受付、パラメータのバインディング、認証属性の付与を担当します。ビジネスロジックは書かず、Handlerへ処理を委譲します。
+*   Endpoint (Transport Layer): HTTPリクエストの受付、パラメータのバインディング、認証属性の付与を担当します。ビジネスロジックは一切書かず、Handlerへ処理を委譲します。
 *   Handler (Application Layer): ユースケースの進行役（オーケストレーター）。データの取得、ドメインメソッドの呼び出し、永続化、イベント発行を制御します。
 *   Domain Model (Core Business Logic): 状態の整合性を保つルール、計算ロジック、ガード条件は、Handlerにベタ書きせず、可能な限りドメインモデル（Entity/ValueObject）のメソッドとして実装してください（リッチドメインモデルの推奨）。
+
+#### 3.2.1 最小テンプレート（1エンドポイント=1クラス）
+Endpoint は「入力受付 + 認証 + 委譲」のみを行い、Handler に業務処理を集約します。
+
+```ts
+// Endpoint: input/auth only, delegate to handler.
+export class ExampleEndpoint {
+  constructor(private readonly handler: ExampleHandler) {}
+
+  async handle(request: ExampleRequest): Promise<ExampleResponse> {
+    return this.handler.execute(request);
+  }
+}
+
+// Handler: business logic orchestration.
+export class ExampleHandler {
+  async execute(request: ExampleRequest): Promise<ExampleResponse> {
+    // do business logic here
+    return { ok: true };
+  }
+}
+```
 
 ## 4. データアクセスと依存関係
 
