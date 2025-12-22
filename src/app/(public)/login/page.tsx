@@ -4,36 +4,25 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { supabaseClient } from "@/lib/supabaseClient";
+import { useAuth } from "@/shared/cross-cutting/auth";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { session, isReady, login } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    let active = true;
-
-    supabaseClient.auth.getSession().then(({ data }) => {
-      if (!active) return;
-      if (data.session) {
-        router.replace("/");
-      }
-    });
-
-    return () => {
-      active = false;
-    };
-  }, [router]);
+    if (!isReady) return;
+    if (session) {
+      router.replace("/");
+    }
+  }, [isReady, router, session]);
 
   const handleLogin = async () => {
     setIsSubmitting(true);
-    const redirectTo = `${window.location.origin}/`;
-    const { error } = await supabaseClient.auth.signInWithOAuth({
-      provider: "github",
-      options: { redirectTo },
-    });
-
-    if (error) {
+    try {
+      await login({ redirectTo: `${window.location.origin}/` });
+    } catch {
       setIsSubmitting(false);
     }
   };

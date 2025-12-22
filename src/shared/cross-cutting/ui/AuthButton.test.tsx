@@ -1,40 +1,35 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-
+import type { AuthContextValue } from "@/shared/cross-cutting/auth";
+import { useAuth } from "@/shared/cross-cutting/auth";
 import { AuthButton } from "@/shared/cross-cutting/ui/AuthButton";
+import { createMockSession, createMockUser } from "@/test/factories/auth";
 
-const { replace, signOut, getSession, onAuthStateChange } = vi.hoisted(() => ({
-  replace: vi.fn(),
-  signOut: vi.fn().mockResolvedValue({ error: null }),
-  getSession: vi.fn(),
-  onAuthStateChange: vi.fn().mockReturnValue({
-    data: { subscription: { unsubscribe: vi.fn() } },
-  }),
+const { logout } = vi.hoisted(() => ({
+  logout: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ replace }),
+vi.mock("@/shared/cross-cutting/auth", () => ({
+  useAuth: vi.fn(),
 }));
 
-vi.mock("@/lib/supabaseClient", () => ({
-  supabaseClient: {
-    auth: {
-      getSession,
-      onAuthStateChange,
-      signOut,
-    },
-  },
-}));
+const mockedUseAuth = vi.mocked(useAuth);
 
 describe("AuthButton", () => {
   beforeEach(() => {
-    replace.mockClear();
-    signOut.mockClear();
-    getSession.mockReset();
+    logout.mockClear();
+    mockedUseAuth.mockReset();
   });
 
   it("shows a login link when no session exists", async () => {
-    getSession.mockResolvedValueOnce({ data: { session: null } });
+    const authValue: AuthContextValue = {
+      session: null,
+      isReady: true,
+      login: vi.fn(),
+      logout,
+    };
+
+    mockedUseAuth.mockReturnValue(authValue);
 
     render(<AuthButton />);
 
@@ -43,10 +38,15 @@ describe("AuthButton", () => {
     });
   });
 
-  it("signs out and redirects to /login when session exists", async () => {
-    getSession.mockResolvedValueOnce({
-      data: { session: { user: { id: "user-1" } } },
-    });
+  it("calls logout when session exists", async () => {
+    const authValue: AuthContextValue = {
+      session: createMockSession({ user: createMockUser({ id: "user-1" }) }),
+      isReady: true,
+      login: vi.fn(),
+      logout,
+    };
+
+    mockedUseAuth.mockReturnValue(authValue);
 
     render(<AuthButton />);
 
@@ -57,8 +57,7 @@ describe("AuthButton", () => {
     fireEvent.click(screen.getByRole("button", { name: "Log out" }));
 
     await waitFor(() => {
-      expect(signOut).toHaveBeenCalledTimes(1);
-      expect(replace).toHaveBeenCalledWith("/login");
+      expect(logout).toHaveBeenCalledTimes(1);
     });
   });
 });

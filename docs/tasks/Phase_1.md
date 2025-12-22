@@ -56,13 +56,13 @@
 ## Task 5: Supabase クライアントと環境変数テンプレートの整備
 - 目的: Supabase 連携の基盤を整え、開発者が迷わずセットアップできるようにする。
 - 作業内容:
-  - Supabase JS クライアントを `@/lib/supabaseClient` に配置する。
+  - Supabase JS クライアントを `@/shared/cross-cutting/infrastructure/supabase` に配置する。
   - `.env.example` に必要なキーを記載する。
   - 型生成の手順（`supabase gen types typescript`）を利用できる状態にする。
 - 受入基準（Gherkin）:
   - シナリオ: Supabase 接続準備が整っている
     - 前提: Supabase の利用方針が `docs/Design.md` に記載されている
-    - もし: `@/lib/supabaseClient` と `.env.example` を確認する
+    - もし: `@/shared/cross-cutting/infrastructure/supabase` と `.env.example` を確認する
     - ならば: Supabase クライアントの初期化が用意されている
     - かつ: `.env.example` に必要な環境変数が揃っている
     - かつ: 型生成コマンドの実行手順が示されている

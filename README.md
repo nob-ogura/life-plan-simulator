@@ -26,6 +26,12 @@ Open http://localhost:3000 in your browser.
 
 ## Quality checks
 
+Run formatting:
+
+```bash
+pnpm format
+```
+
 Run linting:
 
 ```bash

@@ -3,7 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
-import { AppHeader } from "@/shared/cross-cutting/ui/AppHeader";
+import { AuthProvider } from "@/shared/cross-cutting/auth";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -28,13 +28,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja">
-      <body className={cn(geistSans.variable, geistMono.variable)}>
-        <div className="flex min-h-screen flex-col bg-background text-foreground">
-          <AppHeader />
-          <main className="flex-1">
-            <div className="mx-auto w-full max-w-6xl px-6 py-10">{children}</div>
-          </main>
-        </div>
+      <body className={cn(geistSans.variable, geistMono.variable, "bg-background text-foreground")}>
+        <AuthProvider>{children}</AuthProvider>
         <Toaster />
       </body>
     </html>
