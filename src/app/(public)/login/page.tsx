@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -8,20 +8,28 @@ import { useAuth } from "@/shared/cross-cutting/auth";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { session, isReady, login } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const redirectPath = (() => {
+    const candidate = searchParams.get("redirect");
+    if (!candidate || !candidate.startsWith("/")) {
+      return "/";
+    }
+    return candidate;
+  })();
 
   useEffect(() => {
     if (!isReady) return;
     if (session) {
-      router.replace("/");
+      router.replace(redirectPath);
     }
-  }, [isReady, router, session]);
+  }, [isReady, redirectPath, router, session]);
 
   const handleLogin = async () => {
     setIsSubmitting(true);
     try {
-      await login({ redirectTo: `${window.location.origin}/` });
+      await login({ redirectTo: `${window.location.origin}${redirectPath}` });
     } catch {
       setIsSubmitting(false);
     }
