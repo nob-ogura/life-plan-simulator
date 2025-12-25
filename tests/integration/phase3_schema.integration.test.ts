@@ -103,6 +103,29 @@ const expectIndex = (table: string, columns: string[]) => {
   );
 };
 
+const expectRlsEnabled = (table: string) => {
+  expectPattern(
+    new RegExp(`alter\\s+table\\s+public\\.${table}[^;]*enable\\s+row\\s+level\\s+security`, "i"),
+    `${table} RLS enabled`,
+  );
+};
+
+const expectPolicy = (
+  table: string,
+  action: "select" | "insert" | "update" | "delete",
+  clauses: string[],
+) => {
+  const pattern = new RegExp(
+    [
+      `create\\s+policy\\s+[^;]*?\\s+on\\s+public\\.${table}[^;]*?`,
+      `for\\s+${action}[^;]*?`,
+      ...clauses.map((clause) => `[^;]*?${clause}`),
+    ].join(""),
+    "i",
+  );
+  expectPattern(pattern, `${table} ${action} policy`);
+};
+
 const expectMonthStartConstraint = (table: string, column: string, nullable: boolean) => {
   const condition = nullable
     ? `${column}\\s+is\\s+null\\s+or\\s+date_part\\('\\s*day\\s*',\\s*${column}\\)\\s*=\\s*1`
@@ -325,5 +348,30 @@ describe("Phase 3 schema migrations", () => {
     expectIndex("life_events", ["user_id"]);
     expectIndex("life_events", ["year_month"]);
     expectIndex("mortgages", ["user_id", "target_rental_id"]);
+  });
+
+  it("enables RLS and adds per-user policies for core tables", () => {
+    const tables = [
+      "children",
+      "income_streams",
+      "expenses",
+      "rentals",
+      "assets",
+      "mortgages",
+      "life_events",
+    ];
+
+    for (const table of tables) {
+      expectRlsEnabled(table);
+      expectPolicy(table, "select", ["using\\s*\\(\\s*auth\\.uid\\(\\)\\s*=\\s*user_id\\s*\\)"]);
+      expectPolicy(table, "insert", [
+        "with\\s+check\\s*\\(\\s*auth\\.uid\\(\\)\\s*=\\s*user_id\\s*\\)",
+      ]);
+      expectPolicy(table, "update", [
+        "using\\s*\\(\\s*auth\\.uid\\(\\)\\s*=\\s*user_id\\s*\\)",
+        "with\\s+check\\s*\\(\\s*auth\\.uid\\(\\)\\s*=\\s*user_id\\s*\\)",
+      ]);
+      expectPolicy(table, "delete", ["using\\s*\\(\\s*auth\\.uid\\(\\)\\s*=\\s*user_id\\s*\\)"]);
+    }
   });
 });

@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "test:unit": "vitest run",
     "test:integration": "vitest run --config vitest.integration.config.mts",
+    "supabase:push": "pnpm supabase db push",
     "supabase:gen-types": "dotenv -e .env -e .env.local -- supabase gen types typescript --project-id \"$SUPABASE_PROJECT_ID\" --schema public > src/types/supabase.ts"
   },
   "dependencies": {
