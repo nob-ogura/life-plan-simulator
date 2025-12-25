@@ -11,6 +11,7 @@ export const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const refresh = router.refresh;
   const [session, setSession] = useState<AuthContextValue["session"]>(null);
   const [isReady, setIsReady] = useState(false);
 
@@ -23,16 +24,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsReady(true);
     });
 
-    const { data } = supabaseClient.auth.onAuthStateChange((_event, nextSession) => {
+    const { data } = supabaseClient.auth.onAuthStateChange((event, nextSession) => {
       setSession(nextSession);
       setIsReady(true);
+      if (event !== "INITIAL_SESSION") {
+        refresh();
+      }
     });
 
     return () => {
       active = false;
       data.subscription.unsubscribe();
     };
-  }, []);
+  }, [refresh]);
 
   const login = useCallback(async (options?: LoginOptions) => {
     const provider = options?.provider ?? "github";
