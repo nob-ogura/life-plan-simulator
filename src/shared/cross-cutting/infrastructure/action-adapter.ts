@@ -19,12 +19,14 @@ export type ActionResult<TRes> =
       error: ActionError;
     };
 
+type IssuePath = Array<string | number | symbol>;
+
 export type ActionSchema<TReq> = {
   safeParse: (input: unknown) =>
     | { success: true; data: TReq }
     | {
         success: false;
-        error: { issues: Array<{ path: Array<string | number>; message: string }> };
+        error: { issues: Array<{ path: IssuePath; message: string }> };
       };
 };
 
@@ -46,11 +48,9 @@ const isActionError = (error: unknown): error is ActionError => {
   return typeof record.type === "string" && typeof record.message === "string";
 };
 
-const toIssues = (
-  issues: Array<{ path: Array<string | number>; message: string }>,
-): ActionIssue[] =>
+const toIssues = (issues: Array<{ path: IssuePath; message: string }>): ActionIssue[] =>
   issues.map((issue) => ({
-    path: issue.path.length === 0 ? "(root)" : issue.path.join("."),
+    path: issue.path.length === 0 ? "(root)" : issue.path.map((part) => String(part)).join("."),
     message: issue.message,
   }));
 
