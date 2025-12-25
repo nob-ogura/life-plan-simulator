@@ -63,9 +63,9 @@ const waitForRecord = async (
   throw new Error(`Timed out waiting for ${table} record for user ${userId}`);
 };
 
-describe("Phase 2 RLS policies", () => {
+describe("User Profiles and Settings Flow", () => {
   itIf(
-    "enforces per-user access for profiles and simulation_settings (requires NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, SUPABASE_SECRET_KEY)",
+    "creates default records and enforces access control (requires NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, SUPABASE_SECRET_KEY)",
     async () => {
       if (!supabaseUrl || !publishableKey || !secretKey) {
         throw new Error(
@@ -116,6 +116,25 @@ describe("Phase 2 RLS policies", () => {
 
         const userAClient = await createUserClient(userA.email, userA.password);
 
+        // Check defaults for User A
+        const { data: profileDefaults, error: profileDefaultsError } = await userAClient
+          .from("profiles")
+          .select("pension_start_age")
+          .eq("user_id", userAId)
+          .single();
+        if (profileDefaultsError) throw profileDefaultsError;
+        expect(profileDefaults.pension_start_age).toBe(65);
+
+        const { data: settingsDefaults, error: settingsDefaultsError } = await userAClient
+          .from("simulation_settings")
+          .select("start_offset_months, end_age")
+          .eq("user_id", userAId)
+          .single();
+        if (settingsDefaultsError) throw settingsDefaultsError;
+        expect(settingsDefaults.start_offset_months).toBe(0);
+        expect(settingsDefaults.end_age).toBe(100);
+
+        // Check RLS and Updates
         const { data: ownProfile, error: ownProfileError } = await userAClient
           .from("profiles")
           .select("user_id")
