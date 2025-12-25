@@ -86,6 +86,23 @@ const expectPattern = (pattern: RegExp, label: string) => {
   expect(matched, `Expected migrations (${files}) to include ${label}`).toBe(true);
 };
 
+const expectMonthStartConstraint = (table: string, column: string, nullable: boolean) => {
+  const condition = nullable
+    ? `${column}\\s+is\\s+null\\s+or\\s+date_part\\('\\s*day\\s*',\\s*${column}\\)\\s*=\\s*1`
+    : `date_part\\('\\s*day\\s*',\\s*${column}\\)\\s*=\\s*1`;
+  expectPattern(
+    new RegExp(`alter\\s+table\\s+public\\.${table}[^;]*${condition}`, "i"),
+    `${table}.${column} month-start check constraint`,
+  );
+};
+
+const expectNonNegativeConstraint = (table: string, column: string) => {
+  expectPattern(
+    new RegExp(`alter\\s+table\\s+public\\.${table}[^;]*${column}[^\\n]*>=\\s*0`, "i"),
+    `${table}.${column} >= 0 check constraint`,
+  );
+};
+
 describe("Phase 3 schema migrations", () => {
   it("creates children with required columns", () => {
     const block = findTableBlock("children");
@@ -211,6 +228,61 @@ describe("Phase 3 schema migrations", () => {
       "down_payment",
       "target_rental_id",
     ]);
+  });
+
+  it("enforces month-start dates across core tables", () => {
+    expectMonthStartConstraint("children", "birth_year_month", true);
+    expectMonthStartConstraint("children", "due_year_month", true);
+    expectMonthStartConstraint("income_streams", "change_year_month", true);
+    expectMonthStartConstraint("income_streams", "start_year_month", false);
+    expectMonthStartConstraint("income_streams", "end_year_month", true);
+    expectMonthStartConstraint("expenses", "start_year_month", false);
+    expectMonthStartConstraint("expenses", "end_year_month", true);
+    expectMonthStartConstraint("rentals", "start_year_month", false);
+    expectMonthStartConstraint("rentals", "end_year_month", true);
+    expectMonthStartConstraint("mortgages", "start_year_month", false);
+    expectMonthStartConstraint("life_events", "year_month", false);
+  });
+
+  it("prevents negative monetary amounts", () => {
+    expectNonNegativeConstraint("income_streams", "take_home_monthly");
+    expectNonNegativeConstraint("income_streams", "bonus_amount");
+    expectNonNegativeConstraint("income_streams", "bonus_amount_after");
+    expectNonNegativeConstraint("expenses", "amount_monthly");
+    expectNonNegativeConstraint("rentals", "rent_monthly");
+    expectNonNegativeConstraint("assets", "cash_balance");
+    expectNonNegativeConstraint("assets", "investment_balance");
+    expectNonNegativeConstraint("mortgages", "principal");
+    expectNonNegativeConstraint("mortgages", "building_price");
+    expectNonNegativeConstraint("mortgages", "land_price");
+    expectNonNegativeConstraint("mortgages", "down_payment");
+    expectNonNegativeConstraint("life_events", "amount");
+  });
+
+  it("requires children to have birth or due month", () => {
+    expectPattern(
+      new RegExp(
+        [
+          "alter\\s+table\\s+public\\.children[^;]*",
+          "birth_year_month\\s+is\\s+not\\s+null\\s+or\\s+due_year_month\\s+is\\s+not\\s+null",
+        ].join(""),
+        "i",
+      ),
+      "children birth/due requirement check",
+    );
+  });
+
+  it("enforces repeat_interval_years to be positive when present", () => {
+    expectPattern(
+      new RegExp(
+        [
+          "alter\\s+table\\s+public\\.life_events[^;]*",
+          "repeat_interval_years\\s+is\\s+null\\s+or\\s+repeat_interval_years\\s*>\\s*0",
+        ].join(""),
+        "i",
+      ),
+      "repeat_interval_years > 0 check",
+    );
   });
 
   it("adds all core tables in migrations", () => {
