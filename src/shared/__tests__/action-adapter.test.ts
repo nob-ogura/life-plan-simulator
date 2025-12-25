@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type {
   ActionError,
   ActionResult,
@@ -47,6 +47,8 @@ describe("createAction", () => {
   });
 
   it("maps unexpected errors to internal errors", async () => {
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
     const action = createAction(numberSchema, () => ({
       handle: async () => {
         throw new Error("boom");
@@ -62,6 +64,9 @@ describe("createAction", () => {
         message: "Internal Server Error",
       });
     }
+
+    expect(consoleSpy).toHaveBeenCalled();
+    consoleSpy.mockRestore();
   });
 
   it("returns ActionError thrown by the handler as-is", async () => {
