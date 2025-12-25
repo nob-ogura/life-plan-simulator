@@ -50,10 +50,11 @@ Run integration tests:
 pnpm test:integration
 ```
 
-Integration tests that exercise Supabase (e.g. auth trigger) require these env vars in `.env`:
+Integration tests that exercise Supabase (e.g. auth trigger, RLS) require these env vars in `.env`:
 
 - `NEXT_PUBLIC_SUPABASE_URL`
-- `SUPABASE_SERVICE_ROLE_KEY`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+- `SUPABASE_SECRET_KEY`
 
 ## Supabase migrations
 

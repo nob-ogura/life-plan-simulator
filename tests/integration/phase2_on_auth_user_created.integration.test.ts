@@ -6,8 +6,8 @@ import { describe, expect, it } from "vitest";
 import type { Database } from "@/types/supabase";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const hasEnv = Boolean(supabaseUrl && serviceRoleKey);
+const secretKey = process.env.SUPABASE_SECRET_KEY;
+const hasEnv = Boolean(supabaseUrl && secretKey);
 const itIf = hasEnv ? it : it.skip;
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -40,13 +40,13 @@ const waitForRecord = async (
 
 describe("Phase 2 auth trigger integration", () => {
   itIf(
-    "creates profiles and simulation_settings on user creation (requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY)",
+    "creates profiles and simulation_settings on user creation (requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SECRET_KEY)",
     async () => {
-      if (!supabaseUrl || !serviceRoleKey) {
-        throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY");
+      if (!supabaseUrl || !secretKey) {
+        throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SECRET_KEY");
       }
 
-      const supabase = createClient<Database>(supabaseUrl, serviceRoleKey, {
+      const supabase = createClient<Database>(supabaseUrl, secretKey, {
         auth: {
           persistSession: false,
         },
