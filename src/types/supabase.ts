@@ -8,6 +8,227 @@ export type Database = {
   };
   public: {
     Tables: {
+      assets: {
+        Row: {
+          cash_balance: number;
+          id: string;
+          investment_balance: number;
+          return_rate: number;
+          user_id: string;
+        };
+        Insert: {
+          cash_balance: number;
+          id?: string;
+          investment_balance: number;
+          return_rate?: number;
+          user_id: string;
+        };
+        Update: {
+          cash_balance?: number;
+          id?: string;
+          investment_balance?: number;
+          return_rate?: number;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      children: {
+        Row: {
+          birth_year_month: string | null;
+          due_year_month: string | null;
+          id: string;
+          label: string;
+          note: string | null;
+          user_id: string;
+        };
+        Insert: {
+          birth_year_month?: string | null;
+          due_year_month?: string | null;
+          id?: string;
+          label: string;
+          note?: string | null;
+          user_id: string;
+        };
+        Update: {
+          birth_year_month?: string | null;
+          due_year_month?: string | null;
+          id?: string;
+          label?: string;
+          note?: string | null;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      expenses: {
+        Row: {
+          amount_monthly: number;
+          category: string;
+          end_year_month: string | null;
+          id: string;
+          inflation_rate: number;
+          label: string;
+          start_year_month: string;
+          user_id: string;
+        };
+        Insert: {
+          amount_monthly: number;
+          category: string;
+          end_year_month?: string | null;
+          id?: string;
+          inflation_rate?: number;
+          label: string;
+          start_year_month: string;
+          user_id: string;
+        };
+        Update: {
+          amount_monthly?: number;
+          category?: string;
+          end_year_month?: string | null;
+          id?: string;
+          inflation_rate?: number;
+          label?: string;
+          start_year_month?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      income_streams: {
+        Row: {
+          bonus_amount: number;
+          bonus_amount_after: number | null;
+          bonus_months: number[];
+          change_year_month: string | null;
+          end_year_month: string | null;
+          id: string;
+          label: string;
+          raise_rate: number;
+          start_year_month: string;
+          take_home_monthly: number;
+          user_id: string;
+        };
+        Insert: {
+          bonus_amount: number;
+          bonus_amount_after?: number | null;
+          bonus_months?: number[];
+          change_year_month?: string | null;
+          end_year_month?: string | null;
+          id?: string;
+          label: string;
+          raise_rate?: number;
+          start_year_month: string;
+          take_home_monthly: number;
+          user_id: string;
+        };
+        Update: {
+          bonus_amount?: number;
+          bonus_amount_after?: number | null;
+          bonus_months?: number[];
+          change_year_month?: string | null;
+          end_year_month?: string | null;
+          id?: string;
+          label?: string;
+          raise_rate?: number;
+          start_year_month?: string;
+          take_home_monthly?: number;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      life_events: {
+        Row: {
+          amount: number;
+          auto_toggle_key: string | null;
+          building_price: number | null;
+          category: string;
+          down_payment: number | null;
+          id: string;
+          label: string;
+          land_price: number | null;
+          repeat_interval_years: number | null;
+          stop_after_occurrences: number | null;
+          target_rental_id: string | null;
+          user_id: string;
+          year_month: string;
+        };
+        Insert: {
+          amount: number;
+          auto_toggle_key?: string | null;
+          building_price?: number | null;
+          category: string;
+          down_payment?: number | null;
+          id?: string;
+          label: string;
+          land_price?: number | null;
+          repeat_interval_years?: number | null;
+          stop_after_occurrences?: number | null;
+          target_rental_id?: string | null;
+          user_id: string;
+          year_month: string;
+        };
+        Update: {
+          amount?: number;
+          auto_toggle_key?: string | null;
+          building_price?: number | null;
+          category?: string;
+          down_payment?: number | null;
+          id?: string;
+          label?: string;
+          land_price?: number | null;
+          repeat_interval_years?: number | null;
+          stop_after_occurrences?: number | null;
+          target_rental_id?: string | null;
+          user_id?: string;
+          year_month?: string;
+        };
+        Relationships: [];
+      };
+      mortgages: {
+        Row: {
+          annual_rate: number;
+          building_price: number;
+          down_payment: number;
+          id: string;
+          land_price: number;
+          principal: number;
+          start_year_month: string;
+          target_rental_id: string | null;
+          user_id: string;
+          years: number;
+        };
+        Insert: {
+          annual_rate?: number;
+          building_price: number;
+          down_payment: number;
+          id?: string;
+          land_price: number;
+          principal: number;
+          start_year_month: string;
+          target_rental_id?: string | null;
+          user_id: string;
+          years: number;
+        };
+        Update: {
+          annual_rate?: number;
+          building_price?: number;
+          down_payment?: number;
+          id?: string;
+          land_price?: number;
+          principal?: number;
+          start_year_month?: string;
+          target_rental_id?: string | null;
+          user_id?: string;
+          years?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "mortgages_target_rental_id_fkey";
+            columns: ["target_rental_id"];
+            isOneToOne: false;
+            referencedRelation: "rentals";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       profiles: {
         Row: {
           birth_month: number | null;
@@ -37,6 +258,30 @@ export type Database = {
           spouse_birth_month?: number | null;
           spouse_birth_year?: number | null;
           updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      rentals: {
+        Row: {
+          end_year_month: string | null;
+          id: string;
+          rent_monthly: number;
+          start_year_month: string;
+          user_id: string;
+        };
+        Insert: {
+          end_year_month?: string | null;
+          id?: string;
+          rent_monthly: number;
+          start_year_month: string;
+          user_id: string;
+        };
+        Update: {
+          end_year_month?: string | null;
+          id?: string;
+          rent_monthly?: number;
+          start_year_month?: string;
           user_id?: string;
         };
         Relationships: [];
