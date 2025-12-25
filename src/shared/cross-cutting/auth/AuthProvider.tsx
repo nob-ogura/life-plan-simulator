@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { createContext, useCallback, useEffect, useMemo, useState } from "react";
 
-import { supabaseClient } from "@/shared/cross-cutting/infrastructure/supabase";
+import { supabaseClient } from "@/shared/cross-cutting/infrastructure/supabase.client";
 
 import type { AuthContextValue, LoginOptions, LogoutOptions } from "./types";
 
