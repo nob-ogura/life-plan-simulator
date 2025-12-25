@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { scopeByUserAndId } from "@/features/inputs/shared/infrastructure/user-owned-supabase";
+import { unwrapSupabaseData } from "@/shared/cross-cutting/infrastructure/supabase-result";
 import type { Database } from "@/types/supabase";
 
 import type { UpdateMortgageCommand, UpdateMortgageRepository } from "./handler";
@@ -10,18 +12,14 @@ export class SupabaseUpdateMortgageRepository implements UpdateMortgageRepositor
 
   async update(command: UpdateMortgageCommand): Promise<UpdateMortgageResponse> {
     const { userId, id, patch } = command;
-    const { data, error } = await this.client
-      .from("mortgages")
-      .update(patch)
-      .eq("id", id)
-      .eq("user_id", userId)
+    const { data, error } = await scopeByUserAndId(
+      this.client.from("mortgages").update(patch),
+      userId,
+      id,
+    )
       .select()
       .single();
 
-    if (error) {
-      throw error;
-    }
-
-    return data;
+    return unwrapSupabaseData(data, error);
   }
 }

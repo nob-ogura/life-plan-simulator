@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { scopeByUserAndId } from "@/features/inputs/shared/infrastructure/user-owned-supabase";
+import { throwIfSupabaseError } from "@/shared/cross-cutting/infrastructure/supabase-result";
 import type { Database } from "@/types/supabase";
 
 import type { DeleteMortgageCommand, DeleteMortgageRepository } from "./handler";
@@ -10,15 +12,9 @@ export class SupabaseDeleteMortgageRepository implements DeleteMortgageRepositor
 
   async delete(command: DeleteMortgageCommand): Promise<DeleteMortgageResponse> {
     const { userId, id } = command;
-    const { error } = await this.client
-      .from("mortgages")
-      .delete()
-      .eq("id", id)
-      .eq("user_id", userId);
+    const { error } = await scopeByUserAndId(this.client.from("mortgages").delete(), userId, id);
 
-    if (error) {
-      throw error;
-    }
+    throwIfSupabaseError(error);
 
     return { id };
   }

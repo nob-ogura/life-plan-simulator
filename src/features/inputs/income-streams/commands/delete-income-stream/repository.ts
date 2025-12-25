@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { scopeByUserAndId } from "@/features/inputs/shared/infrastructure/user-owned-supabase";
+import { throwIfSupabaseError } from "@/shared/cross-cutting/infrastructure/supabase-result";
 import type { Database } from "@/types/supabase";
 
 import type { DeleteIncomeStreamCommand, DeleteIncomeStreamRepository } from "./handler";
@@ -10,15 +12,13 @@ export class SupabaseDeleteIncomeStreamRepository implements DeleteIncomeStreamR
 
   async delete(command: DeleteIncomeStreamCommand): Promise<DeleteIncomeStreamResponse> {
     const { userId, id } = command;
-    const { error } = await this.client
-      .from("income_streams")
-      .delete()
-      .eq("id", id)
-      .eq("user_id", userId);
+    const { error } = await scopeByUserAndId(
+      this.client.from("income_streams").delete(),
+      userId,
+      id,
+    );
 
-    if (error) {
-      throw error;
-    }
+    throwIfSupabaseError(error);
 
     return { id };
   }

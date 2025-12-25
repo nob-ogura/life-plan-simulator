@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { toUserOwnedInsert } from "@/features/inputs/shared/infrastructure/user-owned-supabase";
+import { unwrapSupabaseData } from "@/shared/cross-cutting/infrastructure/supabase-result";
 import type { Database } from "@/types/supabase";
 
 import type { CreateLifeEventCommand, CreateLifeEventRepository } from "./handler";
@@ -9,17 +11,12 @@ export class SupabaseCreateLifeEventRepository implements CreateLifeEventReposit
   constructor(private readonly client: SupabaseClient<Database>) {}
 
   async insert(command: CreateLifeEventCommand): Promise<CreateLifeEventResponse> {
-    const { userId, ...payload } = command;
     const { data, error } = await this.client
       .from("life_events")
-      .insert({ ...payload, user_id: userId })
+      .insert(toUserOwnedInsert(command))
       .select()
       .single();
 
-    if (error) {
-      throw error;
-    }
-
-    return data;
+    return unwrapSupabaseData(data, error);
   }
 }

@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { scopeByUserId } from "@/features/inputs/shared/infrastructure/user-owned-supabase";
+import { unwrapSupabaseData } from "@/shared/cross-cutting/infrastructure/supabase-result";
 import type { Database } from "@/types/supabase";
 
 import type { ListMortgagesQuery, ListMortgagesRepository } from "./handler";
@@ -10,16 +12,11 @@ export class SupabaseListMortgagesRepository implements ListMortgagesRepository 
 
   async fetch(query: ListMortgagesQuery): Promise<ListMortgagesResponse> {
     const { userId } = query;
-    const { data, error } = await this.client
-      .from("mortgages")
-      .select()
-      .eq("user_id", userId)
-      .order("id", { ascending: true });
+    const { data, error } = await scopeByUserId(
+      this.client.from("mortgages").select(),
+      userId,
+    ).order("id", { ascending: true });
 
-    if (error) {
-      throw error;
-    }
-
-    return data;
+    return unwrapSupabaseData(data, error);
   }
 }
