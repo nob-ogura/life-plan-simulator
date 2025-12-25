@@ -43,3 +43,29 @@ Run unit tests:
 ```bash
 pnpm test:unit
 ```
+
+## Supabase migrations
+
+1) Log in to Supabase CLI.
+
+```bash
+pnpm supabase login
+```
+
+2) Link the project (use your project ref).
+
+```bash
+pnpm supabase link --project-ref <project-ref>
+```
+
+3) Push migrations to the remote database.
+
+```bash
+pnpm supabase db push
+```
+
+4) Regenerate TypeScript types after schema changes.
+
+```bash
+pnpm supabase:gen-types
+```
