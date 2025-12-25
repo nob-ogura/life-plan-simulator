@@ -44,6 +44,17 @@ Run unit tests:
 pnpm test:unit
 ```
 
+Run integration tests:
+
+```bash
+pnpm test:integration
+```
+
+Integration tests that exercise Supabase (e.g. auth trigger) require these env vars in `.env`:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+
 ## Supabase migrations
 
 1) Log in to Supabase CLI.
