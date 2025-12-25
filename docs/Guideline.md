@@ -58,6 +58,11 @@ export class ExampleHandler {
 }
 ```
 
+#### 3.2.2 Server Action 連携アダプター
+Next.js の Server Action から Endpoint を安全に呼び出すために、
+`src/shared/cross-cutting/infrastructure/action-adapter.ts` の `createAction` を利用します。
+`safeParse` を持つスキーマ（Zod 互換）を渡すことで入力検証とエラーハンドリングを統一します。
+
 ## 4. データアクセスと依存関係
 
 ### 4.1 データアクセスの配置
