@@ -86,6 +86,23 @@ const expectPattern = (pattern: RegExp, label: string) => {
   expect(matched, `Expected migrations (${files}) to include ${label}`).toBe(true);
 };
 
+const expectIndex = (table: string, columns: string[]) => {
+  const columnPattern = columns.map((column) => `\\s*${column}\\s*`).join("\\s*,\\s*");
+  expectPattern(
+    new RegExp(
+      [
+        "create\\s+index\\s+(if\\s+not\\s+exists\\s+)?",
+        "[^;]*",
+        `on\\s+public\\.${table}[^;]*`,
+        "using\\s+btree\\s*",
+        `\\(\\s*${columnPattern}\\s*\\)`,
+      ].join(""),
+      "i",
+    ),
+    `${table} index on ${columns.join(", ")}`,
+  );
+};
+
 const expectMonthStartConstraint = (table: string, column: string, nullable: boolean) => {
   const condition = nullable
     ? `${column}\\s+is\\s+null\\s+or\\s+date_part\\('\\s*day\\s*',\\s*${column}\\)\\s*=\\s*1`
@@ -296,5 +313,17 @@ describe("Phase 3 schema migrations", () => {
     expectPattern(/create\s+table\s+if\s+not\s+exists\s+public\.assets/i, "assets table");
     expectPattern(/create\s+table\s+if\s+not\s+exists\s+public\.mortgages/i, "mortgages table");
     expectPattern(/create\s+table\s+if\s+not\s+exists\s+public\.life_events/i, "life_events table");
+  });
+
+  it("adds required indexes for core tables", () => {
+    expectIndex("children", ["user_id"]);
+    expectIndex("income_streams", ["user_id"]);
+    expectIndex("expenses", ["user_id"]);
+    expectIndex("rentals", ["user_id"]);
+    expectIndex("assets", ["user_id"]);
+    expectIndex("mortgages", ["user_id"]);
+    expectIndex("life_events", ["user_id"]);
+    expectIndex("life_events", ["year_month"]);
+    expectIndex("mortgages", ["user_id", "target_rental_id"]);
   });
 });
