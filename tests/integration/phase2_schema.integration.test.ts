@@ -51,10 +51,9 @@ const expectColumns = (block: TableBlock, columns: string[]) => {
   const normalized = block.block.toLowerCase();
   for (const column of columns) {
     const matcher = new RegExp(`\\b${column}\\b`, "i");
-    expect(
-      matcher.test(normalized),
-      `Expected ${block.file} to include column ${column}`,
-    ).toBe(true);
+    expect(matcher.test(normalized), `Expected ${block.file} to include column ${column}`).toBe(
+      true,
+    );
   }
 };
 
