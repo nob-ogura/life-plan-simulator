@@ -19,6 +19,12 @@ const readMigrations = () => {
     .sort();
 };
 
+const readMigrationSql = () =>
+  readMigrations().map((file) => ({
+    file,
+    sql: fs.readFileSync(path.join(migrationsDir, file), "utf8"),
+  }));
+
 const findTableBlock = (tableName: string): TableBlock | null => {
   const migrationFiles = readMigrations();
   for (const file of migrationFiles) {
@@ -57,6 +63,13 @@ const expectColumns = (block: TableBlock, columns: string[]) => {
   }
 };
 
+const expectPattern = (pattern: RegExp, label: string) => {
+  const migrations = readMigrationSql();
+  const matched = migrations.some(({ sql }) => pattern.test(sql));
+  const files = migrations.map(({ file }) => file).join(", ");
+  expect(matched, `Expected migrations (${files}) to include ${label}`).toBe(true);
+};
+
 describe("Phase 2 schema migrations", () => {
   it("creates profiles with required columns", () => {
     const block = findTableBlock("profiles");
@@ -92,5 +105,14 @@ describe("Phase 2 schema migrations", () => {
       "real_estate_tax_rate",
       "real_estate_evaluation_rate",
     ]);
+  });
+
+  it("adds on_auth_user_created trigger to create initial records", () => {
+    expectPattern(/create\s+trigger\s+on_auth_user_created/i, "on_auth_user_created trigger");
+    expectPattern(/insert\s+into\s+public\.profiles/i, "profiles insert in trigger function");
+    expectPattern(
+      /insert\s+into\s+public\.simulation_settings/i,
+      "simulation_settings insert in trigger function",
+    );
   });
 });
