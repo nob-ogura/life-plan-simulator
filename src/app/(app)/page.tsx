@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { Button } from "@/components/ui/button";
 
 export default function Home() {
@@ -13,7 +15,9 @@ export default function Home() {
           とシミュレーション表示をここに積み上げていきます。
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
-          <Button>Start with Inputs</Button>
+          <Button asChild>
+            <Link href="/inputs">Start with Inputs</Link>
+          </Button>
           <Button variant="outline">Review Plan</Button>
         </div>
       </section>
