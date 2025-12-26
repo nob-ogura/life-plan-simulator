@@ -1,6 +1,7 @@
 import { deriveHousingPurchaseMetrics, expandLifeEvents } from "./life-events";
 import { addMonths, generateMonthlyTimeline, yearMonthToElapsedMonths } from "./timeline";
 import type {
+  SimulationAsset,
   SimulationExpense,
   SimulationIncomeStream,
   SimulationInput,
@@ -135,6 +136,33 @@ const calculateRetirementBonus = (
     .filter((event) => event.category === "retirement_bonus" && event.year_month === yearMonth)
     .reduce((total, event) => total + event.amount, 0);
 
+const aggregateAssets = (assets: SimulationAsset[]) => {
+  const totalCash = assets.reduce((sum, asset) => sum + (asset.cash_balance ?? 0), 0);
+  const totalInvestment = assets.reduce((sum, asset) => sum + (asset.investment_balance ?? 0), 0);
+  if (assets.length === 0) {
+    return { cashBalance: 0, investmentBalance: 0, returnRate: 0 };
+  }
+  if (totalInvestment === 0) {
+    const averageReturn =
+      assets.reduce((sum, asset) => sum + (asset.return_rate ?? 0), 0) / assets.length;
+    return {
+      cashBalance: totalCash,
+      investmentBalance: totalInvestment,
+      returnRate: averageReturn,
+    };
+  }
+  const weightedReturn =
+    assets.reduce(
+      (sum, asset) => sum + (asset.investment_balance ?? 0) * (asset.return_rate ?? 0),
+      0,
+    ) / totalInvestment;
+  return {
+    cashBalance: totalCash,
+    investmentBalance: totalInvestment,
+    returnRate: weightedReturn,
+  };
+};
+
 export const simulateLifePlan = (input: SimulationInput): SimulationResult => {
   const timeline = generateMonthlyTimeline({
     currentYearMonth: input.currentYearMonth,
@@ -212,8 +240,35 @@ export const simulateLifePlan = (input: SimulationInput): SimulationResult => {
     };
   });
 
+  const aggregatedAssets = aggregateAssets(input.assets);
+  let cashBalance = aggregatedAssets.cashBalance;
+  let investmentBalance = aggregatedAssets.investmentBalance;
+  let depletionYearMonth: YearMonth | null = null;
+  const monthlyReturnRate = aggregatedAssets.returnRate / 12;
+
+  const monthsWithBalances = months.map((month) => {
+    const cashFlow = month.totalIncome - month.totalExpense + month.eventAmount;
+    cashBalance += cashFlow;
+    if (cashBalance < 0) {
+      const deficit = -cashBalance;
+      investmentBalance -= deficit;
+      cashBalance = 0;
+    }
+    investmentBalance *= 1 + monthlyReturnRate;
+    const totalBalance = cashBalance + investmentBalance;
+    if (depletionYearMonth == null && totalBalance < 0) {
+      depletionYearMonth = month.yearMonth;
+    }
+    return {
+      ...month,
+      cashBalance,
+      investmentBalance,
+      totalBalance,
+    };
+  });
+
   return {
-    months,
-    depletionYearMonth: null,
+    months: monthsWithBalances,
+    depletionYearMonth,
   };
 };
