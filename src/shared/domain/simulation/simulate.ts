@@ -11,6 +11,31 @@ import type {
   YearMonth,
 } from "./types";
 
+type TimelineMonth = ReturnType<typeof generateMonthlyTimeline>[number];
+type HousingPurchaseMetrics = ReturnType<typeof deriveHousingPurchaseMetrics>;
+
+type MonthlyCashFlow = {
+  yearMonth: YearMonth;
+  age: number;
+  spouseAge: number | null;
+  totalIncome: number;
+  totalExpense: number;
+  eventAmount: number;
+};
+
+type BalanceState = {
+  cashBalance: number;
+  investmentBalance: number;
+  depletionYearMonth: YearMonth | null;
+};
+
+type SimulationContext = {
+  input: SimulationInput;
+  expandedLifeEvents: SimulationLifeEvent[];
+  housingPurchases: HousingPurchaseMetrics[];
+  rentals: SimulationRental[];
+};
+
 const isYearMonthWithinRange = (
   yearMonth: YearMonth,
   start: YearMonth,
@@ -163,6 +188,100 @@ const aggregateAssets = (assets: SimulationAsset[]) => {
   };
 };
 
+const calculateMonthlyCashFlow = (
+  context: SimulationContext,
+  month: TimelineMonth,
+): MonthlyCashFlow => {
+  const { input, expandedLifeEvents, housingPurchases, rentals } = context;
+
+  const incomeFromStreams = input.incomeStreams.reduce(
+    (total, stream) => total + calculateIncomeForStream(stream, month.yearMonth),
+    0,
+  );
+  const pensionStartAge = input.profiles.pension_start_age;
+  const pensionIncome =
+    pensionStartAge != null && month.age >= pensionStartAge
+      ? input.simulationSettings.pension_amount_single
+      : 0;
+  const spousePensionIncome =
+    pensionStartAge != null && month.spouseAge != null && month.spouseAge >= pensionStartAge
+      ? input.simulationSettings.pension_amount_spouse
+      : 0;
+  const retirementBonus = calculateRetirementBonus(month.yearMonth, expandedLifeEvents);
+  const totalIncome = incomeFromStreams + pensionIncome + spousePensionIncome + retirementBonus;
+  const baseExpense = input.expenses.reduce(
+    (total, expense) => total + calculateExpenseForItem(expense, month.yearMonth),
+    0,
+  );
+  const rentExpense = rentals.reduce(
+    (total, rental) => total + calculateRentForRental(rental, month.yearMonth),
+    0,
+  );
+  const realEstateTax = housingPurchases.reduce((total, purchase) => {
+    if (
+      yearMonthToElapsedMonths(month.yearMonth) <
+      yearMonthToElapsedMonths(purchase.event.year_month)
+    ) {
+      return total;
+    }
+    return total + purchase.realEstateTaxMonthly;
+  }, 0);
+  const eventAmount = expandedLifeEvents.reduce((total, event) => {
+    if (event.category === "retirement_bonus") {
+      return total;
+    }
+    if (event.year_month !== month.yearMonth) {
+      return total;
+    }
+    return total + event.amount;
+  }, 0);
+  const totalExpense = baseExpense + rentExpense + realEstateTax;
+
+  return {
+    yearMonth: month.yearMonth,
+    age: month.age,
+    spouseAge: month.spouseAge,
+    totalIncome,
+    totalExpense,
+    eventAmount,
+  };
+};
+
+const applyBalances = (
+  state: BalanceState,
+  monthly: MonthlyCashFlow,
+  monthlyReturnRate: number,
+): { nextState: BalanceState; monthWithBalances: SimulationResult["months"][number] } => {
+  let { cashBalance, investmentBalance, depletionYearMonth } = state;
+
+  const cashFlow = monthly.totalIncome - monthly.totalExpense + monthly.eventAmount;
+  cashBalance += cashFlow;
+  if (cashBalance < 0) {
+    const deficit = -cashBalance;
+    investmentBalance -= deficit;
+    cashBalance = 0;
+  }
+  investmentBalance *= 1 + monthlyReturnRate;
+  const totalBalance = cashBalance + investmentBalance;
+  if (depletionYearMonth == null && totalBalance < 0) {
+    depletionYearMonth = monthly.yearMonth;
+  }
+
+  return {
+    nextState: {
+      cashBalance,
+      investmentBalance,
+      depletionYearMonth,
+    },
+    monthWithBalances: {
+      ...monthly,
+      cashBalance,
+      investmentBalance,
+      totalBalance,
+    },
+  };
+};
+
 export const simulateLifePlan = (input: SimulationInput): SimulationResult => {
   const timeline = generateMonthlyTimeline({
     currentYearMonth: input.currentYearMonth,
@@ -183,92 +302,32 @@ export const simulateLifePlan = (input: SimulationInput): SimulationResult => {
     .map((event) => deriveHousingPurchaseMetrics(event, input.simulationSettings));
   const rentals = applyAutoToggleToRentals(input.rentals, expandedLifeEvents);
 
-  const months = timeline.map((month) => {
-    const incomeFromStreams = input.incomeStreams.reduce(
-      (total, stream) => total + calculateIncomeForStream(stream, month.yearMonth),
-      0,
-    );
-    const pensionStartAge = input.profiles.pension_start_age;
-    const pensionIncome =
-      pensionStartAge != null && month.age >= pensionStartAge
-        ? input.simulationSettings.pension_amount_single
-        : 0;
-    const spousePensionIncome =
-      pensionStartAge != null && month.spouseAge != null && month.spouseAge >= pensionStartAge
-        ? input.simulationSettings.pension_amount_spouse
-        : 0;
-    const retirementBonus = calculateRetirementBonus(month.yearMonth, expandedLifeEvents);
-    const totalIncome = incomeFromStreams + pensionIncome + spousePensionIncome + retirementBonus;
-    const baseExpense = input.expenses.reduce(
-      (total, expense) => total + calculateExpenseForItem(expense, month.yearMonth),
-      0,
-    );
-    const rentExpense = rentals.reduce(
-      (total, rental) => total + calculateRentForRental(rental, month.yearMonth),
-      0,
-    );
-    const realEstateTax = housingPurchases.reduce((total, purchase) => {
-      if (
-        yearMonthToElapsedMonths(month.yearMonth) <
-        yearMonthToElapsedMonths(purchase.event.year_month)
-      ) {
-        return total;
-      }
-      return total + purchase.realEstateTaxMonthly;
-    }, 0);
-    const eventAmount = expandedLifeEvents.reduce((total, event) => {
-      if (event.category === "retirement_bonus") {
-        return total;
-      }
-      if (event.year_month !== month.yearMonth) {
-        return total;
-      }
-      return total + event.amount;
-    }, 0);
-    const totalExpense = baseExpense + rentExpense + realEstateTax;
-
-    return {
-      yearMonth: month.yearMonth,
-      age: month.age,
-      spouseAge: month.spouseAge,
-      totalIncome,
-      totalExpense,
-      eventAmount,
-      cashBalance: 0,
-      investmentBalance: 0,
-      totalBalance: 0,
-    };
-  });
+  const context: SimulationContext = {
+    input,
+    expandedLifeEvents,
+    housingPurchases,
+    rentals,
+  };
+  const monthlyCashFlows = timeline.map((month) => calculateMonthlyCashFlow(context, month));
 
   const aggregatedAssets = aggregateAssets(input.assets);
-  let cashBalance = aggregatedAssets.cashBalance;
-  let investmentBalance = aggregatedAssets.investmentBalance;
-  let depletionYearMonth: YearMonth | null = null;
   const monthlyReturnRate = aggregatedAssets.returnRate / 12;
 
-  const monthsWithBalances = months.map((month) => {
-    const cashFlow = month.totalIncome - month.totalExpense + month.eventAmount;
-    cashBalance += cashFlow;
-    if (cashBalance < 0) {
-      const deficit = -cashBalance;
-      investmentBalance -= deficit;
-      cashBalance = 0;
-    }
-    investmentBalance *= 1 + monthlyReturnRate;
-    const totalBalance = cashBalance + investmentBalance;
-    if (depletionYearMonth == null && totalBalance < 0) {
-      depletionYearMonth = month.yearMonth;
-    }
-    return {
-      ...month,
-      cashBalance,
-      investmentBalance,
-      totalBalance,
-    };
-  });
+  let state: BalanceState = {
+    cashBalance: aggregatedAssets.cashBalance,
+    investmentBalance: aggregatedAssets.investmentBalance,
+    depletionYearMonth: null,
+  };
+  const monthsWithBalances: SimulationResult["months"] = [];
+
+  for (const monthly of monthlyCashFlows) {
+    const { nextState, monthWithBalances } = applyBalances(state, monthly, monthlyReturnRate);
+    state = nextState;
+    monthsWithBalances.push(monthWithBalances);
+  }
 
   return {
     months: monthsWithBalances,
-    depletionYearMonth,
+    depletionYearMonth: state.depletionYearMonth,
   };
 };
