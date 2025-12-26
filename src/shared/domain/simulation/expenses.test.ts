@@ -73,9 +73,9 @@ describe("expense calculation", () => {
         stop_after_occurrences: null,
         category: "housing_purchase",
         auto_toggle_key: "HOUSING_PURCHASE_STOP_RENT",
-        building_price: null,
-        land_price: null,
-        down_payment: null,
+        building_price: 0,
+        land_price: 0,
+        down_payment: 0,
         target_rental_id: "rental-1",
       },
     ];

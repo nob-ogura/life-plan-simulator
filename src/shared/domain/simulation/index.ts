@@ -1,3 +1,9 @@
+export {
+  calculateMortgagePrincipal,
+  calculateRealEstateTaxMonthly,
+  deriveHousingPurchaseMetrics,
+  expandLifeEvents,
+} from "./life-events";
 export { simulateLifePlan } from "./simulate";
 export type { TimelineMonth } from "./timeline";
 export {
