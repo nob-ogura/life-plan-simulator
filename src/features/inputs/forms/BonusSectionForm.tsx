@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 import {
   Form,
@@ -86,6 +87,7 @@ export function BonusSectionForm({ defaultValues }: BonusSectionFormProps) {
         }
       }
 
+      toast.success("保存しました。");
       router.refresh();
     } catch (error) {
       console.error(error);

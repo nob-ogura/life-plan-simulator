@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { type UseFormReturn, useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 import { toMonthStartDate } from "@/features/inputs/forms/sections";
@@ -179,6 +180,7 @@ export function useLifeEventActions(
 
       if (response.ok) {
         closeModal();
+        toast.success("保存しました。");
         router.refresh();
       } else {
         setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
@@ -197,6 +199,7 @@ export function useLifeEventActions(
     try {
       const response = await deleteLifeEventAction({ id: eventId });
       if (response.ok) {
+        toast.success("削除しました。");
         router.refresh();
       } else {
         setDeleteError("削除に失敗しました。時間をおいて再度お試しください。");

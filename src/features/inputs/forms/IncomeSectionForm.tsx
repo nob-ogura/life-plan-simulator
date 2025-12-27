@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 import {
   Form,
@@ -56,6 +57,7 @@ export function IncomeSectionForm({ defaultValues }: IncomeSectionFormProps) {
         streams: rawValues.streams ?? [],
       });
       if (res.ok) {
+        toast.success("保存しました。");
         router.refresh();
       } else {
         setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");

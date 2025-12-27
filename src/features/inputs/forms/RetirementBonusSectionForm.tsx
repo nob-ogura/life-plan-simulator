@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 import {
   Form,
@@ -50,6 +51,7 @@ export function RetirementBonusSectionForm({ defaultValues }: RetirementBonusSec
     try {
       const response = await upsertRetirementBonusAction(payload);
       if (response.ok) {
+        toast.success("保存しました。");
         router.refresh();
       } else {
         setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");

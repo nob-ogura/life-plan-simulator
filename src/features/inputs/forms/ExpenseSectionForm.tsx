@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 import {
   Form,
@@ -105,6 +106,7 @@ export function ExpenseSectionForm({ defaultValues }: ExpenseSectionFormProps) {
         }
       }
 
+      toast.success("保存しました。");
       router.refresh();
     } catch (error) {
       console.error(error);
