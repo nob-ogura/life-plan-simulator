@@ -23,6 +23,12 @@ describe("inputs form schemas", () => {
     if (!result.success) {
       expect(findIssueMessage(result.error.issues, "profile.birth_year")).toBe("必須項目です");
       expect(findIssueMessage(result.error.issues, "profile.birth_month")).toBe("必須項目です");
+      expect(findIssueMessage(result.error.issues, "profile.spouse_birth_year")).toBe(
+        "必須項目です",
+      );
+      expect(findIssueMessage(result.error.issues, "profile.spouse_birth_month")).toBe(
+        "必須項目です",
+      );
     }
   });
 
@@ -31,8 +37,8 @@ describe("inputs form schemas", () => {
       profile: {
         birth_year: "abc",
         birth_month: "4",
-        spouse_birth_year: "",
-        spouse_birth_month: "",
+        spouse_birth_year: "1990",
+        spouse_birth_month: "6",
       },
       children: [],
     });
@@ -50,8 +56,8 @@ describe("inputs form schemas", () => {
       profile: {
         birth_year: "1980",
         birth_month: "5",
-        spouse_birth_year: "",
-        spouse_birth_month: "",
+        spouse_birth_year: "1982",
+        spouse_birth_month: "7",
       },
       children: [
         {

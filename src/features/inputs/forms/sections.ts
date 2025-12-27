@@ -84,8 +84,8 @@ export const FamilySectionSchema = z.object({
   profile: z.object({
     birth_year: requiredNumericString,
     birth_month: requiredNumericString,
-    spouse_birth_year: optionalNumericString,
-    spouse_birth_month: optionalNumericString,
+    spouse_birth_year: requiredNumericString,
+    spouse_birth_month: requiredNumericString,
   }),
   children: arrayWithDefault(ChildFormSchema),
 });
@@ -261,8 +261,8 @@ export const toFamilyPayload = (
   profile: {
     birth_year: number;
     birth_month: number;
-    spouse_birth_year?: number;
-    spouse_birth_month?: number;
+    spouse_birth_year: number;
+    spouse_birth_month: number;
   };
   children: CreateChildRequest[];
 } => ({
