@@ -1,5 +1,5 @@
-import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
+import * as React from "react";
 import {
   Controller,
   type ControllerProps,
@@ -20,9 +20,7 @@ type FormFieldContextValue<
   name: TName;
 };
 
-const FormFieldContext = React.createContext<FormFieldContextValue>(
-  {} as FormFieldContextValue,
-);
+const FormFieldContext = React.createContext<FormFieldContextValue>({} as FormFieldContextValue);
 
 const FormField = <
   TFieldValues extends FieldValues = FieldValues,
@@ -78,7 +76,7 @@ const useFormField = () => {
 };
 
 const FormLabel = React.forwardRef<HTMLLabelElement, React.LabelHTMLAttributes<HTMLLabelElement>>(
-  ({ className, ...props }, ref) => {
+  ({ className, children, ...props }, ref) => {
     const { formItemId } = useFormField();
     return (
       <label
@@ -89,7 +87,9 @@ const FormLabel = React.forwardRef<HTMLLabelElement, React.LabelHTMLAttributes<H
         )}
         htmlFor={formItemId}
         {...props}
-      />
+      >
+        {children}
+      </label>
     );
   },
 );
