@@ -2,23 +2,27 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/form/form";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   type BonusSectionInput,
   type BonusSectionPayload,
   BonusSectionSchema,
   toOptionalMonthStartDate,
 } from "@/features/inputs/forms/sections";
-import { cn } from "@/lib/utils";
 import { zodResolver } from "@/lib/zod-resolver";
 import { useAuth } from "@/shared/cross-cutting/auth";
 import { supabaseClient } from "@/shared/cross-cutting/infrastructure/supabase.client";
-
-const inputClassName =
-  "h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm " +
-  "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring";
 
 const monthOptions = Array.from({ length: 12 }, (_, index) => index + 1);
 
@@ -94,160 +98,128 @@ export function BonusSectionForm({ defaultValues }: BonusSectionFormProps) {
     }
   });
 
-  const { errors, isSubmitting } = form.formState;
+  const { isSubmitting } = form.formState;
 
   return (
-    <form className="space-y-4" onSubmit={onSubmit} noValidate>
-      <div>
-        <p className="text-sm font-semibold">ボーナス設定</p>
-        <p className="text-xs text-muted-foreground">
-          収入ストリームごとのボーナス月・金額・変化点を設定します。
-        </p>
-      </div>
-      {fields.length === 0 ? (
-        <p className="text-xs text-muted-foreground">
-          収入ストリームがありません。先に収入フォームで登録してください。
-        </p>
-      ) : (
-        <div className="space-y-4">
-          {fields.map((field, index) => {
-            const streamErrors = errors.streams?.[index];
-            const labelId = `bonus-${field.fieldKey}-label`;
-            const bonusAmountId = `bonus-${field.fieldKey}-amount`;
-            const changeYearMonthId = `bonus-${field.fieldKey}-change`;
-            const bonusAfterId = `bonus-${field.fieldKey}-after`;
-            return (
+    <Form {...form}>
+      <form className="space-y-4" onSubmit={onSubmit} noValidate>
+        <div>
+          <p className="text-sm font-semibold">ボーナス設定</p>
+          <p className="text-xs text-muted-foreground">
+            収入ストリームごとのボーナス月・金額・変化点を設定します。
+          </p>
+        </div>
+        {fields.length === 0 ? (
+          <p className="text-xs text-muted-foreground">
+            収入ストリームがありません。先に収入フォームで登録してください。
+          </p>
+        ) : (
+          <div className="space-y-4">
+            {fields.map((field, index) => (
               <div
                 key={field.fieldKey}
                 className="space-y-4 rounded-md border border-border bg-card p-4"
               >
                 <p className="text-sm font-semibold">ボーナス {index + 1}</p>
-                <div className="space-y-2">
-                  <label
-                    className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-                    htmlFor={labelId}
-                  >
-                    収入ラベル
-                  </label>
-                  <input
-                    {...form.register(`streams.${index}.label`)}
-                    className={cn(inputClassName, streamErrors?.label && "border-destructive")}
-                    id={labelId}
-                    placeholder="例: 給与"
-                  />
-                  {streamErrors?.label?.message ? (
-                    <p className="text-xs text-destructive">{streamErrors.label.message}</p>
-                  ) : null}
-                </div>
-                <Controller
+                <FormField
                   control={form.control}
-                  name={`streams.${index}.bonus_months`}
-                  render={({ field: bonusField }) => (
-                    <div className="flex flex-wrap gap-2">
-                      {monthOptions.map((month) => {
-                        const selected = (bonusField.value ?? []) as number[];
-                        const checked = selected.includes(month);
-                        return (
-                          <label key={month} className="flex items-center gap-1 text-xs">
-                            <input
-                              className="size-4 rounded border-input"
-                              type="checkbox"
-                              checked={checked}
-                              onChange={() => {
-                                const next = checked
-                                  ? selected.filter((value) => value !== month)
-                                  : [...selected, month].sort((a, b) => a - b);
-                                bonusField.onChange(next);
-                              }}
-                            />
-                            <span>{month}月</span>
-                          </label>
-                        );
-                      })}
-                    </div>
+                  name={`streams.${index}.label` as const}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>収入ラベル</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="例: 給与" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={`streams.${index}.bonus_months` as const}
+                  render={({ field }) => (
+                    <FormItem>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        ボーナス月
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {monthOptions.map((month) => {
+                          const selected = (field.value ?? []) as number[];
+                          const checked = selected.includes(month);
+                          return (
+                            <label key={month} className="flex items-center gap-1 text-xs">
+                              <input
+                                className="size-4 rounded border-input"
+                                type="checkbox"
+                                checked={checked}
+                                onChange={() => {
+                                  const next = checked
+                                    ? selected.filter((value) => value !== month)
+                                    : [...selected, month].sort((a, b) => a - b);
+                                  field.onChange(next);
+                                }}
+                              />
+                              <span>{month}月</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                      <FormMessage />
+                    </FormItem>
                   )}
                 />
                 <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <label
-                      className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-                      htmlFor={bonusAmountId}
-                    >
-                      ボーナス金額
-                    </label>
-                    <input
-                      {...form.register(`streams.${index}.bonus_amount`)}
-                      className={cn(
-                        inputClassName,
-                        streamErrors?.bonus_amount && "border-destructive",
-                      )}
-                      id={bonusAmountId}
-                      inputMode="numeric"
-                      placeholder="例: 200000"
-                    />
-                    {streamErrors?.bonus_amount?.message ? (
-                      <p className="text-xs text-destructive">
-                        {streamErrors.bonus_amount.message}
-                      </p>
-                    ) : null}
-                  </div>
-                  <div className="space-y-2">
-                    <label
-                      className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-                      htmlFor={changeYearMonthId}
-                    >
-                      変化年月
-                    </label>
-                    <input
-                      {...form.register(`streams.${index}.change_year_month`)}
-                      className={cn(
-                        inputClassName,
-                        streamErrors?.change_year_month && "border-destructive",
-                      )}
-                      id={changeYearMonthId}
-                      type="month"
-                    />
-                    {streamErrors?.change_year_month?.message ? (
-                      <p className="text-xs text-destructive">
-                        {streamErrors.change_year_month.message}
-                      </p>
-                    ) : null}
-                  </div>
-                  <div className="space-y-2 md:col-span-2">
-                    <label
-                      className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-                      htmlFor={bonusAfterId}
-                    >
-                      変化後ボーナス金額
-                    </label>
-                    <input
-                      {...form.register(`streams.${index}.bonus_amount_after`)}
-                      className={cn(
-                        inputClassName,
-                        streamErrors?.bonus_amount_after && "border-destructive",
-                      )}
-                      id={bonusAfterId}
-                      inputMode="numeric"
-                      placeholder="例: 250000"
-                    />
-                    {streamErrors?.bonus_amount_after?.message ? (
-                      <p className="text-xs text-destructive">
-                        {streamErrors.bonus_amount_after.message}
-                      </p>
-                    ) : null}
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name={`streams.${index}.bonus_amount` as const}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>ボーナス金額</FormLabel>
+                        <FormControl>
+                          <Input {...field} inputMode="numeric" placeholder="例: 200000" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`streams.${index}.change_year_month` as const}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>変化年月</FormLabel>
+                        <FormControl>
+                          <Input {...field} type="month" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`streams.${index}.bonus_amount_after` as const}
+                    render={({ field }) => (
+                      <FormItem className="md:col-span-2">
+                        <FormLabel>変化後ボーナス金額</FormLabel>
+                        <FormControl>
+                          <Input {...field} inputMode="numeric" placeholder="例: 250000" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </div>
-            );
-          })}
+            ))}
+          </div>
+        )}
+        {submitError ? <p className="text-xs text-destructive">{submitError}</p> : null}
+        <div className="flex items-center justify-end">
+          <Button type="submit" disabled={isSubmitting || fields.length === 0}>
+            保存
+          </Button>
         </div>
-      )}
-      {submitError ? <p className="text-xs text-destructive">{submitError}</p> : null}
-      <div className="flex items-center justify-end">
-        <Button type="submit" disabled={isSubmitting || fields.length === 0}>
-          保存
-        </Button>
-      </div>
-    </form>
+      </form>
+    </Form>
   );
 }

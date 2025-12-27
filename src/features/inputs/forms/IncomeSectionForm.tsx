@@ -4,7 +4,16 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/form/form";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   type IncomeSectionInput,
   type IncomeSectionPayload,
@@ -12,14 +21,9 @@ import {
   toIncomeStreamCreatePayloads,
   toIncomeStreamUpdatePayloads,
 } from "@/features/inputs/forms/sections";
-import { cn } from "@/lib/utils";
 import { zodResolver } from "@/lib/zod-resolver";
 import { useAuth } from "@/shared/cross-cutting/auth";
 import { supabaseClient } from "@/shared/cross-cutting/infrastructure/supabase.client";
-
-const inputClassName =
-  "h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm " +
-  "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring";
 
 type IncomeSectionFormProps = {
   defaultValues: IncomeSectionInput;
@@ -111,47 +115,40 @@ export function IncomeSectionForm({ defaultValues }: IncomeSectionFormProps) {
     }
   });
 
-  const { errors, isSubmitting } = form.formState;
+  const { isSubmitting } = form.formState;
 
   return (
-    <form className="space-y-4" onSubmit={onSubmit} noValidate>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <p className="text-sm font-semibold">収入ストリーム</p>
-          <p className="text-xs text-muted-foreground">
-            手取り月額、昇給率、期間を入力してください。
-          </p>
+    <Form {...form}>
+      <form className="space-y-4" onSubmit={onSubmit} noValidate>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <p className="text-sm font-semibold">収入ストリーム</p>
+            <p className="text-xs text-muted-foreground">
+              手取り月額、昇給率、期間を入力してください。
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              append({
+                label: "",
+                take_home_monthly: "",
+                raise_rate: "",
+                start_year_month: "",
+                end_year_month: "",
+              })
+            }
+          >
+            追加
+          </Button>
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() =>
-            append({
-              label: "",
-              take_home_monthly: "",
-              raise_rate: "",
-              start_year_month: "",
-              end_year_month: "",
-            })
-          }
-        >
-          追加
-        </Button>
-      </div>
-      {fields.length === 0 ? (
-        <p className="text-xs text-muted-foreground">収入ストリームの登録はありません。</p>
-      ) : (
-        <div className="space-y-4">
-          {fields.map((field, index) => {
-            const streamErrors = errors.streams?.[index];
-            const labelId = `income-${field.fieldKey}-label`;
-            const takeHomeId = `income-${field.fieldKey}-take-home`;
-            const raiseRateId = `income-${field.fieldKey}-raise-rate`;
-            const startYearMonthId = `income-${field.fieldKey}-start`;
-            const endYearMonthId = `income-${field.fieldKey}-end`;
-
-            return (
+        {fields.length === 0 ? (
+          <p className="text-xs text-muted-foreground">収入ストリームの登録はありません。</p>
+        ) : (
+          <div className="space-y-4">
+            {fields.map((field, index) => (
               <div
                 key={field.fieldKey}
                 className="space-y-4 rounded-md border border-border bg-card p-4"
@@ -163,123 +160,83 @@ export function IncomeSectionForm({ defaultValues }: IncomeSectionFormProps) {
                   </Button>
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <label
-                      className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-                      htmlFor={labelId}
-                    >
-                      ラベル
-                    </label>
-                    <input
-                      {...form.register(`streams.${index}.label`)}
-                      className={cn(inputClassName, streamErrors?.label && "border-destructive")}
-                      id={labelId}
-                      placeholder="例: 給与"
-                    />
-                    {streamErrors?.label?.message ? (
-                      <p className="text-xs text-destructive">{streamErrors.label.message}</p>
-                    ) : null}
-                  </div>
-                  <div className="space-y-2">
-                    <label
-                      className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-                      htmlFor={takeHomeId}
-                    >
-                      手取り月額
-                    </label>
-                    <input
-                      {...form.register(`streams.${index}.take_home_monthly`)}
-                      className={cn(
-                        inputClassName,
-                        streamErrors?.take_home_monthly && "border-destructive",
-                      )}
-                      id={takeHomeId}
-                      inputMode="numeric"
-                      placeholder="例: 300000"
-                    />
-                    {streamErrors?.take_home_monthly?.message ? (
-                      <p className="text-xs text-destructive">
-                        {streamErrors.take_home_monthly.message}
-                      </p>
-                    ) : null}
-                  </div>
-                  <div className="space-y-2">
-                    <label
-                      className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-                      htmlFor={raiseRateId}
-                    >
-                      昇給率
-                    </label>
-                    <input
-                      {...form.register(`streams.${index}.raise_rate`)}
-                      className={cn(
-                        inputClassName,
-                        streamErrors?.raise_rate && "border-destructive",
-                      )}
-                      id={raiseRateId}
-                      inputMode="decimal"
-                      placeholder="例: 0.02"
-                    />
-                    {streamErrors?.raise_rate?.message ? (
-                      <p className="text-xs text-destructive">{streamErrors.raise_rate.message}</p>
-                    ) : null}
-                  </div>
-                  <div className="space-y-2">
-                    <label
-                      className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-                      htmlFor={startYearMonthId}
-                    >
-                      開始年月
-                    </label>
-                    <input
-                      {...form.register(`streams.${index}.start_year_month`)}
-                      className={cn(
-                        inputClassName,
-                        streamErrors?.start_year_month && "border-destructive",
-                      )}
-                      id={startYearMonthId}
-                      type="month"
-                    />
-                    {streamErrors?.start_year_month?.message ? (
-                      <p className="text-xs text-destructive">
-                        {streamErrors.start_year_month.message}
-                      </p>
-                    ) : null}
-                  </div>
-                  <div className="space-y-2">
-                    <label
-                      className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-                      htmlFor={endYearMonthId}
-                    >
-                      終了年月
-                    </label>
-                    <input
-                      {...form.register(`streams.${index}.end_year_month`)}
-                      className={cn(
-                        inputClassName,
-                        streamErrors?.end_year_month && "border-destructive",
-                      )}
-                      id={endYearMonthId}
-                      type="month"
-                    />
-                    {streamErrors?.end_year_month?.message ? (
-                      <p className="text-xs text-destructive">
-                        {streamErrors.end_year_month.message}
-                      </p>
-                    ) : null}
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name={`streams.${index}.label` as const}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>ラベル</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="例: 給与" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`streams.${index}.take_home_monthly` as const}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>手取り月額</FormLabel>
+                        <FormControl>
+                          <Input {...field} inputMode="numeric" placeholder="例: 300000" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`streams.${index}.raise_rate` as const}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>昇給率</FormLabel>
+                        <FormControl>
+                          <Input {...field} inputMode="decimal" placeholder="例: 0.02" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`streams.${index}.start_year_month` as const}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>開始年月</FormLabel>
+                        <FormControl>
+                          <Input {...field} type="month" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`streams.${index}.end_year_month` as const}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>終了年月</FormLabel>
+                        <FormControl>
+                          <Input {...field} type="month" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </div>
-            );
-          })}
+            ))}
+          </div>
+        )}
+        {submitError ? <p className="text-xs text-destructive">{submitError}</p> : null}
+        <div className="flex items-center justify-end">
+          <Button type="submit" disabled={isSubmitting}>
+            保存
+          </Button>
         </div>
-      )}
-      {submitError ? <p className="text-xs text-destructive">{submitError}</p> : null}
-      <div className="flex items-center justify-end">
-        <Button type="submit" disabled={isSubmitting}>
-          保存
-        </Button>
-      </div>
-    </form>
+      </form>
+    </Form>
   );
 }

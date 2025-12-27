@@ -4,21 +4,25 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/form/form";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   type ExpenseSectionInput,
   type ExpenseSectionPayload,
   ExpenseSectionSchema,
   toExpensePayloads,
 } from "@/features/inputs/forms/sections";
-import { cn } from "@/lib/utils";
 import { zodResolver } from "@/lib/zod-resolver";
 import { useAuth } from "@/shared/cross-cutting/auth";
 import { supabaseClient } from "@/shared/cross-cutting/infrastructure/supabase.client";
-
-const inputClassName =
-  "h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm " +
-  "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring";
 
 type ExpenseSectionFormProps = {
   defaultValues: ExpenseSectionInput;
@@ -105,49 +109,41 @@ export function ExpenseSectionForm({ defaultValues }: ExpenseSectionFormProps) {
     }
   });
 
-  const { errors, isSubmitting } = form.formState;
+  const { isSubmitting } = form.formState;
 
   return (
-    <form className="space-y-4" onSubmit={onSubmit} noValidate>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <p className="text-sm font-semibold">支出項目</p>
-          <p className="text-xs text-muted-foreground">
-            月額、インフレ率、期間、カテゴリを登録します。
-          </p>
+    <Form {...form}>
+      <form className="space-y-4" onSubmit={onSubmit} noValidate>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <p className="text-sm font-semibold">支出項目</p>
+            <p className="text-xs text-muted-foreground">
+              月額、インフレ率、期間、カテゴリを登録します。
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              append({
+                label: "",
+                amount_monthly: "",
+                inflation_rate: "",
+                category: "",
+                start_year_month: "",
+                end_year_month: "",
+              })
+            }
+          >
+            追加
+          </Button>
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() =>
-            append({
-              label: "",
-              amount_monthly: "",
-              inflation_rate: "",
-              category: "",
-              start_year_month: "",
-              end_year_month: "",
-            })
-          }
-        >
-          追加
-        </Button>
-      </div>
-      {fields.length === 0 ? (
-        <p className="text-xs text-muted-foreground">支出項目の登録はありません。</p>
-      ) : (
-        <div className="space-y-4">
-          {fields.map((field, index) => {
-            const expenseErrors = errors.expenses?.[index];
-            const labelId = `expense-${field.fieldKey}-label`;
-            const amountId = `expense-${field.fieldKey}-amount`;
-            const inflationId = `expense-${field.fieldKey}-inflation`;
-            const categoryId = `expense-${field.fieldKey}-category`;
-            const startYearMonthId = `expense-${field.fieldKey}-start`;
-            const endYearMonthId = `expense-${field.fieldKey}-end`;
-
-            return (
+        {fields.length === 0 ? (
+          <p className="text-xs text-muted-foreground">支出項目の登録はありません。</p>
+        ) : (
+          <div className="space-y-4">
+            {fields.map((field, index) => (
               <div
                 key={field.fieldKey}
                 className="space-y-4 rounded-md border border-border bg-card p-4"
@@ -159,145 +155,96 @@ export function ExpenseSectionForm({ defaultValues }: ExpenseSectionFormProps) {
                   </Button>
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <label
-                      className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-                      htmlFor={labelId}
-                    >
-                      ラベル
-                    </label>
-                    <input
-                      {...form.register(`expenses.${index}.label`)}
-                      className={cn(inputClassName, expenseErrors?.label && "border-destructive")}
-                      id={labelId}
-                      placeholder="例: 生活費"
-                    />
-                    {expenseErrors?.label?.message ? (
-                      <p className="text-xs text-destructive">{expenseErrors.label.message}</p>
-                    ) : null}
-                  </div>
-                  <div className="space-y-2">
-                    <label
-                      className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-                      htmlFor={amountId}
-                    >
-                      月額
-                    </label>
-                    <input
-                      {...form.register(`expenses.${index}.amount_monthly`)}
-                      className={cn(
-                        inputClassName,
-                        expenseErrors?.amount_monthly && "border-destructive",
-                      )}
-                      id={amountId}
-                      inputMode="numeric"
-                      placeholder="例: 180000"
-                    />
-                    {expenseErrors?.amount_monthly?.message ? (
-                      <p className="text-xs text-destructive">
-                        {expenseErrors.amount_monthly.message}
-                      </p>
-                    ) : null}
-                  </div>
-                  <div className="space-y-2">
-                    <label
-                      className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-                      htmlFor={inflationId}
-                    >
-                      インフレ率
-                    </label>
-                    <input
-                      {...form.register(`expenses.${index}.inflation_rate`)}
-                      className={cn(
-                        inputClassName,
-                        expenseErrors?.inflation_rate && "border-destructive",
-                      )}
-                      id={inflationId}
-                      inputMode="decimal"
-                      placeholder="例: 0.01"
-                    />
-                    {expenseErrors?.inflation_rate?.message ? (
-                      <p className="text-xs text-destructive">
-                        {expenseErrors.inflation_rate.message}
-                      </p>
-                    ) : null}
-                  </div>
-                  <div className="space-y-2">
-                    <label
-                      className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-                      htmlFor={categoryId}
-                    >
-                      カテゴリ
-                    </label>
-                    <input
-                      {...form.register(`expenses.${index}.category`)}
-                      className={cn(
-                        inputClassName,
-                        expenseErrors?.category && "border-destructive",
-                      )}
-                      id={categoryId}
-                      placeholder="例: 生活費"
-                    />
-                    {expenseErrors?.category?.message ? (
-                      <p className="text-xs text-destructive">{expenseErrors.category.message}</p>
-                    ) : null}
-                  </div>
-                  <div className="space-y-2">
-                    <label
-                      className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-                      htmlFor={startYearMonthId}
-                    >
-                      開始年月
-                    </label>
-                    <input
-                      {...form.register(`expenses.${index}.start_year_month`)}
-                      className={cn(
-                        inputClassName,
-                        expenseErrors?.start_year_month && "border-destructive",
-                      )}
-                      id={startYearMonthId}
-                      type="month"
-                    />
-                    {expenseErrors?.start_year_month?.message ? (
-                      <p className="text-xs text-destructive">
-                        {expenseErrors.start_year_month.message}
-                      </p>
-                    ) : null}
-                  </div>
-                  <div className="space-y-2">
-                    <label
-                      className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-                      htmlFor={endYearMonthId}
-                    >
-                      終了年月
-                    </label>
-                    <input
-                      {...form.register(`expenses.${index}.end_year_month`)}
-                      className={cn(
-                        inputClassName,
-                        expenseErrors?.end_year_month && "border-destructive",
-                      )}
-                      id={endYearMonthId}
-                      type="month"
-                    />
-                    {expenseErrors?.end_year_month?.message ? (
-                      <p className="text-xs text-destructive">
-                        {expenseErrors.end_year_month.message}
-                      </p>
-                    ) : null}
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name={`expenses.${index}.label` as const}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>ラベル</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="例: 生活費" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`expenses.${index}.amount_monthly` as const}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>月額</FormLabel>
+                        <FormControl>
+                          <Input {...field} inputMode="numeric" placeholder="例: 180000" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`expenses.${index}.inflation_rate` as const}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>インフレ率</FormLabel>
+                        <FormControl>
+                          <Input {...field} inputMode="decimal" placeholder="例: 0.01" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`expenses.${index}.category` as const}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>カテゴリ</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="例: 生活費" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`expenses.${index}.start_year_month` as const}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>開始年月</FormLabel>
+                        <FormControl>
+                          <Input {...field} type="month" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`expenses.${index}.end_year_month` as const}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>終了年月</FormLabel>
+                        <FormControl>
+                          <Input {...field} type="month" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </div>
-            );
-          })}
+            ))}
+          </div>
+        )}
+        {submitError ? <p className="text-xs text-destructive">{submitError}</p> : null}
+        <div className="flex items-center justify-end">
+          <Button type="submit" disabled={isSubmitting}>
+            保存
+          </Button>
         </div>
-      )}
-      {submitError ? <p className="text-xs text-destructive">{submitError}</p> : null}
-      <div className="flex items-center justify-end">
-        <Button type="submit" disabled={isSubmitting}>
-          保存
-        </Button>
-      </div>
-    </form>
+      </form>
+    </Form>
   );
 }
