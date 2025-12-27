@@ -2,14 +2,15 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
 import {
   type IncomeSectionInput,
   type IncomeSectionPayload,
   IncomeSectionSchema,
-  toIncomeStreamPayloads,
+  toIncomeStreamCreatePayloads,
+  toIncomeStreamUpdatePayloads,
 } from "@/features/inputs/forms/sections";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@/lib/zod-resolver";
@@ -19,8 +20,6 @@ import { supabaseClient } from "@/shared/cross-cutting/infrastructure/supabase.c
 const inputClassName =
   "h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm " +
   "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring";
-
-const monthOptions = Array.from({ length: 12 }, (_, index) => index + 1);
 
 type IncomeSectionFormProps = {
   defaultValues: IncomeSectionInput;
@@ -60,17 +59,18 @@ export function IncomeSectionForm({ defaultValues }: IncomeSectionFormProps) {
 
     const parsedResult = IncomeSectionSchema.safeParse(value);
     const parsed = (parsedResult.success ? parsedResult.data : value) as IncomeSectionPayload;
-    const payloads = toIncomeStreamPayloads(parsed);
+    const createPayloads = toIncomeStreamCreatePayloads(parsed);
+    const updatePayloads = toIncomeStreamUpdatePayloads(parsed);
     const userId = session.user.id;
     const currentIds = new Set(
       parsed.streams.map((stream) => stream.id).filter(Boolean) as string[],
     );
     const removedIds = initialIdsRef.current.filter((id) => !currentIds.has(id));
-    const createPayloads = parsed.streams.flatMap((stream, index) =>
-      stream.id ? [] : [payloads[index]],
+    const createPayloadsForInsert = parsed.streams.flatMap((stream, index) =>
+      stream.id ? [] : [createPayloads[index]],
     );
-    const updatePayloads = parsed.streams.flatMap((stream, index) =>
-      stream.id ? [{ id: stream.id, payload: payloads[index] }] : [],
+    const updatePayloadsForUpdate = parsed.streams.flatMap((stream, index) =>
+      stream.id ? [{ id: stream.id, payload: updatePayloads[index] }] : [],
     );
 
     try {
@@ -83,16 +83,16 @@ export function IncomeSectionForm({ defaultValues }: IncomeSectionFormProps) {
         if (error) throw error;
       }
 
-      if (createPayloads.length > 0) {
+      if (createPayloadsForInsert.length > 0) {
         const { error } = await supabaseClient
           .from("income_streams")
-          .insert(createPayloads.map((payload) => ({ ...payload, user_id: userId })));
+          .insert(createPayloadsForInsert.map((payload) => ({ ...payload, user_id: userId })));
         if (error) throw error;
       }
 
-      if (updatePayloads.length > 0) {
+      if (updatePayloadsForUpdate.length > 0) {
         const results = await Promise.all(
-          updatePayloads.map(({ id, payload }) =>
+          updatePayloadsForUpdate.map(({ id, payload }) =>
             supabaseClient
               .from("income_streams")
               .update(payload)
@@ -119,7 +119,7 @@ export function IncomeSectionForm({ defaultValues }: IncomeSectionFormProps) {
         <div>
           <p className="text-sm font-semibold">収入ストリーム</p>
           <p className="text-xs text-muted-foreground">
-            手取り月額、期間、ボーナス情報を入力してください。
+            手取り月額、昇給率、期間を入力してください。
           </p>
         </div>
         <Button
@@ -130,10 +130,6 @@ export function IncomeSectionForm({ defaultValues }: IncomeSectionFormProps) {
             append({
               label: "",
               take_home_monthly: "",
-              bonus_months: [],
-              bonus_amount: "",
-              change_year_month: "",
-              bonus_amount_after: "",
               raise_rate: "",
               start_year_month: "",
               end_year_month: "",
@@ -154,9 +150,6 @@ export function IncomeSectionForm({ defaultValues }: IncomeSectionFormProps) {
             const raiseRateId = `income-${field.fieldKey}-raise-rate`;
             const startYearMonthId = `income-${field.fieldKey}-start`;
             const endYearMonthId = `income-${field.fieldKey}-end`;
-            const bonusAmountId = `income-${field.fieldKey}-bonus-amount`;
-            const changeYearMonthId = `income-${field.fieldKey}-bonus-change`;
-            const bonusAfterId = `income-${field.fieldKey}-bonus-after`;
 
             return (
               <div
@@ -274,109 +267,6 @@ export function IncomeSectionForm({ defaultValues }: IncomeSectionFormProps) {
                         {streamErrors.end_year_month.message}
                       </p>
                     ) : null}
-                  </div>
-                </div>
-                <div className="space-y-3 rounded-md border border-border/60 bg-background/60 p-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    ボーナス設定
-                  </p>
-                  <Controller
-                    control={form.control}
-                    name={`streams.${index}.bonus_months`}
-                    render={({ field: bonusField }) => (
-                      <div className="flex flex-wrap gap-2">
-                        {monthOptions.map((month) => {
-                          const selected = (bonusField.value ?? []) as number[];
-                          const checked = selected.includes(month);
-                          return (
-                            <label key={month} className="flex items-center gap-1 text-xs">
-                              <input
-                                className="size-4 rounded border-input"
-                                type="checkbox"
-                                checked={checked}
-                                onChange={() => {
-                                  const next = checked
-                                    ? selected.filter((value) => value !== month)
-                                    : [...selected, month].sort((a, b) => a - b);
-                                  bonusField.onChange(next);
-                                }}
-                              />
-                              <span>{month}月</span>
-                            </label>
-                          );
-                        })}
-                      </div>
-                    )}
-                  />
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <label
-                        className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-                        htmlFor={bonusAmountId}
-                      >
-                        ボーナス金額
-                      </label>
-                      <input
-                        {...form.register(`streams.${index}.bonus_amount`)}
-                        className={cn(
-                          inputClassName,
-                          streamErrors?.bonus_amount && "border-destructive",
-                        )}
-                        id={bonusAmountId}
-                        inputMode="numeric"
-                        placeholder="例: 200000"
-                      />
-                      {streamErrors?.bonus_amount?.message ? (
-                        <p className="text-xs text-destructive">
-                          {streamErrors.bonus_amount.message}
-                        </p>
-                      ) : null}
-                    </div>
-                    <div className="space-y-2">
-                      <label
-                        className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-                        htmlFor={changeYearMonthId}
-                      >
-                        変化年月
-                      </label>
-                      <input
-                        {...form.register(`streams.${index}.change_year_month`)}
-                        className={cn(
-                          inputClassName,
-                          streamErrors?.change_year_month && "border-destructive",
-                        )}
-                        id={changeYearMonthId}
-                        type="month"
-                      />
-                      {streamErrors?.change_year_month?.message ? (
-                        <p className="text-xs text-destructive">
-                          {streamErrors.change_year_month.message}
-                        </p>
-                      ) : null}
-                    </div>
-                    <div className="space-y-2 md:col-span-2">
-                      <label
-                        className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-                        htmlFor={bonusAfterId}
-                      >
-                        変化後ボーナス金額
-                      </label>
-                      <input
-                        {...form.register(`streams.${index}.bonus_amount_after`)}
-                        className={cn(
-                          inputClassName,
-                          streamErrors?.bonus_amount_after && "border-destructive",
-                        )}
-                        id={bonusAfterId}
-                        inputMode="numeric"
-                        placeholder="例: 250000"
-                      />
-                      {streamErrors?.bonus_amount_after?.message ? (
-                        <p className="text-xs text-destructive">
-                          {streamErrors.bonus_amount_after.message}
-                        </p>
-                      ) : null}
-                    </div>
                   </div>
                 </div>
               </div>

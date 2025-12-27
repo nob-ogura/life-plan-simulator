@@ -93,37 +93,33 @@ export const FamilySectionSchema = z.object({
 export type FamilySectionInput = z.input<typeof FamilySectionSchema>;
 export type FamilySectionPayload = z.output<typeof FamilySectionSchema>;
 
-const IncomeStreamFormSchema = z.object({
+const IncomeStreamBaseSchema = z.object({
   id: z.string().optional(),
   label: requiredString,
   take_home_monthly: requiredNumericString,
-  bonus_months: bonusMonthsSchema,
-  bonus_amount: requiredNumericString,
-  change_year_month: optionalYearMonth,
-  bonus_amount_after: optionalNumericString,
   raise_rate: optionalNumericString,
   start_year_month: requiredYearMonth,
   end_year_month: optionalYearMonth,
 });
 
+const BonusStreamSchema = z.object({
+  id: z.string().optional(),
+  label: requiredString,
+  bonus_months: bonusMonthsSchema,
+  bonus_amount: requiredNumericString,
+  change_year_month: optionalYearMonth,
+  bonus_amount_after: optionalNumericString,
+});
+
 export const IncomeSectionSchema = z.object({
-  streams: arrayWithDefault(IncomeStreamFormSchema),
+  streams: arrayWithDefault(IncomeStreamBaseSchema),
 });
 
 export type IncomeSectionInput = z.input<typeof IncomeSectionSchema>;
 export type IncomeSectionPayload = z.output<typeof IncomeSectionSchema>;
 
 export const BonusSectionSchema = z.object({
-  streams: arrayWithDefault(
-    IncomeStreamFormSchema.pick({
-      id: true,
-      label: true,
-      bonus_months: true,
-      bonus_amount: true,
-      change_year_month: true,
-      bonus_amount_after: true,
-    }),
-  ),
+  streams: arrayWithDefault(BonusStreamSchema),
 });
 
 export type BonusSectionInput = z.input<typeof BonusSectionSchema>;
@@ -265,10 +261,6 @@ export const buildIncomeSectionDefaults = (
     id: stream.id,
     label: stream.label,
     take_home_monthly: toNumberInput(stream.take_home_monthly),
-    bonus_months: stream.bonus_months ?? [],
-    bonus_amount: toNumberInput(stream.bonus_amount),
-    change_year_month: toYearMonthInput(stream.change_year_month),
-    bonus_amount_after: toNumberInput(stream.bonus_amount_after),
     raise_rate: toNumberInput(stream.raise_rate),
     start_year_month: toYearMonthInput(stream.start_year_month),
     end_year_month: toYearMonthInput(stream.end_year_month),
@@ -327,14 +319,32 @@ export const toFamilyPayload = (
   })),
 });
 
-export const toIncomeStreamPayloads = (value: IncomeSectionPayload): CreateIncomeStreamRequest[] =>
+export type UpdateIncomeStreamRequest = Pick<
+  CreateIncomeStreamRequest,
+  "label" | "take_home_monthly" | "raise_rate" | "start_year_month" | "end_year_month"
+>;
+
+export const toIncomeStreamCreatePayloads = (
+  value: IncomeSectionPayload,
+): CreateIncomeStreamRequest[] =>
   value.streams.map((stream) => ({
     label: stream.label,
     take_home_monthly: stream.take_home_monthly,
-    bonus_months: stream.bonus_months ?? [],
-    bonus_amount: stream.bonus_amount,
-    change_year_month: toOptionalMonthStartDate(stream.change_year_month),
-    bonus_amount_after: stream.bonus_amount_after ?? null,
+    bonus_months: [],
+    bonus_amount: 0,
+    change_year_month: null,
+    bonus_amount_after: null,
+    raise_rate: stream.raise_rate,
+    start_year_month: toMonthStartDate(stream.start_year_month),
+    end_year_month: toOptionalMonthStartDate(stream.end_year_month),
+  }));
+
+export const toIncomeStreamUpdatePayloads = (
+  value: IncomeSectionPayload,
+): UpdateIncomeStreamRequest[] =>
+  value.streams.map((stream) => ({
+    label: stream.label,
+    take_home_monthly: stream.take_home_monthly,
     raise_rate: stream.raise_rate,
     start_year_month: toMonthStartDate(stream.start_year_month),
     end_year_month: toOptionalMonthStartDate(stream.end_year_month),

@@ -207,7 +207,7 @@ export default async function InputsPage() {
           value: data.incomeStreams[0]?.label ?? "未登録",
         },
       ],
-      note: "手取り月額、昇給率、期間、ボーナス情報を入力して保存します。",
+      note: "手取り月額、昇給率、期間を入力して保存します。",
       form: <IncomeSectionForm defaultValues={incomeSectionDefaults} />,
     },
     {

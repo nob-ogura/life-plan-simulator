@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { FamilySectionSchema, IncomeSectionSchema } from "./sections";
+import { BonusSectionSchema, FamilySectionSchema, IncomeSectionSchema } from "./sections";
 
 const findIssueMessage = (
   issues: Array<{ path: Array<PropertyKey>; message: string }>,
@@ -85,10 +85,6 @@ describe("inputs form schemas", () => {
           id: "income-1",
           label: "給与",
           take_home_monthly: "300000",
-          bonus_months: [6, 12],
-          bonus_amount: "200000",
-          change_year_month: "",
-          bonus_amount_after: "",
           raise_rate: "",
           start_year_month: "2024-13",
           end_year_month: "",
@@ -111,10 +107,6 @@ describe("inputs form schemas", () => {
           id: "income-1",
           label: "給与",
           take_home_monthly: "300000",
-          bonus_months: [6, 12],
-          bonus_amount: "200000",
-          change_year_month: "",
-          bonus_amount_after: "",
           raise_rate: "",
           start_year_month: "2024-04",
           end_year_month: "",
@@ -123,5 +115,27 @@ describe("inputs form schemas", () => {
     });
 
     expect(result.success).toBe(true);
+  });
+
+  it("validates bonus change year-month format with Japanese message", () => {
+    const result = BonusSectionSchema.safeParse({
+      streams: [
+        {
+          id: "income-1",
+          label: "給与",
+          bonus_months: [6, 12],
+          bonus_amount: "200000",
+          change_year_month: "2024-13",
+          bonus_amount_after: "",
+        },
+      ],
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(findIssueMessage(result.error.issues, "streams.0.change_year_month")).toBe(
+        "YYYY-MM 形式で入力してください",
+      );
+    }
   });
 });
