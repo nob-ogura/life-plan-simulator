@@ -1,6 +1,5 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
@@ -13,6 +12,7 @@ import {
   toIncomeStreamPayloads,
 } from "@/features/inputs/forms/sections";
 import { cn } from "@/lib/utils";
+import { zodResolver } from "@/lib/zod-resolver";
 import { useAuth } from "@/shared/cross-cutting/auth";
 import { supabaseClient } from "@/shared/cross-cutting/infrastructure/supabase.client";
 

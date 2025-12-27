@@ -1,6 +1,5 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
@@ -13,6 +12,7 @@ import {
   toFamilyPayload,
 } from "@/features/inputs/forms/sections";
 import { cn } from "@/lib/utils";
+import { zodResolver } from "@/lib/zod-resolver";
 import { useAuth } from "@/shared/cross-cutting/auth";
 import { supabaseClient } from "@/shared/cross-cutting/infrastructure/supabase.client";
 
@@ -101,11 +101,7 @@ export function FamilySectionForm({ defaultValues, onSave }: FamilySectionFormPr
       if (updatePayloads.length > 0) {
         const results = await Promise.all(
           updatePayloads.map(({ id, payload: childPayload }) =>
-            supabaseClient
-              .from("children")
-              .update(childPayload)
-              .eq("id", id)
-              .eq("user_id", userId),
+            supabaseClient.from("children").update(childPayload).eq("id", id).eq("user_id", userId),
           ),
         );
         const firstError = results.find((result) => result.error)?.error;
