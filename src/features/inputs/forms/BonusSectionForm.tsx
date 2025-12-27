@@ -20,9 +20,9 @@ import {
   BonusSectionSchema,
   toOptionalMonthStartDate,
 } from "@/features/inputs/forms/sections";
+import { updateIncomeStreamAction } from "@/features/inputs/income-streams/commands/update-income-stream/action";
 import { zodResolver } from "@/lib/zod-resolver";
 import { useAuth } from "@/shared/cross-cutting/auth";
-import { supabaseClient } from "@/shared/cross-cutting/infrastructure/supabase.client";
 
 const monthOptions = Array.from({ length: 12 }, (_, index) => index + 1);
 
@@ -57,8 +57,6 @@ export function BonusSectionForm({ defaultValues }: BonusSectionFormProps) {
 
     const parsedResult = BonusSectionSchema.safeParse(value);
     const parsed = (parsedResult.success ? parsedResult.data : value) as BonusSectionPayload;
-    const userId = session.user.id;
-
     try {
       const updates = parsed.streams.flatMap((stream) =>
         stream.id
@@ -79,16 +77,13 @@ export function BonusSectionForm({ defaultValues }: BonusSectionFormProps) {
 
       if (updates.length > 0) {
         const results = await Promise.all(
-          updates.map(({ id, payload }) =>
-            supabaseClient
-              .from("income_streams")
-              .update(payload)
-              .eq("id", id)
-              .eq("user_id", userId),
-          ),
+          updates.map(({ id, payload }) => updateIncomeStreamAction({ id, patch: payload })),
         );
-        const firstError = results.find((result) => result.error)?.error;
-        if (firstError) throw firstError;
+        const hasError = results.some((result) => !result.ok);
+        if (hasError) {
+          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          return;
+        }
       }
 
       router.refresh();

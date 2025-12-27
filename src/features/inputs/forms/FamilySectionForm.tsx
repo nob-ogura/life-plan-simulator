@@ -14,15 +14,18 @@ import {
 } from "@/components/form/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { createChildAction } from "@/features/inputs/children/commands/create-child/action";
+import { deleteChildAction } from "@/features/inputs/children/commands/delete-child/action";
+import { updateChildAction } from "@/features/inputs/children/commands/update-child/action";
 import {
   type FamilySectionInput,
   type FamilySectionPayload,
   FamilySectionSchema,
   toFamilyPayload,
 } from "@/features/inputs/forms/sections";
+import { upsertProfileAction } from "@/features/inputs/profiles/commands/upsert-profile/action";
 import { zodResolver } from "@/lib/zod-resolver";
 import { useAuth } from "@/shared/cross-cutting/auth";
-import { supabaseClient } from "@/shared/cross-cutting/infrastructure/supabase.client";
 
 type FamilySectionFormProps = {
   defaultValues: FamilySectionInput;
@@ -64,8 +67,6 @@ export function FamilySectionForm({ defaultValues, onSave }: FamilySectionFormPr
     const parsedResult = FamilySectionSchema.safeParse(value);
     const parsed = (parsedResult.success ? parsedResult.data : value) as FamilySectionPayload;
     const payload = toFamilyPayload(parsed);
-    const userId = session.user.id;
-
     const currentIds = new Set(
       parsed.children.map((child) => child.id).filter(Boolean) as string[],
     );
@@ -78,35 +79,38 @@ export function FamilySectionForm({ defaultValues, onSave }: FamilySectionFormPr
     );
 
     try {
-      const { error: profileError } = await supabaseClient
-        .from("profiles")
-        .upsert({ user_id: userId, ...payload.profile }, { onConflict: "user_id" });
-      if (profileError) throw profileError;
+      const profileResult = await upsertProfileAction({ patch: payload.profile });
+      if (!profileResult.ok) {
+        setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+        return;
+      }
 
       if (removedIds.length > 0) {
-        const { error } = await supabaseClient
-          .from("children")
-          .delete()
-          .in("id", removedIds)
-          .eq("user_id", userId);
-        if (error) throw error;
+        const results = await Promise.all(removedIds.map((id) => deleteChildAction({ id })));
+        if (results.some((result) => !result.ok)) {
+          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          return;
+        }
       }
 
       if (createPayloads.length > 0) {
-        const { error } = await supabaseClient
-          .from("children")
-          .insert(createPayloads.map((child) => ({ ...child, user_id: userId })));
-        if (error) throw error;
+        const results = await Promise.all(createPayloads.map((child) => createChildAction(child)));
+        if (results.some((result) => !result.ok)) {
+          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          return;
+        }
       }
 
       if (updatePayloads.length > 0) {
         const results = await Promise.all(
           updatePayloads.map(({ id, payload: childPayload }) =>
-            supabaseClient.from("children").update(childPayload).eq("id", id).eq("user_id", userId),
+            updateChildAction({ id, patch: childPayload }),
           ),
         );
-        const firstError = results.find((result) => result.error)?.error;
-        if (firstError) throw firstError;
+        if (results.some((result) => !result.ok)) {
+          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          return;
+        }
       }
 
       onSave?.(payload);

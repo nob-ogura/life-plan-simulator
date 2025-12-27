@@ -63,6 +63,10 @@ Next.js の Server Action から Endpoint を安全に呼び出すために、
 `src/shared/cross-cutting/infrastructure/action-adapter.ts` の `createAction` を利用します。
 `safeParse` を持つスキーマ（Zod 互換）を渡すことで入力検証とエラーハンドリングを統一します。
 
+### 3.3 UI からのデータ更新ルール
+*   原則として、UI コンポーネント内で `supabaseClient` を使って `insert` / `update` / `delete` を行わないでください。
+*   更新は各機能スライスで定義された Server Action (`action.ts`) を呼び出してください。これにより、ドメインルールと認可が一貫して適用されます。
+
 ## 4. データアクセスと依存関係
 
 ### 4.1 データアクセスの配置

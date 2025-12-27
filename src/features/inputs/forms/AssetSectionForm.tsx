@@ -14,6 +14,8 @@ import {
 } from "@/components/form/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { createAssetAction } from "@/features/inputs/assets/commands/create-asset/action";
+import { updateAssetAction } from "@/features/inputs/assets/commands/update-asset/action";
 import {
   type AssetSectionInput,
   type AssetSectionPayload,
@@ -22,7 +24,6 @@ import {
 } from "@/features/inputs/forms/sections";
 import { zodResolver } from "@/lib/zod-resolver";
 import { useAuth } from "@/shared/cross-cutting/auth";
-import { supabaseClient } from "@/shared/cross-cutting/infrastructure/supabase.client";
 
 type AssetSectionFormProps = {
   defaultValues: AssetSectionInput;
@@ -56,21 +57,19 @@ export function AssetSectionForm({ defaultValues, assetId }: AssetSectionFormPro
     const parsedResult = AssetSectionSchema.safeParse(value);
     const parsed = (parsedResult.success ? parsedResult.data : value) as AssetSectionPayload;
     const payload = omitUndefined(toAssetPayload(parsed));
-    const userId = session.user.id;
-
     try {
       if (assetId) {
-        const { error } = await supabaseClient
-          .from("assets")
-          .update(payload)
-          .eq("id", assetId)
-          .eq("user_id", userId);
-        if (error) throw error;
+        const result = await updateAssetAction({ id: assetId, patch: payload });
+        if (!result.ok) {
+          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          return;
+        }
       } else {
-        const { error } = await supabaseClient
-          .from("assets")
-          .insert({ ...payload, user_id: userId });
-        if (error) throw error;
+        const result = await createAssetAction(payload);
+        if (!result.ok) {
+          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          return;
+        }
       }
 
       router.refresh();

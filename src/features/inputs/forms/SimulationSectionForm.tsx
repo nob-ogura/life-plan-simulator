@@ -19,9 +19,10 @@ import {
   type SimulationSectionPayload,
   SimulationSectionSchema,
 } from "@/features/inputs/forms/sections";
+import { createSimulationSettingsAction } from "@/features/inputs/simulation-settings/commands/create-simulation-settings/action";
+import { updateSimulationSettingsAction } from "@/features/inputs/simulation-settings/commands/update-simulation-settings/action";
 import { zodResolver } from "@/lib/zod-resolver";
 import { useAuth } from "@/shared/cross-cutting/auth";
-import { supabaseClient } from "@/shared/cross-cutting/infrastructure/supabase.client";
 
 type SimulationSectionFormProps = {
   defaultValues: SimulationSectionInput;
@@ -64,21 +65,19 @@ export function SimulationSectionForm({ defaultValues, settingsId }: SimulationS
       real_estate_evaluation_rate: parsed.real_estate_evaluation_rate,
     });
 
-    const userId = session.user.id;
-
     try {
       if (settingsId) {
-        const { error } = await supabaseClient
-          .from("simulation_settings")
-          .update(payload)
-          .eq("id", settingsId)
-          .eq("user_id", userId);
-        if (error) throw error;
+        const result = await updateSimulationSettingsAction({ id: settingsId, patch: payload });
+        if (!result.ok) {
+          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          return;
+        }
       } else {
-        const { error } = await supabaseClient
-          .from("simulation_settings")
-          .insert({ ...payload, user_id: userId });
-        if (error) throw error;
+        const result = await createSimulationSettingsAction(payload);
+        if (!result.ok) {
+          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          return;
+        }
       }
 
       router.refresh();

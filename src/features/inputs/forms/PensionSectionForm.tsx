@@ -19,9 +19,9 @@ import {
   type PensionSectionPayload,
   PensionSectionSchema,
 } from "@/features/inputs/forms/sections";
+import { upsertProfileAction } from "@/features/inputs/profiles/commands/upsert-profile/action";
 import { zodResolver } from "@/lib/zod-resolver";
 import { useAuth } from "@/shared/cross-cutting/auth";
-import { supabaseClient } from "@/shared/cross-cutting/infrastructure/supabase.client";
 
 type PensionSectionFormProps = {
   defaultValues: PensionSectionInput;
@@ -50,16 +50,14 @@ export function PensionSectionForm({ defaultValues }: PensionSectionFormProps) {
 
     const parsedResult = PensionSectionSchema.safeParse(value);
     const parsed = (parsedResult.success ? parsedResult.data : value) as PensionSectionPayload;
-    const userId = session.user.id;
-
     try {
-      const { error } = await supabaseClient.from("profiles").upsert(
-        { user_id: userId, pension_start_age: parsed.pension_start_age },
-        {
-          onConflict: "user_id",
-        },
-      );
-      if (error) throw error;
+      const result = await upsertProfileAction({
+        patch: { pension_start_age: parsed.pension_start_age },
+      });
+      if (!result.ok) {
+        setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+        return;
+      }
 
       router.refresh();
     } catch (error) {

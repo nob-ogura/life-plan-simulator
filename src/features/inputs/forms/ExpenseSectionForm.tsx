@@ -14,6 +14,9 @@ import {
 } from "@/components/form/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { createExpenseAction } from "@/features/inputs/expenses/commands/create-expense/action";
+import { deleteExpenseAction } from "@/features/inputs/expenses/commands/delete-expense/action";
+import { updateExpenseAction } from "@/features/inputs/expenses/commands/update-expense/action";
 import {
   type ExpenseSectionInput,
   type ExpenseSectionPayload,
@@ -22,7 +25,6 @@ import {
 } from "@/features/inputs/forms/sections";
 import { zodResolver } from "@/lib/zod-resolver";
 import { useAuth } from "@/shared/cross-cutting/auth";
-import { supabaseClient } from "@/shared/cross-cutting/infrastructure/supabase.client";
 
 type ExpenseSectionFormProps = {
   defaultValues: ExpenseSectionInput;
@@ -63,7 +65,6 @@ export function ExpenseSectionForm({ defaultValues }: ExpenseSectionFormProps) {
     const parsedResult = ExpenseSectionSchema.safeParse(value);
     const parsed = (parsedResult.success ? parsedResult.data : value) as ExpenseSectionPayload;
     const payloads = toExpensePayloads(parsed);
-    const userId = session.user.id;
     const currentIds = new Set(
       parsed.expenses.map((expense) => expense.id).filter(Boolean) as string[],
     );
@@ -77,29 +78,31 @@ export function ExpenseSectionForm({ defaultValues }: ExpenseSectionFormProps) {
 
     try {
       if (removedIds.length > 0) {
-        const { error } = await supabaseClient
-          .from("expenses")
-          .delete()
-          .in("id", removedIds)
-          .eq("user_id", userId);
-        if (error) throw error;
+        const results = await Promise.all(removedIds.map((id) => deleteExpenseAction({ id })));
+        if (results.some((result) => !result.ok)) {
+          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          return;
+        }
       }
 
       if (createPayloads.length > 0) {
-        const { error } = await supabaseClient
-          .from("expenses")
-          .insert(createPayloads.map((payload) => ({ ...payload, user_id: userId })));
-        if (error) throw error;
+        const results = await Promise.all(
+          createPayloads.map((payload) => createExpenseAction(payload)),
+        );
+        if (results.some((result) => !result.ok)) {
+          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          return;
+        }
       }
 
       if (updatePayloads.length > 0) {
         const results = await Promise.all(
-          updatePayloads.map(({ id, payload }) =>
-            supabaseClient.from("expenses").update(payload).eq("id", id).eq("user_id", userId),
-          ),
+          updatePayloads.map(({ id, payload }) => updateExpenseAction({ id, patch: payload })),
         );
-        const firstError = results.find((result) => result.error)?.error;
-        if (firstError) throw firstError;
+        if (results.some((result) => !result.ok)) {
+          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          return;
+        }
       }
 
       router.refresh();

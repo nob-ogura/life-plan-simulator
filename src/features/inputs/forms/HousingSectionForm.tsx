@@ -20,9 +20,14 @@ import {
   HousingSectionSchema,
   toHousingPayloads,
 } from "@/features/inputs/forms/sections";
+import { createMortgageAction } from "@/features/inputs/mortgages/commands/create-mortgage/action";
+import { deleteMortgageAction } from "@/features/inputs/mortgages/commands/delete-mortgage/action";
+import { updateMortgageAction } from "@/features/inputs/mortgages/commands/update-mortgage/action";
+import { createRentalAction } from "@/features/inputs/rentals/commands/create-rental/action";
+import { deleteRentalAction } from "@/features/inputs/rentals/commands/delete-rental/action";
+import { updateRentalAction } from "@/features/inputs/rentals/commands/update-rental/action";
 import { zodResolver } from "@/lib/zod-resolver";
 import { useAuth } from "@/shared/cross-cutting/auth";
-import { supabaseClient } from "@/shared/cross-cutting/infrastructure/supabase.client";
 
 type HousingSectionFormProps = {
   defaultValues: HousingSectionInput;
@@ -83,8 +88,6 @@ export function HousingSectionForm({ defaultValues }: HousingSectionFormProps) {
     const parsedResult = HousingSectionSchema.safeParse(value);
     const parsed = (parsedResult.success ? parsedResult.data : value) as HousingSectionPayload;
     const payloads = toHousingPayloads(parsed);
-    const userId = session.user.id;
-
     const currentMortgageIds = new Set(
       parsed.mortgages.map((mortgage) => mortgage.id).filter(Boolean) as string[],
     );
@@ -111,55 +114,63 @@ export function HousingSectionForm({ defaultValues }: HousingSectionFormProps) {
 
     try {
       if (removedMortgageIds.length > 0) {
-        const { error } = await supabaseClient
-          .from("mortgages")
-          .delete()
-          .in("id", removedMortgageIds)
-          .eq("user_id", userId);
-        if (error) throw error;
+        const results = await Promise.all(
+          removedMortgageIds.map((id) => deleteMortgageAction({ id })),
+        );
+        if (results.some((result) => !result.ok)) {
+          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          return;
+        }
       }
 
       if (removedRentalIds.length > 0) {
-        const { error } = await supabaseClient
-          .from("rentals")
-          .delete()
-          .in("id", removedRentalIds)
-          .eq("user_id", userId);
-        if (error) throw error;
+        const results = await Promise.all(removedRentalIds.map((id) => deleteRentalAction({ id })));
+        if (results.some((result) => !result.ok)) {
+          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          return;
+        }
       }
 
       if (createMortgagePayloads.length > 0) {
-        const { error } = await supabaseClient
-          .from("mortgages")
-          .insert(createMortgagePayloads.map((payload) => ({ ...payload, user_id: userId })));
-        if (error) throw error;
+        const results = await Promise.all(
+          createMortgagePayloads.map((payload) => createMortgageAction(payload)),
+        );
+        if (results.some((result) => !result.ok)) {
+          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          return;
+        }
       }
 
       if (createRentalPayloads.length > 0) {
-        const { error } = await supabaseClient
-          .from("rentals")
-          .insert(createRentalPayloads.map((payload) => ({ ...payload, user_id: userId })));
-        if (error) throw error;
+        const results = await Promise.all(
+          createRentalPayloads.map((payload) => createRentalAction(payload)),
+        );
+        if (results.some((result) => !result.ok)) {
+          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          return;
+        }
       }
 
       if (updateMortgagePayloads.length > 0) {
         const results = await Promise.all(
           updateMortgagePayloads.map(({ id, payload }) =>
-            supabaseClient.from("mortgages").update(payload).eq("id", id).eq("user_id", userId),
+            updateMortgageAction({ id, patch: payload }),
           ),
         );
-        const firstError = results.find((result) => result.error)?.error;
-        if (firstError) throw firstError;
+        if (results.some((result) => !result.ok)) {
+          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          return;
+        }
       }
 
       if (updateRentalPayloads.length > 0) {
         const results = await Promise.all(
-          updateRentalPayloads.map(({ id, payload }) =>
-            supabaseClient.from("rentals").update(payload).eq("id", id).eq("user_id", userId),
-          ),
+          updateRentalPayloads.map(({ id, payload }) => updateRentalAction({ id, patch: payload })),
         );
-        const firstError = results.find((result) => result.error)?.error;
-        if (firstError) throw firstError;
+        if (results.some((result) => !result.ok)) {
+          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          return;
+        }
       }
 
       router.refresh();
