@@ -4,8 +4,16 @@ import type { ReactNode } from "react";
 import { SupabaseListAssetsRepository } from "@/features/inputs/assets/queries/list-assets/repository";
 import { SupabaseListChildrenRepository } from "@/features/inputs/children/queries/list-children/repository";
 import { SupabaseListExpensesRepository } from "@/features/inputs/expenses/queries/list-expenses/repository";
+import { BonusSectionForm } from "@/features/inputs/forms/BonusSectionForm";
+import { ExpenseSectionForm } from "@/features/inputs/forms/ExpenseSectionForm";
 import { FamilySectionForm } from "@/features/inputs/forms/FamilySectionForm";
-import { buildFamilySectionDefaults } from "@/features/inputs/forms/sections";
+import { IncomeSectionForm } from "@/features/inputs/forms/IncomeSectionForm";
+import {
+  buildBonusSectionDefaults,
+  buildExpenseSectionDefaults,
+  buildFamilySectionDefaults,
+  buildIncomeSectionDefaults,
+} from "@/features/inputs/forms/sections";
 import { SupabaseListIncomeStreamsRepository } from "@/features/inputs/income-streams/queries/list-income-streams/repository";
 import { SupabaseListLifeEventsRepository } from "@/features/inputs/life-events/queries/list-life-events/repository";
 import { SupabaseListMortgagesRepository } from "@/features/inputs/mortgages/queries/list-mortgages/repository";
@@ -163,6 +171,9 @@ export default async function InputsPage() {
     profile?.spouse_birth_month != null;
 
   const familySectionDefaults = buildFamilySectionDefaults(profile, data.children);
+  const incomeSectionDefaults = buildIncomeSectionDefaults(data.incomeStreams);
+  const bonusSectionDefaults = buildBonusSectionDefaults(data.incomeStreams);
+  const expenseSectionDefaults = buildExpenseSectionDefaults(data.expenses);
 
   const sections: InputsSection[] = [
     {
@@ -196,7 +207,8 @@ export default async function InputsPage() {
           value: data.incomeStreams[0]?.label ?? "未登録",
         },
       ],
-      note: "収入フォームは react-hook-form + zod の基盤整備後に追加します。",
+      note: "手取り月額、昇給率、期間、ボーナス情報を入力して保存します。",
+      form: <IncomeSectionForm defaultValues={incomeSectionDefaults} />,
     },
     {
       id: "bonus",
@@ -211,7 +223,8 @@ export default async function InputsPage() {
           value: bonusStreams[0]?.label ?? "未登録",
         },
       ],
-      note: "ボーナスの月・金額・変化点は後続タスクで" + "入力 UI を実装します。",
+      note: "収入ストリームごとのボーナス月・金額・変化点を管理します。",
+      form: <BonusSectionForm defaultValues={bonusSectionDefaults} />,
     },
     {
       id: "expenses",
@@ -223,7 +236,8 @@ export default async function InputsPage() {
         { label: "支出項目", value: formatCount(data.expenses.length) },
         { label: "主な支出ラベル", value: data.expenses[0]?.label ?? "未登録" },
       ],
-      note: "支出フォームの詳細は Task 4 で追加予定です。",
+      note: "支出の月額・インフレ率・期間・カテゴリを入力して保存します。",
+      form: <ExpenseSectionForm defaultValues={expenseSectionDefaults} />,
     },
     {
       id: "housing",

@@ -255,6 +255,50 @@ export const buildFamilySectionDefaults = (
   })),
 });
 
+export const buildIncomeSectionDefaults = (
+  streams: Array<Tables<"income_streams">>,
+): IncomeSectionInput => ({
+  streams: streams.map((stream) => ({
+    id: stream.id,
+    label: stream.label,
+    take_home_monthly: toNumberInput(stream.take_home_monthly),
+    bonus_months: stream.bonus_months ?? [],
+    bonus_amount: toNumberInput(stream.bonus_amount),
+    change_year_month: toYearMonthInput(stream.change_year_month),
+    bonus_amount_after: toNumberInput(stream.bonus_amount_after),
+    raise_rate: toNumberInput(stream.raise_rate),
+    start_year_month: toYearMonthInput(stream.start_year_month),
+    end_year_month: toYearMonthInput(stream.end_year_month),
+  })),
+});
+
+export const buildBonusSectionDefaults = (
+  streams: Array<Tables<"income_streams">>,
+): BonusSectionInput => ({
+  streams: streams.map((stream) => ({
+    id: stream.id,
+    label: stream.label,
+    bonus_months: stream.bonus_months ?? [],
+    bonus_amount: toNumberInput(stream.bonus_amount),
+    change_year_month: toYearMonthInput(stream.change_year_month),
+    bonus_amount_after: toNumberInput(stream.bonus_amount_after),
+  })),
+});
+
+export const buildExpenseSectionDefaults = (
+  expenses: Array<Tables<"expenses">>,
+): ExpenseSectionInput => ({
+  expenses: expenses.map((expense) => ({
+    id: expense.id,
+    label: expense.label,
+    amount_monthly: toNumberInput(expense.amount_monthly),
+    inflation_rate: toNumberInput(expense.inflation_rate),
+    category: expense.category,
+    start_year_month: toYearMonthInput(expense.start_year_month),
+    end_year_month: toYearMonthInput(expense.end_year_month),
+  })),
+});
+
 export const toFamilyPayload = (
   value: FamilySectionPayload,
 ): {
