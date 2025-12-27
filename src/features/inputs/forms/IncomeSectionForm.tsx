@@ -14,16 +14,9 @@ import {
 } from "@/components/form/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  type IncomeSectionInput,
-  type IncomeSectionPayload,
-  IncomeSectionSchema,
-  toIncomeStreamCreatePayloads,
-  toIncomeStreamUpdatePayloads,
-} from "@/features/inputs/forms/sections";
+import { type IncomeSectionInput, IncomeSectionSchema } from "@/features/inputs/forms/sections";
+import { bulkSaveIncomeStreamsAction } from "@/features/inputs/income-streams/commands/bulk-save-income-streams/action";
 import { zodResolver } from "@/lib/zod-resolver";
-import { useAuth } from "@/shared/cross-cutting/auth";
-import { supabaseClient } from "@/shared/cross-cutting/infrastructure/supabase.client";
 
 type IncomeSectionFormProps = {
   defaultValues: IncomeSectionInput;
@@ -31,7 +24,6 @@ type IncomeSectionFormProps = {
 
 export function IncomeSectionForm({ defaultValues }: IncomeSectionFormProps) {
   const router = useRouter();
-  const { session, isReady } = useAuth();
   const [submitError, setSubmitError] = useState<string | null>(null);
   const form = useForm<IncomeSectionInput>({
     defaultValues,
@@ -54,61 +46,20 @@ export function IncomeSectionForm({ defaultValues }: IncomeSectionFormProps) {
       .filter(Boolean) as string[];
   }, [defaultValues, form]);
 
-  const onSubmit = form.handleSubmit(async (value) => {
+  const onSubmit = form.handleSubmit(async () => {
     setSubmitError(null);
-    if (!isReady || !session?.user?.id) {
-      setSubmitError("ログイン情報を取得できませんでした。");
-      return;
-    }
-
-    const parsedResult = IncomeSectionSchema.safeParse(value);
-    const parsed = (parsedResult.success ? parsedResult.data : value) as IncomeSectionPayload;
-    const createPayloads = toIncomeStreamCreatePayloads(parsed);
-    const updatePayloads = toIncomeStreamUpdatePayloads(parsed);
-    const userId = session.user.id;
-    const currentIds = new Set(
-      parsed.streams.map((stream) => stream.id).filter(Boolean) as string[],
-    );
-    const removedIds = initialIdsRef.current.filter((id) => !currentIds.has(id));
-    const createPayloadsForInsert = parsed.streams.flatMap((stream, index) =>
-      stream.id ? [] : [createPayloads[index]],
-    );
-    const updatePayloadsForUpdate = parsed.streams.flatMap((stream, index) =>
-      stream.id ? [{ id: stream.id, payload: updatePayloads[index] }] : [],
-    );
 
     try {
-      if (removedIds.length > 0) {
-        const { error } = await supabaseClient
-          .from("income_streams")
-          .delete()
-          .in("id", removedIds)
-          .eq("user_id", userId);
-        if (error) throw error;
+      const rawValues = form.getValues();
+      const res = await bulkSaveIncomeStreamsAction({
+        initial_ids: initialIdsRef.current,
+        streams: rawValues.streams ?? [],
+      });
+      if (res.ok) {
+        router.refresh();
+      } else {
+        setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
       }
-
-      if (createPayloadsForInsert.length > 0) {
-        const { error } = await supabaseClient
-          .from("income_streams")
-          .insert(createPayloadsForInsert.map((payload) => ({ ...payload, user_id: userId })));
-        if (error) throw error;
-      }
-
-      if (updatePayloadsForUpdate.length > 0) {
-        const results = await Promise.all(
-          updatePayloadsForUpdate.map(({ id, payload }) =>
-            supabaseClient
-              .from("income_streams")
-              .update(payload)
-              .eq("id", id)
-              .eq("user_id", userId),
-          ),
-        );
-        const firstError = results.find((result) => result.error)?.error;
-        if (firstError) throw firstError;
-      }
-
-      router.refresh();
     } catch (error) {
       console.error(error);
       setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
