@@ -123,7 +123,7 @@ test.describe("Inputs UI E2E", () => {
       await familySection.getByLabel("配偶者（年）").fill("1987");
       await familySection.getByLabel("配偶者（月）").fill("9");
       await familySection.getByRole("button", { name: "保存" }).click();
-      await expect(page.getByText("保存しました。")).toBeVisible();
+      await expect(page.getByText("保存しました。").first()).toBeVisible();
 
       const incomeSection = await openSection(page, "収入");
       await incomeSection.getByRole("button", { name: "追加" }).click();
@@ -133,7 +133,7 @@ test.describe("Inputs UI E2E", () => {
       await incomeSection.getByLabel("開始年月").fill("2024-04");
       await incomeSection.getByLabel("終了年月").fill("2050-03");
       await incomeSection.getByRole("button", { name: "保存" }).click();
-      await expect(page.getByText("保存しました。")).toBeVisible();
+      await expect(page.getByText("保存しました。").first()).toBeVisible();
 
       const expenseSection = await openSection(page, "支出");
       await expenseSection.getByRole("button", { name: "追加" }).click();
@@ -144,14 +144,14 @@ test.describe("Inputs UI E2E", () => {
       await expenseSection.getByLabel("開始年月").fill("2024-04");
       await expenseSection.getByLabel("終了年月").fill("2040-03");
       await expenseSection.getByRole("button", { name: "保存" }).click();
-      await expect(page.getByText("保存しました。")).toBeVisible();
+      await expect(page.getByText("保存しました。").first()).toBeVisible();
       await waitForExpense(admin, user.id, "生活費");
 
       const retirementSection = await openSection(page, "退職金");
       await retirementSection.getByLabel("金額").fill("2000000");
       await retirementSection.getByLabel("支給年月").fill("2045-03");
       await retirementSection.getByRole("button", { name: "保存" }).click();
-      await expect(page.getByText("保存しました。")).toBeVisible();
+      await expect(page.getByText("保存しました。").first()).toBeVisible();
 
       const simulationSection = await openSection(page, "シミュレーション設定");
       await simulationSection.getByLabel("開始オフセット（月）").fill("1");
@@ -162,7 +162,7 @@ test.describe("Inputs UI E2E", () => {
       await simulationSection.getByLabel("固定資産税率").fill("0.015");
       await simulationSection.getByLabel("評価額掛目").fill("0.65");
       await simulationSection.getByRole("button", { name: "保存" }).click();
-      await expect(page.getByText("保存しました。")).toBeVisible();
+      await expect(page.getByText("保存しました。").first()).toBeVisible();
 
       await page.reload();
       await expect(page.getByRole("heading", { name: "入力データの登録" })).toBeVisible();
@@ -291,7 +291,7 @@ test.describe("Inputs UI E2E", () => {
       await familySectionB.getByLabel("配偶者（年）").fill("1992");
       await familySectionB.getByLabel("配偶者（月）").fill("11");
       await familySectionB.getByRole("button", { name: "保存" }).click();
-      await expect(page.getByText("保存しました。")).toBeVisible();
+      await expect(page.getByText("保存しました。").first()).toBeVisible();
 
       const contextA = await browser.newContext();
       const pageA = await contextA.newPage();
