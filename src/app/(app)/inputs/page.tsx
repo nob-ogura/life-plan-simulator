@@ -1,8 +1,11 @@
 import { ChevronDown } from "lucide-react";
+import type { ReactNode } from "react";
 
 import { SupabaseListAssetsRepository } from "@/features/inputs/assets/queries/list-assets/repository";
 import { SupabaseListChildrenRepository } from "@/features/inputs/children/queries/list-children/repository";
 import { SupabaseListExpensesRepository } from "@/features/inputs/expenses/queries/list-expenses/repository";
+import { FamilySectionForm } from "@/features/inputs/forms/FamilySectionForm";
+import { buildFamilySectionDefaults } from "@/features/inputs/forms/sections";
 import { SupabaseListIncomeStreamsRepository } from "@/features/inputs/income-streams/queries/list-income-streams/repository";
 import { SupabaseListLifeEventsRepository } from "@/features/inputs/life-events/queries/list-life-events/repository";
 import { SupabaseListMortgagesRepository } from "@/features/inputs/mortgages/queries/list-mortgages/repository";
@@ -135,6 +138,7 @@ type InputsSection = {
   status: string;
   rows: Array<{ label: string; value: string }>;
   note: string;
+  form?: ReactNode;
   defaultOpen?: boolean;
 };
 
@@ -158,6 +162,8 @@ export default async function InputsPage() {
     profile?.spouse_birth_year != null ||
     profile?.spouse_birth_month != null;
 
+  const familySectionDefaults = buildFamilySectionDefaults(profile, data.children);
+
   const sections: InputsSection[] = [
     {
       id: "family",
@@ -173,7 +179,8 @@ export default async function InputsPage() {
         },
         { label: "子ども", value: formatCount(data.children.length, "人") },
       ],
-      note: "本人・配偶者の生年月は必須項目として後続タスクで" + "入力フォームを追加します。",
+      note: "本人・配偶者の生年月は必須項目です。未入力の場合は保存できません。",
+      form: <FamilySectionForm defaultValues={familySectionDefaults} />,
       defaultOpen: true,
     },
     {
@@ -369,6 +376,11 @@ export default async function InputsPage() {
                 >
                   {section.note}
                 </div>
+                {section.form ? (
+                  <div className="rounded-xl border border-border/70 bg-background/60 p-4">
+                    {section.form}
+                  </div>
+                ) : null}
               </div>
             </div>
           </details>
