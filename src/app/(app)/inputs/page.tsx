@@ -4,20 +4,26 @@ import type { ReactNode } from "react";
 import { SupabaseListAssetsRepository } from "@/features/inputs/assets/queries/list-assets/repository";
 import { SupabaseListChildrenRepository } from "@/features/inputs/children/queries/list-children/repository";
 import { SupabaseListExpensesRepository } from "@/features/inputs/expenses/queries/list-expenses/repository";
+import { AssetSectionForm } from "@/features/inputs/forms/AssetSectionForm";
 import { BonusSectionForm } from "@/features/inputs/forms/BonusSectionForm";
 import { ExpenseSectionForm } from "@/features/inputs/forms/ExpenseSectionForm";
 import { FamilySectionForm } from "@/features/inputs/forms/FamilySectionForm";
 import { HousingSectionForm } from "@/features/inputs/forms/HousingSectionForm";
 import { IncomeSectionForm } from "@/features/inputs/forms/IncomeSectionForm";
 import { LifeEventSectionForm } from "@/features/inputs/forms/LifeEventSectionForm";
+import { PensionSectionForm } from "@/features/inputs/forms/PensionSectionForm";
 import { RetirementBonusSectionForm } from "@/features/inputs/forms/RetirementBonusSectionForm";
+import { SimulationSectionForm } from "@/features/inputs/forms/SimulationSectionForm";
 import {
+  buildAssetSectionDefaults,
   buildBonusSectionDefaults,
   buildExpenseSectionDefaults,
   buildFamilySectionDefaults,
   buildHousingSectionDefaults,
   buildIncomeSectionDefaults,
+  buildPensionSectionDefaults,
   buildRetirementSectionDefaults,
+  buildSimulationSectionDefaults,
 } from "@/features/inputs/forms/sections";
 import { SupabaseListIncomeStreamsRepository } from "@/features/inputs/income-streams/queries/list-income-streams/repository";
 import { SupabaseListLifeEventsRepository } from "@/features/inputs/life-events/queries/list-life-events/repository";
@@ -57,6 +63,12 @@ const formatYearMonth = (year?: number | null, month?: number | null) => {
 };
 
 const formatCount = (count: number, unit = "件") => (count > 0 ? `${count}${unit}` : "未登録");
+
+const formatAmount = (value?: number | null) =>
+  value == null ? "未入力" : `${new Intl.NumberFormat("ja-JP").format(value)}円`;
+
+const formatNumber = (value?: number | null, suffix = "") =>
+  value == null ? "未入力" : `${value}${suffix}`;
 
 const statusLabel = (hasData: boolean, filled = "入力済み", empty = "未入力") =>
   hasData ? filled : empty;
@@ -181,6 +193,11 @@ export default async function InputsPage() {
   const expenseSectionDefaults = buildExpenseSectionDefaults(data.expenses);
   const housingSectionDefaults = buildHousingSectionDefaults(data.mortgages, data.rentals);
   const retirementSectionDefaults = buildRetirementSectionDefaults(retirementBonuses);
+  const pensionSectionDefaults = buildPensionSectionDefaults(profile);
+  const assetSectionDefaults = buildAssetSectionDefaults(data.assets);
+  const simulationSectionDefaults = buildSimulationSectionDefaults(data.simulationSettings);
+  const assetId = data.assets[0]?.id ?? null;
+  const simulationSettingsId = data.simulationSettings?.id ?? null;
 
   const sections: InputsSection[] = [
     {
@@ -299,7 +316,8 @@ export default async function InputsPage() {
           value: pensionStartAge != null ? `${pensionStartAge}歳` : "未設定",
         },
       ],
-      note: "年金開始年齢の入力 UI は Task 8 で追加します。",
+      note: "年金開始年齢は将来の年金収入の計算に反映されます。",
+      form: <PensionSectionForm defaultValues={pensionSectionDefaults} />,
     },
     {
       id: "assets",
@@ -307,8 +325,13 @@ export default async function InputsPage() {
       description: "現金・運用残高と利回りを管理します。",
       summary: data.assets.length > 0 ? "資産設定 登録済み" : "資産設定 未登録",
       status: statusLabel(data.assets.length > 0),
-      rows: [{ label: "資産設定", value: data.assets.length > 0 ? "登録済み" : "未登録" }],
-      note: "投資設定フォームは Task 8 で実装します。",
+      rows: [
+        { label: "現金残高", value: formatAmount(data.assets[0]?.cash_balance) },
+        { label: "運用残高", value: formatAmount(data.assets[0]?.investment_balance) },
+        { label: "運用利回り", value: formatNumber(data.assets[0]?.return_rate) },
+      ],
+      note: "投資設定は 1 件のみ保存され、保存すると上書きされます。",
+      form: <AssetSectionForm defaultValues={assetSectionDefaults} assetId={assetId} />,
     },
     {
       id: "simulation",
@@ -318,11 +341,25 @@ export default async function InputsPage() {
       status: statusLabel(!!data.simulationSettings),
       rows: [
         {
-          label: "係数設定",
-          value: data.simulationSettings ? "登録済み" : "未登録",
+          label: "終了年齢",
+          value: formatNumber(data.simulationSettings?.end_age, "歳"),
+        },
+        {
+          label: "年金月額（単身）",
+          value: formatAmount(data.simulationSettings?.pension_amount_single),
+        },
+        {
+          label: "年金月額（配偶者）",
+          value: formatAmount(data.simulationSettings?.pension_amount_spouse),
         },
       ],
-      note: "係数設定の編集 UI は Task 8 で追加します。",
+      note: "係数設定を変更するとシミュレーション結果に反映されます。",
+      form: (
+        <SimulationSectionForm
+          defaultValues={simulationSectionDefaults}
+          settingsId={simulationSettingsId}
+        />
+      ),
     },
   ];
 

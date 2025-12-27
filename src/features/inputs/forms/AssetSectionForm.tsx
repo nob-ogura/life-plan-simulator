@@ -1,0 +1,146 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/form/form";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  type AssetSectionInput,
+  type AssetSectionPayload,
+  AssetSectionSchema,
+  toAssetPayload,
+} from "@/features/inputs/forms/sections";
+import { zodResolver } from "@/lib/zod-resolver";
+import { useAuth } from "@/shared/cross-cutting/auth";
+import { supabaseClient } from "@/shared/cross-cutting/infrastructure/supabase.client";
+
+type AssetSectionFormProps = {
+  defaultValues: AssetSectionInput;
+  assetId?: string | null;
+};
+
+const omitUndefined = <T extends Record<string, unknown>>(payload: T) =>
+  Object.fromEntries(Object.entries(payload).filter(([, value]) => value !== undefined)) as T;
+
+export function AssetSectionForm({ defaultValues, assetId }: AssetSectionFormProps) {
+  const router = useRouter();
+  const { session, isReady } = useAuth();
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const form = useForm<AssetSectionInput>({
+    defaultValues,
+    resolver: zodResolver(AssetSectionSchema),
+    mode: "onSubmit",
+  });
+
+  useEffect(() => {
+    form.reset(defaultValues);
+  }, [defaultValues, form]);
+
+  const onSubmit = form.handleSubmit(async (value) => {
+    setSubmitError(null);
+    if (!isReady || !session?.user?.id) {
+      setSubmitError("ログイン情報を取得できませんでした。");
+      return;
+    }
+
+    const parsedResult = AssetSectionSchema.safeParse(value);
+    const parsed = (parsedResult.success ? parsedResult.data : value) as AssetSectionPayload;
+    const payload = omitUndefined(toAssetPayload(parsed));
+    const userId = session.user.id;
+
+    try {
+      if (assetId) {
+        const { error } = await supabaseClient
+          .from("assets")
+          .update(payload)
+          .eq("id", assetId)
+          .eq("user_id", userId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabaseClient
+          .from("assets")
+          .insert({ ...payload, user_id: userId });
+        if (error) throw error;
+      }
+
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+      setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+    }
+  });
+
+  const { isSubmitting } = form.formState;
+
+  return (
+    <Form {...form}>
+      <form className="space-y-4" onSubmit={onSubmit} noValidate>
+        <div>
+          <p className="text-sm font-semibold">投資設定</p>
+          <p className="text-xs text-muted-foreground">
+            現金・運用残高と利回りを入力してください。
+          </p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          <FormField
+            control={form.control}
+            name="cash_balance"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>現金残高</FormLabel>
+                <FormControl>
+                  <Input {...field} inputMode="numeric" placeholder="例: 1000000" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="investment_balance"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>運用残高</FormLabel>
+                <FormControl>
+                  <Input {...field} inputMode="numeric" placeholder="例: 5000000" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="return_rate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>運用利回り</FormLabel>
+                <FormControl>
+                  <Input {...field} inputMode="decimal" placeholder="例: 0.03" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {submitError ? <p className="text-xs text-destructive">{submitError}</p> : null}
+
+        <div className="flex items-center justify-end">
+          <Button type="submit" disabled={isSubmitting}>
+            保存
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
+}

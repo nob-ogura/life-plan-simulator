@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  AssetSectionSchema,
   BonusSectionSchema,
   FamilySectionSchema,
   HousingSectionSchema,
   IncomeSectionSchema,
+  PensionSectionSchema,
+  SimulationSectionSchema,
 } from "./sections";
 
 const findIssueMessage = (
@@ -172,6 +175,46 @@ describe("inputs form schemas", () => {
         "必須項目です",
       );
       expect(findIssueMessage(result.error.issues, "mortgages.0.years")).toBe("必須項目です");
+    }
+  });
+
+  it("requires pension start age with Japanese message", () => {
+    const result = PensionSectionSchema.safeParse({ pension_start_age: "" });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(findIssueMessage(result.error.issues, "pension_start_age")).toBe("必須項目です");
+    }
+  });
+
+  it("requires asset balances with Japanese messages", () => {
+    const result = AssetSectionSchema.safeParse({
+      cash_balance: "",
+      investment_balance: "",
+      return_rate: "",
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(findIssueMessage(result.error.issues, "cash_balance")).toBe("必須項目です");
+      expect(findIssueMessage(result.error.issues, "investment_balance")).toBe("必須項目です");
+    }
+  });
+
+  it("requires simulation end age with Japanese message", () => {
+    const result = SimulationSectionSchema.safeParse({
+      start_offset_months: "",
+      end_age: "",
+      pension_amount_single: "",
+      pension_amount_spouse: "",
+      mortgage_transaction_cost_rate: "",
+      real_estate_tax_rate: "",
+      real_estate_evaluation_rate: "",
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(findIssueMessage(result.error.issues, "end_age")).toBe("必須項目です");
     }
   });
 });
