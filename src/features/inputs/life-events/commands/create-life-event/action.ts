@@ -1,7 +1,7 @@
 "use server";
 
 import { createServerAuthSession } from "@/shared/cross-cutting/auth/server-auth";
-import { createActionResponse } from "@/shared/cross-cutting/infrastructure/action-response";
+import { createAction } from "@/shared/cross-cutting/infrastructure/action-adapter";
 import { createServerSupabaseClient } from "@/shared/cross-cutting/infrastructure/supabase.server";
 
 import { CreateLifeEventEndpoint } from "./endpoint";
@@ -9,7 +9,7 @@ import { CreateLifeEventCommandHandler } from "./handler";
 import { SupabaseCreateLifeEventRepository } from "./repository";
 import { CreateLifeEventRequestSchema } from "./request";
 
-export const createLifeEventAction = createActionResponse(CreateLifeEventRequestSchema, () => {
+export const createLifeEventAction = createAction(CreateLifeEventRequestSchema, () => {
   const client = createServerSupabaseClient();
   const auth = createServerAuthSession(client);
   const repository = new SupabaseCreateLifeEventRepository(client);

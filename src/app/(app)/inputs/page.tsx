@@ -9,6 +9,7 @@ import { ExpenseSectionForm } from "@/features/inputs/forms/ExpenseSectionForm";
 import { FamilySectionForm } from "@/features/inputs/forms/FamilySectionForm";
 import { HousingSectionForm } from "@/features/inputs/forms/HousingSectionForm";
 import { IncomeSectionForm } from "@/features/inputs/forms/IncomeSectionForm";
+import { LifeEventSectionForm } from "@/features/inputs/forms/LifeEventSectionForm";
 import {
   buildBonusSectionDefaults,
   buildExpenseSectionDefaults,
@@ -267,7 +268,8 @@ export default async function InputsPage() {
         { label: "イベント数", value: formatCount(generalEvents.length) },
         { label: "主なイベント", value: generalEvents[0]?.label ?? "未登録" },
       ],
-      note: "イベント一覧と追加モーダルは Task 6 で追加します。",
+      note: "繰り返し設定やカテゴリを含めてイベントを登録します。",
+      form: <LifeEventSectionForm events={generalEvents} />,
     },
     {
       id: "retirement",
