@@ -40,7 +40,7 @@ export function ExpenseSectionForm({ defaultValues }: ExpenseSectionFormProps) {
     resolver: zodResolver(ExpenseSectionSchema),
     mode: "onSubmit",
   });
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, replace } = useFieldArray({
     control: form.control,
     name: "expenses",
     keyName: "fieldKey",
@@ -51,10 +51,11 @@ export function ExpenseSectionForm({ defaultValues }: ExpenseSectionFormProps) {
 
   useEffect(() => {
     form.reset(defaultValues);
+    replace(defaultValues.expenses ?? []);
     initialIdsRef.current = (defaultValues.expenses ?? [])
       .map((expense) => expense.id)
       .filter(Boolean) as string[];
-  }, [defaultValues, form]);
+  }, [defaultValues, form, replace]);
 
   const onSubmit = form.handleSubmit(async (value) => {
     setSubmitError(null);
