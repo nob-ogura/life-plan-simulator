@@ -10,6 +10,7 @@ import {
   type BonusSectionInput,
   type BonusSectionPayload,
   BonusSectionSchema,
+  toOptionalMonthStartDate,
 } from "@/features/inputs/forms/sections";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/shared/cross-cutting/auth";
@@ -64,7 +65,7 @@ export function BonusSectionForm({ defaultValues }: BonusSectionFormProps) {
                   label: stream.label,
                   bonus_months: stream.bonus_months ?? [],
                   bonus_amount: stream.bonus_amount,
-                  change_year_month: stream.change_year_month ?? null,
+                  change_year_month: toOptionalMonthStartDate(stream.change_year_month),
                   bonus_amount_after: stream.bonus_amount_after ?? null,
                 },
               },

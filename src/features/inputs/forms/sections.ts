@@ -234,6 +234,9 @@ export type SimulationSectionInput = z.input<typeof SimulationSectionSchema>;
 export type SimulationSectionPayload = z.output<typeof SimulationSectionSchema>;
 
 const toYearMonthInput = (value?: string | null) => (value ? value.slice(0, 7) : "");
+export const toMonthStartDate = (value: string) => (value.length === 7 ? `${value}-01` : value);
+export const toOptionalMonthStartDate = (value?: string | null) =>
+  value ? toMonthStartDate(value) : null;
 const toNumberInput = (value?: number | null) => (value == null ? "" : String(value));
 
 export const buildFamilySectionDefaults = (
@@ -318,8 +321,8 @@ export const toFamilyPayload = (
   },
   children: value.children.map((child) => ({
     label: child.label,
-    birth_year_month: child.birth_year_month ?? null,
-    due_year_month: child.due_year_month ?? null,
+    birth_year_month: toOptionalMonthStartDate(child.birth_year_month),
+    due_year_month: toOptionalMonthStartDate(child.due_year_month),
     note: child.note ?? null,
   })),
 });
@@ -330,11 +333,11 @@ export const toIncomeStreamPayloads = (value: IncomeSectionPayload): CreateIncom
     take_home_monthly: stream.take_home_monthly,
     bonus_months: stream.bonus_months ?? [],
     bonus_amount: stream.bonus_amount,
-    change_year_month: stream.change_year_month ?? null,
+    change_year_month: toOptionalMonthStartDate(stream.change_year_month),
     bonus_amount_after: stream.bonus_amount_after ?? null,
     raise_rate: stream.raise_rate,
-    start_year_month: stream.start_year_month,
-    end_year_month: stream.end_year_month ?? null,
+    start_year_month: toMonthStartDate(stream.start_year_month),
+    end_year_month: toOptionalMonthStartDate(stream.end_year_month),
   }));
 
 export const toExpensePayloads = (value: ExpenseSectionPayload): CreateExpenseRequest[] =>
@@ -343,8 +346,8 @@ export const toExpensePayloads = (value: ExpenseSectionPayload): CreateExpenseRe
     amount_monthly: expense.amount_monthly,
     inflation_rate: expense.inflation_rate,
     category: expense.category,
-    start_year_month: expense.start_year_month,
-    end_year_month: expense.end_year_month ?? null,
+    start_year_month: toMonthStartDate(expense.start_year_month),
+    end_year_month: toOptionalMonthStartDate(expense.end_year_month),
   }));
 
 export const toHousingPayloads = (
@@ -357,7 +360,7 @@ export const toHousingPayloads = (
     principal: mortgage.principal,
     annual_rate: mortgage.annual_rate,
     years: mortgage.years,
-    start_year_month: mortgage.start_year_month,
+    start_year_month: toMonthStartDate(mortgage.start_year_month),
     building_price: mortgage.building_price,
     land_price: mortgage.land_price,
     down_payment: mortgage.down_payment,
@@ -365,8 +368,8 @@ export const toHousingPayloads = (
   })),
   rentals: value.rentals.map((rental) => ({
     rent_monthly: rental.rent_monthly,
-    start_year_month: rental.start_year_month,
-    end_year_month: rental.end_year_month ?? null,
+    start_year_month: toMonthStartDate(rental.start_year_month),
+    end_year_month: toOptionalMonthStartDate(rental.end_year_month),
   })),
 });
 
@@ -374,7 +377,7 @@ export const toLifeEventPayloads = (value: LifeEventSectionPayload): CreateLifeE
   value.events.map((event) => ({
     label: event.label,
     amount: event.amount,
-    year_month: event.year_month,
+    year_month: toMonthStartDate(event.year_month),
     repeat_interval_years: event.repeat_interval_years ?? null,
     stop_after_occurrences: event.stop_after_occurrences ?? null,
     category: event.category,
@@ -388,7 +391,7 @@ export const toLifeEventPayloads = (value: LifeEventSectionPayload): CreateLifeE
 export const toRetirementPayload = (value: RetirementSectionPayload): CreateLifeEventRequest => ({
   label: value.label,
   amount: value.amount,
-  year_month: value.year_month,
+  year_month: toMonthStartDate(value.year_month),
   repeat_interval_years: null,
   stop_after_occurrences: null,
   category: "retirement_bonus",
