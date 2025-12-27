@@ -10,7 +10,6 @@ import { ExpenseSectionForm } from "@/features/inputs/forms/ExpenseSectionForm";
 import { FamilySectionForm } from "@/features/inputs/forms/FamilySectionForm";
 import { HousingSectionForm } from "@/features/inputs/forms/HousingSectionForm";
 import { IncomeSectionForm } from "@/features/inputs/forms/IncomeSectionForm";
-import { LifeEventSectionForm } from "@/features/inputs/forms/LifeEventSectionForm";
 import { PensionSectionForm } from "@/features/inputs/forms/PensionSectionForm";
 import { RetirementBonusSectionForm } from "@/features/inputs/forms/RetirementBonusSectionForm";
 import { SimulationSectionForm } from "@/features/inputs/forms/SimulationSectionForm";
@@ -27,6 +26,7 @@ import {
 } from "@/features/inputs/forms/sections";
 import { SupabaseListIncomeStreamsRepository } from "@/features/inputs/income-streams/queries/list-income-streams/repository";
 import { SupabaseListLifeEventsRepository } from "@/features/inputs/life-events/queries/list-life-events/repository";
+import { LifeEventSection } from "@/features/inputs/life-events/ui/LifeEventSection";
 import { SupabaseListMortgagesRepository } from "@/features/inputs/mortgages/queries/list-mortgages/repository";
 import { SupabaseListRentalsRepository } from "@/features/inputs/rentals/queries/list-rentals/repository";
 import { createServerAuthSession } from "@/shared/cross-cutting/auth/server-auth";
@@ -289,7 +289,7 @@ export default async function InputsPage() {
         { label: "主なイベント", value: generalEvents[0]?.label ?? "未登録" },
       ],
       note: "繰り返し設定やカテゴリを含めてイベントを登録します。",
-      form: <LifeEventSectionForm events={generalEvents} />,
+      form: <LifeEventSection events={generalEvents} />,
     },
     {
       id: "retirement",

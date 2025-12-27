@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Tables } from "@/types/supabase";
-import { LifeEventSectionForm } from "./LifeEventSectionForm";
+import { LifeEventSection } from "./LifeEventSection";
 
 const { refresh } = vi.hoisted(() => ({
   refresh: vi.fn(),
@@ -39,7 +39,7 @@ const fillRequiredFields = (values: {
   fireEvent.change(screen.getByLabelText("カテゴリ"), { target: { value: values.category } });
 };
 
-describe("LifeEventSectionForm", () => {
+describe("LifeEventSection", () => {
   const emptyEvents: Array<Tables<"life_events">> = [];
 
   beforeEach(() => {
@@ -49,7 +49,7 @@ describe("LifeEventSectionForm", () => {
   });
 
   it("blocks retirement bonus category in modal", () => {
-    render(<LifeEventSectionForm events={emptyEvents} />);
+    render(<LifeEventSection events={emptyEvents} />);
 
     openModal();
     fillRequiredFields({
@@ -71,7 +71,7 @@ describe("LifeEventSectionForm", () => {
   it("submits repeating event settings", async () => {
     createLifeEventAction.mockResolvedValue({ ok: true, data: {} });
 
-    render(<LifeEventSectionForm events={emptyEvents} />);
+    render(<LifeEventSection events={emptyEvents} />);
 
     openModal();
     fillRequiredFields({
@@ -131,7 +131,7 @@ describe("LifeEventSectionForm", () => {
       },
     ];
 
-    render(<LifeEventSectionForm events={events} />);
+    render(<LifeEventSection events={events} />);
 
     fireEvent.click(screen.getByRole("button", { name: "削除" }));
 
