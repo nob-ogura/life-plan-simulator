@@ -4,20 +4,25 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/form/form";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   type FamilySectionInput,
   type FamilySectionPayload,
   FamilySectionSchema,
   toFamilyPayload,
 } from "@/features/inputs/forms/sections";
-import { cn } from "@/lib/utils";
 import { zodResolver } from "@/lib/zod-resolver";
 import { useAuth } from "@/shared/cross-cutting/auth";
 import { supabaseClient } from "@/shared/cross-cutting/infrastructure/supabase.client";
-
-const inputClassName =
-  "h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring";
 
 type FamilySectionFormProps = {
   defaultValues: FamilySectionInput;
@@ -41,10 +46,6 @@ export function FamilySectionForm({ defaultValues, onSave }: FamilySectionFormPr
   const initialChildIdsRef = useRef<string[]>(
     (defaultValues.children ?? []).map((child) => child.id).filter(Boolean) as string[],
   );
-  const birthYearId = "profile-birth-year";
-  const birthMonthId = "profile-birth-month";
-  const spouseBirthYearId = "profile-spouse-birth-year";
-  const spouseBirthMonthId = "profile-spouse-birth-month";
 
   useEffect(() => {
     form.reset(defaultValues);
@@ -116,120 +117,89 @@ export function FamilySectionForm({ defaultValues, onSave }: FamilySectionFormPr
     }
   });
 
-  const { errors, isSubmitting } = form.formState;
+  const { isSubmitting } = form.formState;
 
   return (
-    <form className="space-y-4" onSubmit={onSubmit} noValidate>
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-2">
-          <label
-            className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-            htmlFor={birthYearId}
-          >
-            本人（年）
-          </label>
-          <input
-            {...form.register("profile.birth_year")}
-            className={cn(inputClassName, errors.profile?.birth_year && "border-destructive")}
-            id={birthYearId}
-            inputMode="numeric"
-            placeholder="例: 1985"
-          />
-          {errors.profile?.birth_year?.message ? (
-            <p className="text-xs text-destructive">{errors.profile.birth_year.message}</p>
-          ) : null}
-        </div>
-        <div className="space-y-2">
-          <label
-            className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-            htmlFor={birthMonthId}
-          >
-            本人（月）
-          </label>
-          <input
-            {...form.register("profile.birth_month")}
-            className={cn(inputClassName, errors.profile?.birth_month && "border-destructive")}
-            id={birthMonthId}
-            inputMode="numeric"
-            placeholder="例: 4"
-          />
-          {errors.profile?.birth_month?.message ? (
-            <p className="text-xs text-destructive">{errors.profile.birth_month.message}</p>
-          ) : null}
-        </div>
-        <div className="space-y-2">
-          <label
-            className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-            htmlFor={spouseBirthYearId}
-          >
-            配偶者（年）
-          </label>
-          <input
-            {...form.register("profile.spouse_birth_year")}
-            className={cn(
-              inputClassName,
-              errors.profile?.spouse_birth_year && "border-destructive",
+    <Form {...form}>
+      <form className="space-y-4" onSubmit={onSubmit} noValidate>
+        <div className="grid gap-4 md:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="profile.birth_year"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>本人（年）</FormLabel>
+                <FormControl>
+                  <Input {...field} inputMode="numeric" placeholder="例: 1985" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
-            id={spouseBirthYearId}
-            inputMode="numeric"
-            placeholder="例: 1988"
           />
-          {errors.profile?.spouse_birth_year?.message ? (
-            <p className="text-xs text-destructive">{errors.profile.spouse_birth_year.message}</p>
-          ) : null}
-        </div>
-        <div className="space-y-2">
-          <label
-            className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-            htmlFor={spouseBirthMonthId}
-          >
-            配偶者（月）
-          </label>
-          <input
-            {...form.register("profile.spouse_birth_month")}
-            className={cn(
-              inputClassName,
-              errors.profile?.spouse_birth_month && "border-destructive",
+          <FormField
+            control={form.control}
+            name="profile.birth_month"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>本人（月）</FormLabel>
+                <FormControl>
+                  <Input {...field} inputMode="numeric" placeholder="例: 4" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
-            id={spouseBirthMonthId}
-            inputMode="numeric"
-            placeholder="例: 7"
           />
-          {errors.profile?.spouse_birth_month?.message ? (
-            <p className="text-xs text-destructive">{errors.profile.spouse_birth_month.message}</p>
-          ) : null}
+          <FormField
+            control={form.control}
+            name="profile.spouse_birth_year"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>配偶者（年）</FormLabel>
+                <FormControl>
+                  <Input {...field} inputMode="numeric" placeholder="例: 1988" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="profile.spouse_birth_month"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>配偶者（月）</FormLabel>
+                <FormControl>
+                  <Input {...field} inputMode="numeric" placeholder="例: 7" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
-      </div>
-      <div className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <p className="text-sm font-semibold">子ども</p>
-            <p className="text-xs text-muted-foreground">
-              出生年月か誕生予定年月のいずれかは必須です。
-            </p>
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="text-sm font-semibold">子ども</p>
+              <p className="text-xs text-muted-foreground">
+                出生年月か誕生予定年月のいずれかは必須です。
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                append({ label: "", birth_year_month: "", due_year_month: "", note: "" })
+              }
+            >
+              追加
+            </Button>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              append({ label: "", birth_year_month: "", due_year_month: "", note: "" })
-            }
-          >
-            追加
-          </Button>
-        </div>
-        {fields.length === 0 ? (
-          <p className="text-xs text-muted-foreground">子どもの登録はありません。</p>
-        ) : (
-          <div className="space-y-4">
-            {fields.map((field, index) => {
-              const childErrors = errors.children?.[index];
-              const labelId = `children-${field.fieldKey}-label`;
-              const birthYearMonthId = `children-${field.fieldKey}-birth-year-month`;
-              const dueYearMonthId = `children-${field.fieldKey}-due-year-month`;
-              const noteId = `children-${field.fieldKey}-note`;
-              return (
+          {fields.length === 0 ? (
+            <p className="text-xs text-muted-foreground">子どもの登録はありません。</p>
+          ) : (
+            <div className="space-y-4">
+              {fields.map((field, index) => (
                 <div
                   key={field.fieldKey}
                   className="space-y-3 rounded-md border border-border bg-card p-4"
@@ -240,98 +210,72 @@ export function FamilySectionForm({ defaultValues, onSave }: FamilySectionFormPr
                       削除
                     </Button>
                   </div>
-                  <div className="space-y-2">
-                    <label
-                      className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-                      htmlFor={labelId}
-                    >
-                      ラベル
-                    </label>
-                    <input
-                      {...form.register(`children.${index}.label`)}
-                      className={cn(inputClassName, childErrors?.label && "border-destructive")}
-                      id={labelId}
-                      placeholder="例: 第一子"
-                    />
-                    {childErrors?.label?.message ? (
-                      <p className="text-xs text-destructive">{childErrors.label.message}</p>
-                    ) : null}
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name={`children.${index}.label` as const}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>ラベル</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="例: 第一子" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <label
-                        className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-                        htmlFor={birthYearMonthId}
-                      >
-                        出生年月
-                      </label>
-                      <input
-                        {...form.register(`children.${index}.birth_year_month`)}
-                        className={cn(
-                          inputClassName,
-                          childErrors?.birth_year_month && "border-destructive",
-                        )}
-                        id={birthYearMonthId}
-                        type="month"
-                      />
-                      {childErrors?.birth_year_month?.message ? (
-                        <p className="text-xs text-destructive">
-                          {childErrors.birth_year_month.message}
-                        </p>
-                      ) : null}
-                    </div>
-                    <div className="space-y-2">
-                      <label
-                        className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-                        htmlFor={dueYearMonthId}
-                      >
-                        誕生予定年月
-                      </label>
-                      <input
-                        {...form.register(`children.${index}.due_year_month`)}
-                        className={cn(
-                          inputClassName,
-                          childErrors?.due_year_month && "border-destructive",
-                        )}
-                        id={dueYearMonthId}
-                        type="month"
-                      />
-                      {childErrors?.due_year_month?.message ? (
-                        <p className="text-xs text-destructive">
-                          {childErrors.due_year_month.message}
-                        </p>
-                      ) : null}
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label
-                      className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-                      htmlFor={noteId}
-                    >
-                      メモ
-                    </label>
-                    <input
-                      {...form.register(`children.${index}.note`)}
-                      className={cn(inputClassName, childErrors?.note && "border-destructive")}
-                      id={noteId}
-                      placeholder="任意"
+                    <FormField
+                      control={form.control}
+                      name={`children.${index}.birth_year_month` as const}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>出生年月</FormLabel>
+                          <FormControl>
+                            <Input {...field} type="month" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                    {childErrors?.note?.message ? (
-                      <p className="text-xs text-destructive">{childErrors.note.message}</p>
-                    ) : null}
+                    <FormField
+                      control={form.control}
+                      name={`children.${index}.due_year_month` as const}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>誕生予定年月</FormLabel>
+                          <FormControl>
+                            <Input {...field} type="month" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
+                  <FormField
+                    control={form.control}
+                    name={`children.${index}.note` as const}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>メモ</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="任意" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-      {submitError ? <p className="text-xs text-destructive">{submitError}</p> : null}
-      <div className="flex items-center justify-end">
-        <Button type="submit" disabled={isSubmitting}>
-          保存
-        </Button>
-      </div>
-    </form>
+              ))}
+            </div>
+          )}
+        </div>
+        {submitError ? <p className="text-xs text-destructive">{submitError}</p> : null}
+        <div className="flex items-center justify-end">
+          <Button type="submit" disabled={isSubmitting}>
+            保存
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 }
