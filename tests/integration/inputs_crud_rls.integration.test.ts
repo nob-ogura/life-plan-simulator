@@ -57,6 +57,9 @@ import { SupabaseDeleteLifeEventRepository } from "@/features/inputs/life-events
 import { UpdateLifeEventEndpoint } from "@/features/inputs/life-events/commands/update-life-event/endpoint";
 import { UpdateLifeEventCommandHandler } from "@/features/inputs/life-events/commands/update-life-event/handler";
 import { SupabaseUpdateLifeEventRepository } from "@/features/inputs/life-events/commands/update-life-event/repository";
+import { UpsertRetirementBonusEndpoint } from "@/features/inputs/life-events/commands/upsert-retirement-bonus/endpoint";
+import { UpsertRetirementBonusCommandHandler } from "@/features/inputs/life-events/commands/upsert-retirement-bonus/handler";
+import { SupabaseUpsertRetirementBonusRepository } from "@/features/inputs/life-events/commands/upsert-retirement-bonus/repository";
 import { ListLifeEventsEndpoint } from "@/features/inputs/life-events/queries/list-life-events/endpoint";
 import { ListLifeEventsQueryHandler } from "@/features/inputs/life-events/queries/list-life-events/handler";
 import { SupabaseListLifeEventsRepository } from "@/features/inputs/life-events/queries/list-life-events/repository";
@@ -219,6 +222,12 @@ const buildLifeEventEndpoints = (client: SupabaseClient<Database>, auth: AuthSes
     auth,
   ),
 });
+
+const buildRetirementBonusEndpoint = (client: SupabaseClient<Database>, auth: AuthSession) =>
+  new UpsertRetirementBonusEndpoint(
+    new UpsertRetirementBonusCommandHandler(new SupabaseUpsertRetirementBonusRepository(client)),
+    auth,
+  );
 
 const buildMortgageEndpoints = (client: SupabaseClient<Database>, auth: AuthSession) => ({
   create: new CreateMortgageEndpoint(
@@ -625,5 +634,49 @@ describeIf("Inputs CRUD + RLS (Endpoint/Handler + Supabase)", () => {
         expect(Number(row.amount)).toBe(2500);
       },
     );
+  }, 20000);
+
+  it("keeps retirement bonus as a single record on upsert", async () => {
+    const authA = createAuthSession(clientA);
+    const upsertEndpoint = buildRetirementBonusEndpoint(clientA, authA);
+    const listEndpoint = buildLifeEventEndpoints(clientA, authA).list;
+
+    const first = await upsertEndpoint.handle({
+      label: "退職金",
+      amount: 1000000,
+      year_month: "2035-03-01",
+      repeat_interval_years: null,
+      stop_after_occurrences: null,
+      category: "retirement_bonus",
+      auto_toggle_key: null,
+      building_price: null,
+      land_price: null,
+      down_payment: null,
+      target_rental_id: null,
+    });
+
+    const second = await upsertEndpoint.handle({
+      label: "退職金",
+      amount: 2000000,
+      year_month: "2036-03-01",
+      repeat_interval_years: null,
+      stop_after_occurrences: null,
+      category: "retirement_bonus",
+      auto_toggle_key: null,
+      building_price: null,
+      land_price: null,
+      down_payment: null,
+      target_rental_id: null,
+    });
+
+    expect(second.id).toBe(first.id);
+
+    const events = await listEndpoint.handle({});
+    const retirementBonuses = events.filter((event) => event.category === "retirement_bonus");
+
+    expect(retirementBonuses).toHaveLength(1);
+    expect(retirementBonuses[0]?.id).toBe(first.id);
+    expect(Number(retirementBonuses[0]?.amount)).toBe(2000000);
+    expect(retirementBonuses[0]?.year_month).toBe("2036-03-01");
   }, 20000);
 });

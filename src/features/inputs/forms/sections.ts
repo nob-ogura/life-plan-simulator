@@ -4,6 +4,7 @@ import type { CreateChildRequest } from "@/features/inputs/children/commands/cre
 import type { CreateExpenseRequest } from "@/features/inputs/expenses/commands/create-expense/request";
 import type { CreateIncomeStreamRequest } from "@/features/inputs/income-streams/commands/create-income-stream/request";
 import type { CreateLifeEventRequest } from "@/features/inputs/life-events/commands/create-life-event/request";
+import type { UpsertRetirementBonusRequest } from "@/features/inputs/life-events/commands/upsert-retirement-bonus/request";
 import type { CreateMortgageRequest } from "@/features/inputs/mortgages/commands/create-mortgage/request";
 import type { CreateRentalRequest } from "@/features/inputs/rentals/commands/create-rental/request";
 import type { Tables } from "@/types/supabase";
@@ -317,6 +318,20 @@ export const buildHousingSectionDefaults = (
   })),
 });
 
+export const buildRetirementSectionDefaults = (
+  events: Array<Tables<"life_events">>,
+): RetirementSectionInput => {
+  const retirement = [...events]
+    .filter((event) => event.category === "retirement_bonus")
+    .sort((left, right) => (right.year_month ?? "").localeCompare(left.year_month ?? ""))[0];
+
+  return {
+    label: retirement?.label ?? "退職金",
+    amount: toNumberInput(retirement?.amount),
+    year_month: toYearMonthInput(retirement?.year_month),
+  };
+};
+
 export const toFamilyPayload = (
   value: FamilySectionPayload,
 ): {
@@ -421,7 +436,9 @@ export const toLifeEventPayloads = (value: LifeEventSectionPayload): CreateLifeE
     target_rental_id: event.target_rental_id ?? null,
   }));
 
-export const toRetirementPayload = (value: RetirementSectionPayload): CreateLifeEventRequest => ({
+export const toRetirementPayload = (
+  value: RetirementSectionPayload,
+): UpsertRetirementBonusRequest => ({
   label: value.label,
   amount: value.amount,
   year_month: toMonthStartDate(value.year_month),

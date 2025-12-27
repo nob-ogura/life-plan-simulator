@@ -10,12 +10,14 @@ import { FamilySectionForm } from "@/features/inputs/forms/FamilySectionForm";
 import { HousingSectionForm } from "@/features/inputs/forms/HousingSectionForm";
 import { IncomeSectionForm } from "@/features/inputs/forms/IncomeSectionForm";
 import { LifeEventSectionForm } from "@/features/inputs/forms/LifeEventSectionForm";
+import { RetirementBonusSectionForm } from "@/features/inputs/forms/RetirementBonusSectionForm";
 import {
   buildBonusSectionDefaults,
   buildExpenseSectionDefaults,
   buildFamilySectionDefaults,
   buildHousingSectionDefaults,
   buildIncomeSectionDefaults,
+  buildRetirementSectionDefaults,
 } from "@/features/inputs/forms/sections";
 import { SupabaseListIncomeStreamsRepository } from "@/features/inputs/income-streams/queries/list-income-streams/repository";
 import { SupabaseListLifeEventsRepository } from "@/features/inputs/life-events/queries/list-life-events/repository";
@@ -178,6 +180,7 @@ export default async function InputsPage() {
   const bonusSectionDefaults = buildBonusSectionDefaults(data.incomeStreams);
   const expenseSectionDefaults = buildExpenseSectionDefaults(data.expenses);
   const housingSectionDefaults = buildHousingSectionDefaults(data.mortgages, data.rentals);
+  const retirementSectionDefaults = buildRetirementSectionDefaults(retirementBonuses);
 
   const sections: InputsSection[] = [
     {
@@ -281,7 +284,8 @@ export default async function InputsPage() {
         { label: "退職金レコード", value: formatCount(retirementBonuses.length) },
         { label: "登録名", value: retirementBonuses[0]?.label ?? "未登録" },
       ],
-      note: "退職金専用フォームは Task 7 で実装予定です。",
+      note: "退職金は 1 件のみ保存され、再保存すると上書きされます。",
+      form: <RetirementBonusSectionForm defaultValues={retirementSectionDefaults} />,
     },
     {
       id: "pension",
