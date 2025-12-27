@@ -294,6 +294,29 @@ export const buildExpenseSectionDefaults = (
   })),
 });
 
+export const buildHousingSectionDefaults = (
+  mortgages: Array<Tables<"mortgages">>,
+  rentals: Array<Tables<"rentals">>,
+): HousingSectionInput => ({
+  mortgages: mortgages.map((mortgage) => ({
+    id: mortgage.id,
+    principal: toNumberInput(mortgage.principal),
+    annual_rate: toNumberInput(mortgage.annual_rate),
+    years: toNumberInput(mortgage.years),
+    start_year_month: toYearMonthInput(mortgage.start_year_month),
+    building_price: toNumberInput(mortgage.building_price),
+    land_price: toNumberInput(mortgage.land_price),
+    down_payment: toNumberInput(mortgage.down_payment),
+    target_rental_id: mortgage.target_rental_id ?? "",
+  })),
+  rentals: rentals.map((rental) => ({
+    id: rental.id,
+    rent_monthly: toNumberInput(rental.rent_monthly),
+    start_year_month: toYearMonthInput(rental.start_year_month),
+    end_year_month: toYearMonthInput(rental.end_year_month),
+  })),
+});
+
 export const toFamilyPayload = (
   value: FamilySectionPayload,
 ): {

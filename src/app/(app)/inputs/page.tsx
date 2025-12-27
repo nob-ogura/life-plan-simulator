@@ -7,11 +7,13 @@ import { SupabaseListExpensesRepository } from "@/features/inputs/expenses/queri
 import { BonusSectionForm } from "@/features/inputs/forms/BonusSectionForm";
 import { ExpenseSectionForm } from "@/features/inputs/forms/ExpenseSectionForm";
 import { FamilySectionForm } from "@/features/inputs/forms/FamilySectionForm";
+import { HousingSectionForm } from "@/features/inputs/forms/HousingSectionForm";
 import { IncomeSectionForm } from "@/features/inputs/forms/IncomeSectionForm";
 import {
   buildBonusSectionDefaults,
   buildExpenseSectionDefaults,
   buildFamilySectionDefaults,
+  buildHousingSectionDefaults,
   buildIncomeSectionDefaults,
 } from "@/features/inputs/forms/sections";
 import { SupabaseListIncomeStreamsRepository } from "@/features/inputs/income-streams/queries/list-income-streams/repository";
@@ -174,6 +176,7 @@ export default async function InputsPage() {
   const incomeSectionDefaults = buildIncomeSectionDefaults(data.incomeStreams);
   const bonusSectionDefaults = buildBonusSectionDefaults(data.incomeStreams);
   const expenseSectionDefaults = buildExpenseSectionDefaults(data.expenses);
+  const housingSectionDefaults = buildHousingSectionDefaults(data.mortgages, data.rentals);
 
   const sections: InputsSection[] = [
     {
@@ -251,7 +254,8 @@ export default async function InputsPage() {
         { label: "住宅購入", value: formatCount(data.mortgages.length) },
         { label: "賃貸", value: formatCount(data.rentals.length) },
       ],
-      note: "購入/賃貸の詳細フォームは Task 5 で実装します。",
+      note: "購入/賃貸の情報を入力して保存します。",
+      form: <HousingSectionForm defaultValues={housingSectionDefaults} />,
     },
     {
       id: "events",

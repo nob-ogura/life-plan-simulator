@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { BonusSectionSchema, FamilySectionSchema, IncomeSectionSchema } from "./sections";
+import {
+  BonusSectionSchema,
+  FamilySectionSchema,
+  HousingSectionSchema,
+  IncomeSectionSchema,
+} from "./sections";
 
 const findIssueMessage = (
   issues: Array<{ path: Array<PropertyKey>; message: string }>,
@@ -136,6 +141,37 @@ describe("inputs form schemas", () => {
       expect(findIssueMessage(result.error.issues, "streams.0.change_year_month")).toBe(
         "YYYY-MM 形式で入力してください",
       );
+    }
+  });
+
+  it("requires housing purchase mandatory fields with Japanese messages", () => {
+    const result = HousingSectionSchema.safeParse({
+      mortgages: [
+        {
+          id: "mortgage-1",
+          principal: "",
+          annual_rate: "",
+          years: "",
+          start_year_month: "",
+          building_price: "",
+          land_price: "",
+          down_payment: "",
+          target_rental_id: "",
+        },
+      ],
+      rentals: [],
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(findIssueMessage(result.error.issues, "mortgages.0.building_price")).toBe(
+        "必須項目です",
+      );
+      expect(findIssueMessage(result.error.issues, "mortgages.0.land_price")).toBe("必須項目です");
+      expect(findIssueMessage(result.error.issues, "mortgages.0.down_payment")).toBe(
+        "必須項目です",
+      );
+      expect(findIssueMessage(result.error.issues, "mortgages.0.years")).toBe("必須項目です");
     }
   });
 });
