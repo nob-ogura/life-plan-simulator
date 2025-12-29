@@ -313,7 +313,7 @@ test("simulation settings section accepts input and updates summary", async ({
     has: page.getByText("シミュレーション設定", { exact: true }),
   });
 
-  await simulationSection.getByText("シミュレーション設定", { exact: true }).click();
+  await simulationSection.locator("summary").click();
 
   await simulationSection.getByLabel("開始オフセット（月）").fill("2");
   await simulationSection.getByLabel("終了年齢").fill("90");
