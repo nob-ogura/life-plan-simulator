@@ -157,3 +157,46 @@ test("expense section accepts input and updates summary", async ({ page }) => {
     expenseSection.locator("dt", { hasText: "主な支出ラベル" }).locator("..").locator("dd"),
   ).toHaveText("生活費");
 });
+
+test("housing section accepts input and updates summary", async ({ page }) => {
+  const email = `e2e+housing-${Date.now()}@example.com`;
+  await page.request.post("/__e2e/login", { data: { email } });
+
+  await page.goto("/inputs");
+
+  const housingSection = page.locator("details", {
+    has: page.getByText("住宅", { exact: true }),
+  });
+
+  await housingSection.getByText("住宅", { exact: true }).click();
+
+  await expect(housingSection.getByText("住宅購入の登録はありません。")).toBeVisible();
+  await expect(housingSection.getByText("賃貸の登録はありません。")).toBeVisible();
+
+  await housingSection.getByRole("button", { name: "追加" }).first().click();
+  await housingSection.getByLabel("建物価格").fill("25000000");
+  await housingSection.getByLabel("土地価格").fill("12000000");
+  await housingSection.getByLabel("頭金").fill("5000000");
+  await housingSection.getByLabel("返済年数").fill("35");
+  await housingSection.getByLabel("金利").fill("0.015");
+  await housingSection.getByLabel("借入額").fill("32000000");
+  await housingSection.getByLabel("借入開始年月").fill("2025-04");
+
+  await housingSection.getByRole("button", { name: "追加" }).nth(1).click();
+  await housingSection.getByLabel("家賃（月額）").fill("120000");
+  await housingSection.getByLabel("開始年月", { exact: true }).fill("2025-04");
+  await housingSection.getByLabel("終了年月").fill("2030-03");
+
+  await housingSection.getByRole("button", { name: "保存" }).click();
+
+  await expect(page.getByText("保存しました。")).toBeVisible();
+  await expect(housingSection.getByText("住宅購入の登録はありません。")).toBeHidden();
+  await expect(housingSection.getByText("賃貸の登録はありません。")).toBeHidden();
+
+  await expect(
+    housingSection.locator("dt", { hasText: "住宅購入" }).locator("..").locator("dd"),
+  ).toHaveText("1件");
+  await expect(
+    housingSection.locator("dt", { hasText: "賃貸" }).locator("..").locator("dd"),
+  ).toHaveText("1件");
+});
