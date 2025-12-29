@@ -50,6 +50,12 @@ Run integration tests:
 pnpm test:integration
 ```
 
+Run E2E tests:
+
+```bash
+pnpm test:e2e
+```
+
 Integration tests that exercise Supabase (e.g. auth trigger, RLS) require these env vars in `.env`:
 
 - `NEXT_PUBLIC_SUPABASE_URL`
