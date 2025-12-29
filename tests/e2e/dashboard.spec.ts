@@ -25,9 +25,34 @@ test("display range toggle updates graph and table", async ({ authenticatedPage:
   await simulationSection.getByRole("button", { name: "保存" }).click();
   await expect(page.getByText("保存しました。")).toBeVisible();
 
+  const incomeSection = page.locator("details", {
+    has: page.getByText("収入", { exact: true }),
+  });
+  await incomeSection.getByText("収入", { exact: true }).click();
+  await incomeSection.getByRole("button", { name: "追加" }).click();
+  await incomeSection.getByLabel("ラベル").fill("給与");
+  await incomeSection.getByLabel("手取り月額").fill("300000");
+  await incomeSection.getByLabel("昇給率").fill("0.02");
+  await incomeSection.getByLabel("開始年月").fill("2020-04");
+  await incomeSection.getByRole("button", { name: "保存" }).click();
+  await expect(page.getByText("保存しました。")).toBeVisible();
+
   await page.goto("/");
 
-  await expect(page.getByText("計算済み").first()).toBeVisible();
+  const summarySection = page.locator("section", {
+    has: page.getByRole("heading", { name: "サマリカード" }),
+  });
+  const readSummaryValue = async (title: string) => {
+    const titleNode = summarySection.getByText(title, { exact: true });
+    const card = titleNode.locator("..");
+    return (await card.locator("p").nth(1).textContent())?.trim() ?? "";
+  };
+
+  const recentCumulative = await expect
+    .poll(() => readSummaryValue("累計収支"))
+    .not.toBe("--")
+    .then(() => readSummaryValue("累計収支"));
+  const recentAverage = await readSummaryValue("平均月残高");
 
   const graphLabel = page.getByText(/グラフ描画エリア/);
   const cashflowSection = page.locator("section", {
@@ -52,6 +77,14 @@ test("display range toggle updates graph and table", async ({ authenticatedPage:
 
   await page.getByRole("button", { name: "全期間" }).click();
 
+  const allCumulative = await expect
+    .poll(() => readSummaryValue("累計収支"))
+    .not.toBe(recentCumulative)
+    .then(() => readSummaryValue("累計収支"));
+  const allAverage = await expect
+    .poll(() => readSummaryValue("平均月残高"))
+    .not.toBe(recentAverage)
+    .then(() => readSummaryValue("平均月残高"));
   const allMonths = await expect
     .poll(readGraphMonths)
     .toBeGreaterThan(recentMonths)
@@ -63,6 +96,8 @@ test("display range toggle updates graph and table", async ({ authenticatedPage:
 
   await page.getByRole("button", { name: "直近5年" }).click();
 
+  await expect.poll(() => readSummaryValue("累計収支")).toBe(recentCumulative);
+  await expect.poll(() => readSummaryValue("平均月残高")).toBe(recentAverage);
   const recentMonthsAgain = await expect
     .poll(readGraphMonths)
     .toBe(60)
@@ -73,4 +108,6 @@ test("display range toggle updates graph and table", async ({ authenticatedPage:
     .then(() => readFirstMonth());
   expect(allMonths).toBeGreaterThan(recentMonthsAgain);
   expect(allFirstMonth).not.toBe(recentFirstMonthAgain);
+  expect(allCumulative).not.toBe(recentCumulative);
+  expect(allAverage).not.toBe(recentAverage);
 });
