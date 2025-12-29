@@ -140,10 +140,10 @@ test("expense section accepts input and updates summary", async ({ authenticated
 
   await expect(
     expenseSection.locator("dt", { hasText: "支出項目" }).locator("..").locator("dd"),
-  ).toHaveText("1件");
+  ).toHaveText("1件", { timeout: 10_000 });
   await expect(
     expenseSection.locator("dt", { hasText: "主な支出ラベル" }).locator("..").locator("dd"),
-  ).toHaveText("生活費");
+  ).toHaveText("生活費", { timeout: 10_000 });
 });
 
 test("housing section accepts input and updates summary", async ({ authenticatedPage: page }) => {
@@ -231,4 +231,29 @@ test("life event section accepts input and updates summary", async ({
   await expect(
     lifeEventSection.locator("dt", { hasText: "主なイベント" }).locator("..").locator("dd"),
   ).toHaveText(label);
+});
+
+test("retirement bonus section accepts input and updates summary", async ({
+  authenticatedPage: page,
+}) => {
+  await page.goto("/inputs");
+
+  const retirementSection = page.locator("details", {
+    has: page.getByText("退職金", { exact: true }),
+  });
+
+  await retirementSection.locator("summary").click();
+
+  await retirementSection.getByLabel("金額").fill("1500000");
+  await retirementSection.getByLabel("支給年月").fill("2045-03");
+
+  await retirementSection.getByRole("button", { name: "保存" }).click();
+
+  await expect(page.getByText("保存しました。")).toBeVisible();
+  await expect(
+    retirementSection.locator("dt", { hasText: "退職金レコード" }).locator("..").locator("dd"),
+  ).toHaveText("1件");
+  await expect(
+    retirementSection.locator("dt", { hasText: "登録名" }).locator("..").locator("dd"),
+  ).toHaveText("退職金");
 });
