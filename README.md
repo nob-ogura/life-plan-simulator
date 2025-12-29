@@ -56,6 +56,23 @@ Integration tests that exercise Supabase (e.g. auth trigger, RLS) require these 
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 - `SUPABASE_SECRET_KEY`
 
+## E2E auth shortcut
+
+Playwright can authenticate by calling the server-only endpoint below.
+
+- Route: `POST /__e2e/login`
+- Enabled only when `NODE_ENV === "test"` or `E2E_ENABLED === "true"`
+- Body: `{ "email": "optional@example.com" }` (defaults to `e2e@example.com`)
+- Implementation lives at `src/app/e2e/login/route.ts` via rewrite
+
+Example:
+
+```bash
+curl -X POST http://localhost:3000/__e2e/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"e2e@example.com"}'
+```
+
 ## Supabase migrations
 
 1) Log in to Supabase CLI.
