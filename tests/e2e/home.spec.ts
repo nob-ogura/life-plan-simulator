@@ -42,3 +42,83 @@ test("family section accepts input and updates summary", async ({ page }) => {
     familySection.locator("dt", { hasText: "子ども" }).locator("..").locator("dd"),
   ).toHaveText("1人");
 });
+
+test("income section accepts input and updates summary", async ({ page }) => {
+  const email = `e2e+income-${Date.now()}@example.com`;
+  await page.request.post("/__e2e/login", { data: { email } });
+
+  await page.goto("/inputs");
+
+  const incomeSection = page.locator("details", {
+    has: page.getByText("収入", { exact: true }),
+  });
+
+  await incomeSection.getByText("収入", { exact: true }).click();
+
+  await expect(incomeSection.getByText("収入ストリームの登録はありません。")).toBeVisible();
+
+  await incomeSection.getByRole("button", { name: "追加" }).click();
+  await incomeSection.getByLabel("ラベル").fill("給与");
+  await incomeSection.getByLabel("手取り月額").fill("300000");
+  await incomeSection.getByLabel("昇給率").fill("0.02");
+  await incomeSection.getByLabel("開始年月").fill("2020-04");
+
+  await incomeSection.getByRole("button", { name: "保存" }).click();
+
+  await expect(page.getByText("保存しました。")).toBeVisible();
+  await expect(incomeSection.getByText("収入ストリームの登録はありません。")).toBeHidden();
+
+  await expect(
+    incomeSection.locator("dt", { hasText: "収入ストリーム" }).locator("..").locator("dd"),
+  ).toHaveText("1件");
+  await expect(
+    incomeSection.locator("dt", { hasText: "主な収入ラベル" }).locator("..").locator("dd"),
+  ).toHaveText("給与");
+});
+
+test("bonus section accepts input and updates summary", async ({ page }) => {
+  const email = `e2e+bonus-${Date.now()}@example.com`;
+  await page.request.post("/__e2e/login", { data: { email } });
+
+  await page.goto("/inputs");
+
+  const incomeSection = page.locator("details", {
+    has: page.getByText("収入", { exact: true }),
+  });
+
+  await incomeSection.getByText("収入", { exact: true }).click();
+  await incomeSection.getByRole("button", { name: "追加" }).click();
+  await incomeSection.getByLabel("ラベル").fill("給与");
+  await incomeSection.getByLabel("手取り月額").fill("300000");
+  await incomeSection.getByLabel("昇給率").fill("0.02");
+  await incomeSection.getByLabel("開始年月").fill("2020-04");
+
+  await incomeSection.getByRole("button", { name: "保存" }).click();
+
+  await expect(page.getByText("保存しました。")).toBeVisible();
+
+  const bonusSection = page.locator("details", {
+    has: page.getByText("ボーナス", { exact: true }),
+  });
+
+  await bonusSection.getByText("ボーナス", { exact: true }).click();
+
+  await expect(bonusSection.getByText("ボーナス 1")).toBeVisible();
+  await expect(bonusSection.getByLabel("収入ラベル")).toHaveValue("給与");
+
+  await bonusSection.getByLabel("6月").check();
+  await bonusSection.getByLabel("12月").check();
+  await bonusSection.getByLabel("ボーナス金額", { exact: true }).fill("500000");
+  await bonusSection.getByLabel("変化年月").fill("2030-04");
+  await bonusSection.getByLabel("変化後ボーナス金額").fill("600000");
+
+  await bonusSection.getByRole("button", { name: "保存" }).click();
+
+  await expect(page.getByText("保存しました。")).toBeVisible();
+  await expect(
+    bonusSection.locator("dt", { hasText: "ボーナス設定" }).locator("..").locator("dd"),
+  ).toHaveText("1件");
+  await expect(
+    bonusSection.locator("dt", { hasText: "対象ストリーム" }).locator("..").locator("dd"),
+  ).toHaveText("給与");
+});

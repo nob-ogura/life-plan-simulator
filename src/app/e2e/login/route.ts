@@ -10,8 +10,7 @@ const DEFAULT_EMAIL = "e2e@example.com";
 const DEFAULT_PASSWORD = "P@ssword-e2e";
 const USERS_PER_PAGE = 200;
 
-const isE2EEnabled = () =>
-  process.env.NODE_ENV === "test" || process.env.E2E_ENABLED === "true";
+const isE2EEnabled = () => process.env.E2E_ENABLED === "true";
 
 const readJsonBody = async (request: Request) => {
   try {
@@ -46,10 +45,7 @@ const createAdminClient = () => {
 
 const normalizeEmail = (email: string) => email.trim().toLowerCase();
 
-const findUserByEmail = async (
-  admin: ReturnType<typeof createAdminClient>,
-  email: string,
-) => {
+const findUserByEmail = async (admin: ReturnType<typeof createAdminClient>, email: string) => {
   const target = normalizeEmail(email);
   let page = 1;
 
@@ -62,9 +58,7 @@ const findUserByEmail = async (
       throw error;
     }
 
-    const found = data.users.find(
-      (user) => normalizeEmail(user.email ?? "") === target,
-    );
+    const found = data.users.find((user) => normalizeEmail(user.email ?? "") === target);
     if (found) {
       return found;
     }
@@ -129,10 +123,7 @@ export const POST = async (request: Request) => {
   });
 
   if (error) {
-    return NextResponse.json(
-      { ok: false, message: "Failed to create session." },
-      { status: 500 },
-    );
+    return NextResponse.json({ ok: false, message: "Failed to create session." }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true, userId: user.id });
