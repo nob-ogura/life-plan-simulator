@@ -122,3 +122,38 @@ test("bonus section accepts input and updates summary", async ({ page }) => {
     bonusSection.locator("dt", { hasText: "対象ストリーム" }).locator("..").locator("dd"),
   ).toHaveText("給与");
 });
+
+test("expense section accepts input and updates summary", async ({ page }) => {
+  const email = `e2e+expense-${Date.now()}@example.com`;
+  await page.request.post("/__e2e/login", { data: { email } });
+
+  await page.goto("/inputs");
+
+  const expenseSection = page.locator("details", {
+    has: page.getByText("支出", { exact: true }),
+  });
+
+  await expenseSection.getByText("支出", { exact: true }).click();
+
+  await expect(expenseSection.getByText("支出項目の登録はありません。")).toBeVisible();
+
+  await expenseSection.getByRole("button", { name: "追加" }).click();
+  await expenseSection.getByLabel("ラベル").fill("生活費");
+  await expenseSection.getByLabel("月額").fill("180000");
+  await expenseSection.getByLabel("インフレ率").fill("0.01");
+  await expenseSection.getByLabel("カテゴリ").fill("生活費");
+  await expenseSection.getByLabel("開始年月").fill("2020-04");
+  await expenseSection.getByLabel("終了年月").fill("2040-03");
+
+  await expenseSection.getByRole("button", { name: "保存" }).click();
+
+  await expect(page.getByText("保存しました。")).toBeVisible();
+  await expect(expenseSection.getByText("支出項目の登録はありません。")).toBeHidden();
+
+  await expect(
+    expenseSection.locator("dt", { hasText: "支出項目" }).locator("..").locator("dd"),
+  ).toHaveText("1件");
+  await expect(
+    expenseSection.locator("dt", { hasText: "主な支出ラベル" }).locator("..").locator("dd"),
+  ).toHaveText("生活費");
+});
