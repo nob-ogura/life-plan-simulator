@@ -303,3 +303,36 @@ test("asset section accepts input and updates summary", async ({ authenticatedPa
     assetSection.locator("dt", { hasText: "運用利回り" }).locator("..").locator("dd"),
   ).toHaveText("0.03");
 });
+
+test("simulation settings section accepts input and updates summary", async ({
+  authenticatedPage: page,
+}) => {
+  await page.goto("/inputs");
+
+  const simulationSection = page.locator("details", {
+    has: page.getByText("シミュレーション設定", { exact: true }),
+  });
+
+  await simulationSection.getByText("シミュレーション設定", { exact: true }).click();
+
+  await simulationSection.getByLabel("開始オフセット（月）").fill("2");
+  await simulationSection.getByLabel("終了年齢").fill("90");
+  await simulationSection.getByLabel("単身").fill("70000");
+  await simulationSection.getByLabel("配偶者分").fill("140000");
+  await simulationSection.getByLabel("諸経費率").fill("1.05");
+  await simulationSection.getByLabel("固定資産税率").fill("0.014");
+  await simulationSection.getByLabel("評価額掛目").fill("0.8");
+
+  await simulationSection.getByRole("button", { name: "保存" }).click();
+
+  await expect(page.getByText("保存しました。")).toBeVisible();
+  await expect(
+    simulationSection.locator("dt", { hasText: "終了年齢" }).locator("..").locator("dd"),
+  ).toHaveText("90歳");
+  await expect(
+    simulationSection.locator("dt", { hasText: "年金月額（単身）" }).locator("..").locator("dd"),
+  ).toHaveText("70,000円");
+  await expect(
+    simulationSection.locator("dt", { hasText: "年金月額（配偶者）" }).locator("..").locator("dd"),
+  ).toHaveText("140,000円");
+});
