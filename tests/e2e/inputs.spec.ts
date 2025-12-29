@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("unauthenticated users are redirected to login", async ({ page }) => {
   await page.goto("/");
@@ -8,10 +8,7 @@ test("unauthenticated users are redirected to login", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Continue with GitHub" })).toBeVisible();
 });
 
-test("family section accepts input and updates summary", async ({ page }) => {
-  const email = `e2e+family-${Date.now()}@example.com`;
-  await page.request.post("/__e2e/login", { data: { email } });
-
+test("family section accepts input and updates summary", async ({ authenticatedPage: page }) => {
   await page.goto("/inputs");
 
   const familySection = page.locator("details", { hasText: "家族構成" });
@@ -43,10 +40,7 @@ test("family section accepts input and updates summary", async ({ page }) => {
   ).toHaveText("1人");
 });
 
-test("income section accepts input and updates summary", async ({ page }) => {
-  const email = `e2e+income-${Date.now()}@example.com`;
-  await page.request.post("/__e2e/login", { data: { email } });
-
+test("income section accepts input and updates summary", async ({ authenticatedPage: page }) => {
   await page.goto("/inputs");
 
   const incomeSection = page.locator("details", {
@@ -76,10 +70,7 @@ test("income section accepts input and updates summary", async ({ page }) => {
   ).toHaveText("給与");
 });
 
-test("bonus section accepts input and updates summary", async ({ page }) => {
-  const email = `e2e+bonus-${Date.now()}@example.com`;
-  await page.request.post("/__e2e/login", { data: { email } });
-
+test("bonus section accepts input and updates summary", async ({ authenticatedPage: page }) => {
   await page.goto("/inputs");
 
   const incomeSection = page.locator("details", {
@@ -123,10 +114,7 @@ test("bonus section accepts input and updates summary", async ({ page }) => {
   ).toHaveText("給与");
 });
 
-test("expense section accepts input and updates summary", async ({ page }) => {
-  const email = `e2e+expense-${Date.now()}@example.com`;
-  await page.request.post("/__e2e/login", { data: { email } });
-
+test("expense section accepts input and updates summary", async ({ authenticatedPage: page }) => {
   await page.goto("/inputs");
 
   const expenseSection = page.locator("details", {
@@ -158,10 +146,7 @@ test("expense section accepts input and updates summary", async ({ page }) => {
   ).toHaveText("生活費");
 });
 
-test("housing section accepts input and updates summary", async ({ page }) => {
-  const email = `e2e+housing-${Date.now()}@example.com`;
-  await page.request.post("/__e2e/login", { data: { email } });
-
+test("housing section accepts input and updates summary", async ({ authenticatedPage: page }) => {
   await page.goto("/inputs");
 
   const housingSection = page.locator("details", {
@@ -201,12 +186,11 @@ test("housing section accepts input and updates summary", async ({ page }) => {
   ).toHaveText("1件");
 });
 
-test("life event section accepts input and updates summary", async ({ page }) => {
+test("life event section accepts input and updates summary", async ({
+  authenticatedPage: page,
+}) => {
   const timestamp = Date.now();
-  const email = `e2e+life-event-${timestamp}@example.com`;
   const label = `留学費用-${timestamp}`;
-
-  await page.request.post("/__e2e/login", { data: { email } });
 
   await page.goto("/inputs");
 
