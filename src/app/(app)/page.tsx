@@ -1,26 +1,41 @@
 import { Button } from "@/components/ui/button";
+import { getDashboardSimulationAction } from "@/features/dashboard/queries/get-dashboard-simulation/action";
+import type { GetDashboardSimulationResponse } from "@/features/dashboard/queries/get-dashboard-simulation/response";
 
-const summaryCards = [
+const summaryCardDefinitions = [
   {
     title: "累計収支",
     description: "表示範囲内の収支合計",
-    value: "--",
   },
   {
     title: "平均月残高",
     description: "平均的な月末残高",
-    value: "--",
   },
   {
     title: "資産寿命",
     description: "資産が枯渇する月",
-    value: "--",
   },
 ];
 
 const cashflowColumns = ["年月", "収入", "支出", "差分", "残高"];
 
-export default function Home() {
+const formatAmount = (value: number) =>
+  `${new Intl.NumberFormat("ja-JP").format(Math.round(value))}円`;
+
+export default async function Home() {
+  const response = await getDashboardSimulationAction({});
+  const dashboardSimulation = response.ok
+    ? ((await response.json()) as GetDashboardSimulationResponse)
+    : null;
+  const simulationResult = dashboardSimulation?.result ?? null;
+  const simulationMonths = simulationResult?.months ?? [];
+  const hasSimulation = simulationMonths.length > 0;
+  const summaryCards = summaryCardDefinitions.map((card) => ({
+    ...card,
+    value: hasSimulation ? "計算済み" : "--",
+  }));
+  const previewMonths = hasSimulation ? simulationMonths.slice(0, 6) : [];
+
   return (
     <div className="space-y-10">
       <section>
@@ -92,7 +107,9 @@ export default function Home() {
         <div className="mt-4 grid gap-3">
           <div className="rounded-xl border border-dashed border-border bg-background/60 p-6">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>グラフ描画エリア</span>
+              <span>
+                グラフ描画エリア{hasSimulation ? ` (${simulationMonths.length}ヶ月)` : ""}
+              </span>
               <span>ハイライト: 枯渇月</span>
             </div>
             <div className="mt-4 h-56 rounded-lg bg-muted/40" />
@@ -119,15 +136,28 @@ export default function Home() {
             ))}
           </div>
           <div className="divide-y divide-border bg-background">
-            {Array.from({ length: 6 }).map((_, index) => (
-              <div key={`row-${index}`} className="grid grid-cols-5 px-3 py-3 text-xs">
-                <div className="text-muted-foreground">----</div>
-                <div className="text-muted-foreground">--</div>
-                <div className="text-muted-foreground">--</div>
-                <div className="text-muted-foreground">--</div>
-                <div className="text-muted-foreground">--</div>
-              </div>
-            ))}
+            {previewMonths.length > 0
+              ? previewMonths.map((month) => {
+                  const net = month.totalIncome - month.totalExpense + month.eventAmount;
+                  return (
+                    <div key={month.yearMonth} className="grid grid-cols-5 px-3 py-3 text-xs">
+                      <div className="text-muted-foreground">{month.yearMonth}</div>
+                      <div>{formatAmount(month.totalIncome)}</div>
+                      <div>{formatAmount(month.totalExpense)}</div>
+                      <div>{formatAmount(net)}</div>
+                      <div>{formatAmount(month.totalBalance)}</div>
+                    </div>
+                  );
+                })
+              : Array.from({ length: 6 }, (_, index) => `placeholder-${index + 1}`).map((rowId) => (
+                  <div key={rowId} className="grid grid-cols-5 px-3 py-3 text-xs">
+                    <div className="text-muted-foreground">----</div>
+                    <div className="text-muted-foreground">--</div>
+                    <div className="text-muted-foreground">--</div>
+                    <div className="text-muted-foreground">--</div>
+                    <div className="text-muted-foreground">--</div>
+                  </div>
+                ))}
           </div>
         </div>
       </section>
