@@ -258,9 +258,7 @@ test("retirement bonus section accepts input and updates summary", async ({
   ).toHaveText("退職金");
 });
 
-test("pension section accepts input and updates summary", async ({
-  authenticatedPage: page,
-}) => {
+test("pension section accepts input and updates summary", async ({ authenticatedPage: page }) => {
   await page.goto("/inputs");
 
   const pensionSection = page.locator("details", {
@@ -277,4 +275,31 @@ test("pension section accepts input and updates summary", async ({
     pensionSection.locator("dt", { hasText: "年金開始年齢" }).locator("..").locator("dd"),
   ).toHaveText("65歳");
   await expect(pensionSection.getByText("開始年齢 65歳")).toBeVisible();
+});
+
+test("asset section accepts input and updates summary", async ({ authenticatedPage: page }) => {
+  await page.goto("/inputs");
+
+  const assetSection = page.locator("details", {
+    has: page.getByText("投資設定", { exact: true }),
+  });
+
+  await assetSection.locator("summary").click();
+
+  await assetSection.getByLabel("現金残高").fill("1000000");
+  await assetSection.getByLabel("運用残高").fill("5000000");
+  await assetSection.getByLabel("運用利回り").fill("0.03");
+
+  await assetSection.getByRole("button", { name: "保存" }).click();
+
+  await expect(page.getByText("保存しました。")).toBeVisible();
+  await expect(
+    assetSection.locator("dt", { hasText: "現金残高" }).locator("..").locator("dd"),
+  ).toHaveText("1,000,000円");
+  await expect(
+    assetSection.locator("dt", { hasText: "運用残高" }).locator("..").locator("dd"),
+  ).toHaveText("5,000,000円");
+  await expect(
+    assetSection.locator("dt", { hasText: "運用利回り" }).locator("..").locator("dd"),
+  ).toHaveText("0.03");
 });
