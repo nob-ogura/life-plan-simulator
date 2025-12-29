@@ -257,3 +257,24 @@ test("retirement bonus section accepts input and updates summary", async ({
     retirementSection.locator("dt", { hasText: "登録名" }).locator("..").locator("dd"),
   ).toHaveText("退職金");
 });
+
+test("pension section accepts input and updates summary", async ({
+  authenticatedPage: page,
+}) => {
+  await page.goto("/inputs");
+
+  const pensionSection = page.locator("details", {
+    has: page.getByText("年金開始年齢", { exact: true }),
+  });
+
+  await pensionSection.locator("summary").click();
+  await pensionSection.getByLabel("年金開始年齢").fill("65");
+
+  await pensionSection.getByRole("button", { name: "保存" }).click();
+
+  await expect(page.getByText("保存しました。")).toBeVisible();
+  await expect(
+    pensionSection.locator("dt", { hasText: "年金開始年齢" }).locator("..").locator("dd"),
+  ).toHaveText("65歳");
+  await expect(pensionSection.getByText("開始年齢 65歳")).toBeVisible();
+});
