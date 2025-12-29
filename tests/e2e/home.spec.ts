@@ -200,3 +200,51 @@ test("housing section accepts input and updates summary", async ({ page }) => {
     housingSection.locator("dt", { hasText: "賃貸" }).locator("..").locator("dd"),
   ).toHaveText("1件");
 });
+
+test("life event section accepts input and updates summary", async ({ page }) => {
+  const timestamp = Date.now();
+  const email = `e2e+life-event-${timestamp}@example.com`;
+  const label = `留学費用-${timestamp}`;
+
+  await page.request.post("/__e2e/login", { data: { email } });
+
+  await page.goto("/inputs");
+
+  const lifeEventSection = page.locator("details", {
+    has: page.getByText("ライフイベント", { exact: true }),
+  });
+
+  await lifeEventSection.getByText("ライフイベント", { exact: true }).click();
+
+  await expect(lifeEventSection.getByText("登録済みのイベントはありません。")).toBeVisible();
+
+  await lifeEventSection.getByRole("button", { name: "イベント追加" }).click();
+
+  const modal = page.getByRole("dialog");
+
+  await modal.getByLabel("ラベル").fill(label);
+  await modal.getByLabel("金額").fill("750000");
+  await modal.getByLabel("発生年月").fill("2030-04");
+  await modal.getByLabel("カテゴリ").fill("travel");
+  await modal.getByLabel("繰り返し間隔（年）").fill("1");
+  await modal.getByLabel("繰り返し回数").fill("3");
+
+  await modal.getByRole("button", { name: "保存" }).click();
+
+  await expect(page.getByText("保存しました。")).toBeVisible();
+  await expect(lifeEventSection.getByText("登録済みのイベントはありません。")).toBeHidden();
+
+  const eventList = lifeEventSection.locator("div.grid.gap-3");
+
+  await expect(eventList.getByText(label, { exact: true })).toBeVisible();
+  await expect(eventList.getByText("旅行 · 2030年04月")).toBeVisible();
+  await expect(eventList.getByText("750,000円")).toBeVisible();
+  await expect(eventList.getByText("繰り返し: 1年ごと（3回）")).toBeVisible();
+
+  await expect(
+    lifeEventSection.locator("dt", { hasText: "イベント数" }).locator("..").locator("dd"),
+  ).toHaveText("1件");
+  await expect(
+    lifeEventSection.locator("dt", { hasText: "主なイベント" }).locator("..").locator("dd"),
+  ).toHaveText(label);
+});
