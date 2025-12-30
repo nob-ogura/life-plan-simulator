@@ -1,48 +1,51 @@
 # Repository Guidelines
 
-## Project Structure & Module Organization
-- `src/app`: Next.js App Router pages and layouts.
-- `src/components`: shared UI components.
-- `src/features`: Vertical Slice Architecture modules grouped by domain → slice.
-- `src/lib`: reusable utilities/helpers.
-- `src/shared`: cross-cutting/shared kernel code.
-- `src/types`: shared TypeScript types (e.g., Supabase types).
-- `tests/integration`: end-to-end style API flow tests.
-- `docs`: design notes and architecture guidance (see `docs/Guideline.md`).
+This repository is a Next.js (App Router) application for a life-plan simulator, using
+TypeScript, Tailwind CSS, Supabase, and Playwright/Vitest for tests. Use `pnpm` for all
+package scripts.
 
-## Architecture Overview
-- Follow Vertical Slice Architecture (VSA) and the RER (Request/Endpoint/Response) pattern.
-- Keep endpoint glue thin: endpoints accept input/auth and delegate to handlers.
-- Put domain rules in domain models; shared domain rules live in shared kernel.
+## Project Structure & Module Organization
+
+- `src/app`: route handlers and UI for the App Router.
+- `src/components`: shared UI components.
+- `src/features`: feature-scoped modules.
+- `src/lib`: utilities and client setup (e.g., Supabase helpers).
+- `src/shared`: cross-cutting domain helpers/types.
+- `src/types`: generated and shared TypeScript types (including Supabase).
+- `src/test`: test setup and factories.
+- `tests/e2e`: Playwright specs (`*.spec.ts`).
+- `tests/integration`: Vitest integration tests (`*.integration.test.ts`).
+- `supabase/migrations`: database migrations.
+- `docs`: supporting documentation.
 
 ## Build, Test, and Development Commands
-- `pnpm dev`: run local dev server.
-- `pnpm build`: production build.
+
+- `pnpm dev`: run the local dev server on http://localhost:3000.
+- `pnpm build`: build the production bundle.
 - `pnpm start`: run the built app.
-- `pnpm lint`: Biome lint + formatting checks (may apply fixes).
-- `pnpm format`: format all files with Biome.
-- `pnpm typecheck`: TypeScript checks (`tsc --noEmit`).
-- `pnpm test:unit`: Vitest unit tests (jsdom).
-- `pnpm test:integration`: run `tests/integration`.
-- `pnpm supabase:gen-types`: regenerate `src/types/supabase.ts` (needs `.env`).
+- `pnpm lint`: run Biome lint + fixes.
+- `pnpm format`: format code with Biome.
+- `pnpm typecheck`: TypeScript typecheck without emit.
+- `pnpm test:unit`: run Vitest unit tests.
+- `pnpm test:integration`: run Vitest integration tests.
+- `pnpm test:e2e`: run Playwright end-to-end tests.
+- `pnpm supabase:push`: apply migrations to remote Supabase.
+- `pnpm supabase:gen-types`: regenerate Supabase types into `src/types/supabase.ts`.
 
 ## Coding Style & Naming Conventions
-- TypeScript + React + Next.js (App Router).
-- Biome formatting: 2-space indent, 100-char line width, organized imports.
-- Use `@/` alias for `src` (e.g., `@/lib/date`).
-- Test files: `*.test.ts` or `*.test.tsx`.
+
+Formatting and linting are enforced by Biome (`biome.json`) with 2-space indentation and
+a 100 character line width. Prefer TypeScript, keep imports organized, and follow existing
+file naming patterns, especially for tests: `*.spec.ts` (e2e) and `*.integration.test.ts`.
 
 ## Testing Guidelines
-- Prefer integration tests for slice-level behavior; unit tests for complex domain logic.
-- Unit tests live under `src/**` and match `src/**/*.test.{ts,tsx}`.
-- Integration tests live under `tests/integration/**/*.test.{ts,tsx}`.
-- Test setup: `src/test/setup.ts`.
 
-## Commit & Pull Request Guidelines
-- Commit messages are descriptive, sentence-style, often Japanese (see recent history).
-- PRs should include a concise summary, testing notes (commands run), and screenshots for UI changes.
-- Link relevant docs or issues when applicable.
+Vitest is used for unit/integration tests; Playwright is used for e2e. Shared test setup
+lives in `src/test/setup.ts` and factories in `src/test/factories`. Integration tests that
+touch Supabase require `.env` values for Supabase keys. For e2e auth, the test-only
+endpoint `POST /__e2e/login` can be used (enabled via `NODE_ENV=test` or `E2E_ENABLED=true`).
 
 ## Security & Configuration Tips
-- Create local env files from `.env.example` (`cp .env.example .env`).
-- Keep secrets out of the repo; use `.env.local` for overrides.
+
+Store secrets in `.env` or `.env.local` and never commit them. Supabase keys are required
+for integration tests and type generation; verify they are set before running those tasks.

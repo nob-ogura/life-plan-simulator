@@ -19,4 +19,13 @@ export const test = base.extend<Fixtures>({
   },
 });
 
-export { expect };
+const expectToast = async (page: Page, message: string) => {
+  const toast = page
+    .locator('[data-sonner-toast][data-visible="true"]')
+    .filter({ hasText: message })
+    .last();
+
+  await expect(toast).toBeVisible();
+};
+
+export { expect, expectToast };

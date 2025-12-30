@@ -13,6 +13,7 @@ import {
   calculateSummaryMetrics,
   findDepletionYearMonth,
 } from "@/features/dashboard/shared/summary";
+import { AssetTrendChart } from "@/features/dashboard/ui/AssetTrendChart";
 import type { SimulationMonthlyResult } from "@/shared/domain/simulation";
 
 type DashboardSimulationViewProps = {
@@ -52,6 +53,10 @@ export function DashboardSimulationView({ months }: DashboardSimulationViewProps
   const previewMonths = hasSimulation ? filteredMonths.slice(0, 6) : [];
   const summaryMetrics = useMemo(() => calculateSummaryMetrics(filteredMonths), [filteredMonths]);
   const depletionYearMonth = useMemo(() => findDepletionYearMonth(months), [months]);
+  const depletionYearMonthInRange = useMemo(
+    () => findDepletionYearMonth(filteredMonths),
+    [filteredMonths],
+  );
   const summaryCards = useMemo(() => {
     const emptyValues = summaryCardDefinitions.map((card) => ({ ...card, value: "--" }));
 
@@ -133,15 +138,33 @@ export function DashboardSimulationView({ months }: DashboardSimulationViewProps
             </p>
             <h2 className="mt-1 text-lg font-semibold">資産推移グラフ</h2>
           </div>
-          <span className="text-xs text-muted-foreground">cash + investment</span>
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <span className="h-2 w-2 rounded-full bg-emerald-500" />
+              cash
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="h-2 w-2 rounded-full bg-sky-500" />
+              investment
+            </span>
+          </div>
         </div>
         <div className="mt-4 grid gap-3">
           <div className="rounded-xl border border-dashed border-border bg-background/60 p-6">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span>グラフ描画エリア{hasSimulation ? ` (${filteredMonths.length}ヶ月)` : ""}</span>
-              <span>ハイライト: 枯渇月</span>
+              <span data-testid="depletion-label">
+                {depletionYearMonthInRange != null
+                  ? `枯渇月: ${depletionYearMonthInRange}`
+                  : "枯渇なし"}
+              </span>
             </div>
-            <div className="mt-4 h-56 rounded-lg bg-muted/40" />
+            <div className="mt-4">
+              <AssetTrendChart
+                months={filteredMonths}
+                depletionYearMonth={depletionYearMonthInRange}
+              />
+            </div>
           </div>
         </div>
       </section>

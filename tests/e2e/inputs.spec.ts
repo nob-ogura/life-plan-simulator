@@ -1,4 +1,4 @@
-import { expect, test } from "./fixtures";
+import { expect, expectToast, test } from "./fixtures";
 
 test("unauthenticated users are redirected to login", async ({ page }) => {
   await page.goto("/");
@@ -26,7 +26,7 @@ test("family section accepts input and updates summary", async ({ authenticatedP
 
   await familySection.getByRole("button", { name: "保存" }).click();
 
-  await expect(page.getByText("保存しました。")).toBeVisible();
+  await expectToast(page, "保存しました。");
   await expect(familySection.getByText("子どもの登録はありません。")).toBeHidden();
 
   await expect(
@@ -59,7 +59,7 @@ test("income section accepts input and updates summary", async ({ authenticatedP
 
   await incomeSection.getByRole("button", { name: "保存" }).click();
 
-  await expect(page.getByText("保存しました。")).toBeVisible();
+  await expectToast(page, "保存しました。");
   await expect(incomeSection.getByText("収入ストリームの登録はありません。")).toBeHidden();
 
   await expect(
@@ -86,7 +86,7 @@ test("bonus section accepts input and updates summary", async ({ authenticatedPa
 
   await incomeSection.getByRole("button", { name: "保存" }).click();
 
-  await expect(page.getByText("保存しました。")).toBeVisible();
+  await expectToast(page, "保存しました。");
 
   const bonusSection = page.locator("details", {
     has: page.getByText("ボーナス", { exact: true }),
@@ -105,7 +105,7 @@ test("bonus section accepts input and updates summary", async ({ authenticatedPa
 
   await bonusSection.getByRole("button", { name: "保存" }).click();
 
-  await expect(page.getByText("保存しました。")).toBeVisible();
+  await expectToast(page, "保存しました。");
   await expect(
     bonusSection.locator("dt", { hasText: "ボーナス設定" }).locator("..").locator("dd"),
   ).toHaveText("1件");
@@ -135,7 +135,7 @@ test("expense section accepts input and updates summary", async ({ authenticated
 
   await expenseSection.getByRole("button", { name: "保存" }).click();
 
-  await expect(page.getByText("保存しました。")).toBeVisible();
+  await expectToast(page, "保存しました。");
   await expect(expenseSection.getByText("支出項目の登録はありません。")).toBeHidden();
 
   await expect(
@@ -174,7 +174,7 @@ test("housing section accepts input and updates summary", async ({ authenticated
 
   await housingSection.getByRole("button", { name: "保存" }).click();
 
-  await expect(page.getByText("保存しました。")).toBeVisible();
+  await expectToast(page, "保存しました。");
   await expect(housingSection.getByText("住宅購入の登録はありません。")).toBeHidden();
   await expect(housingSection.getByText("賃貸の登録はありません。")).toBeHidden();
 
@@ -215,7 +215,7 @@ test("life event section accepts input and updates summary", async ({
 
   await modal.getByRole("button", { name: "保存" }).click();
 
-  await expect(page.getByText("保存しました。")).toBeVisible();
+  await expectToast(page, "保存しました。");
   await expect(lifeEventSection.getByText("登録済みのイベントはありません。")).toBeHidden();
 
   const eventList = lifeEventSection.locator("div.grid.gap-3");
@@ -249,7 +249,7 @@ test("retirement bonus section accepts input and updates summary", async ({
 
   await retirementSection.getByRole("button", { name: "保存" }).click();
 
-  await expect(page.getByText("保存しました。")).toBeVisible();
+  await expectToast(page, "保存しました。");
   await expect(
     retirementSection.locator("dt", { hasText: "退職金レコード" }).locator("..").locator("dd"),
   ).toHaveText("1件");
@@ -270,7 +270,7 @@ test("pension section accepts input and updates summary", async ({ authenticated
 
   await pensionSection.getByRole("button", { name: "保存" }).click();
 
-  await expect(page.getByText("保存しました。")).toBeVisible();
+  await expectToast(page, "保存しました。");
   await expect(
     pensionSection.locator("dt", { hasText: "年金開始年齢" }).locator("..").locator("dd"),
   ).toHaveText("65歳");
@@ -292,7 +292,7 @@ test("asset section accepts input and updates summary", async ({ authenticatedPa
 
   await assetSection.getByRole("button", { name: "保存" }).click();
 
-  await expect(page.getByText("保存しました。")).toBeVisible();
+  await expectToast(page, "保存しました。");
   await expect(
     assetSection.locator("dt", { hasText: "現金残高" }).locator("..").locator("dd"),
   ).toHaveText("1,000,000円");
@@ -325,7 +325,7 @@ test("simulation settings section accepts input and updates summary", async ({
 
   await simulationSection.getByRole("button", { name: "保存" }).click();
 
-  await expect(page.getByText("保存しました。")).toBeVisible();
+  await expectToast(page, "保存しました。");
   await expect(
     simulationSection.locator("dt", { hasText: "終了年齢" }).locator("..").locator("dd"),
   ).toHaveText("90歳");
