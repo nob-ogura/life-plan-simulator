@@ -10,7 +10,10 @@ import {
   unwrapSupabaseData,
 } from "@/shared/cross-cutting/infrastructure/supabase-result";
 import type { Database } from "@/types/supabase";
-
+import {
+  canRetryWithoutStopAfterAge,
+  omitStopAfterAge,
+} from "../../infrastructure/stop-after-age-compat";
 import type { UpsertRetirementBonusCommand, UpsertRetirementBonusRepository } from "./handler";
 import type { UpsertRetirementBonusResponse } from "./response";
 
@@ -24,6 +27,7 @@ export class SupabaseUpsertRetirementBonusRepository implements UpsertRetirement
       amount,
       year_month,
       repeat_interval_years: null,
+      stop_after_age: null,
       stop_after_occurrences: null,
       category: "retirement_bonus" as const,
       auto_toggle_key: null,
@@ -52,6 +56,28 @@ export class SupabaseUpsertRetirementBonusRepository implements UpsertRetirement
         .select()
         .single();
 
+      if (canRetryWithoutStopAfterAge(updateError, payload.stop_after_age)) {
+        const { data: retryData, error: retryError } = await scopeByUserAndId(
+          this.client.from("life_events").update(omitStopAfterAge(payload)),
+          userId,
+          primary.id,
+        )
+          .select()
+          .single();
+
+        const result = unwrapSupabaseData(retryData, retryError);
+
+        if (duplicateIds.length > 0) {
+          const { error: deleteError } = await scopeByUserId(
+            this.client.from("life_events").delete().in("id", duplicateIds),
+            userId,
+          );
+          throwIfSupabaseError(deleteError);
+        }
+
+        return result;
+      }
+
       const result = unwrapSupabaseData(updated, updateError);
 
       if (duplicateIds.length > 0) {
@@ -70,6 +96,16 @@ export class SupabaseUpsertRetirementBonusRepository implements UpsertRetirement
       .insert(toUserOwnedInsert({ userId, ...payload }))
       .select()
       .single();
+
+    if (canRetryWithoutStopAfterAge(insertError, payload.stop_after_age)) {
+      const { data: retryData, error: retryError } = await this.client
+        .from("life_events")
+        .insert(omitStopAfterAge(toUserOwnedInsert({ userId, ...payload })))
+        .select()
+        .single();
+
+      return unwrapSupabaseData(retryData, retryError);
+    }
 
     return unwrapSupabaseData(created, insertError);
   }

@@ -6,6 +6,7 @@ const UpdateLifeEventPatchSchema = z
     amount: z.number(),
     year_month: z.string().min(1),
     repeat_interval_years: z.number().nullable().optional(),
+    stop_after_age: z.number().nullable().optional(),
     stop_after_occurrences: z.number().nullable().optional(),
     category: z.string().min(1),
     auto_toggle_key: z.string().min(1).nullable().optional(),

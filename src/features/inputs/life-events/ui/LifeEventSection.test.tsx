@@ -120,6 +120,7 @@ describe("LifeEventSection", () => {
         amount: 200000,
         year_month: "2026-04-01",
         repeat_interval_years: null,
+        stop_after_age: null,
         stop_after_occurrences: null,
         category: "travel",
         auto_toggle_key: null,

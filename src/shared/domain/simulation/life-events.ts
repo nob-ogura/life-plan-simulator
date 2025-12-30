@@ -1,5 +1,10 @@
-import { addMonths, yearMonthToElapsedMonths } from "./timeline";
-import type { SimulationLifeEvent, SimulationSettings, YearMonth } from "./types";
+import { addMonths, calculateAgeAtYearMonth, yearMonthToElapsedMonths } from "./timeline";
+import type {
+  SimulationLifeEvent,
+  SimulationProfile,
+  SimulationSettings,
+  YearMonth,
+} from "./types";
 
 export type HousingPurchaseMetrics = {
   event: SimulationLifeEvent;
@@ -73,19 +78,24 @@ export const expandLifeEvents = ({
   lifeEvents,
   startYearMonth,
   endYearMonth,
+  profile,
 }: {
   lifeEvents: SimulationLifeEvent[];
   startYearMonth: YearMonth;
   endYearMonth: YearMonth;
+  profile: SimulationProfile;
 }): SimulationLifeEvent[] => {
   const startIndex = yearMonthToElapsedMonths(startYearMonth);
   const endIndex = yearMonthToElapsedMonths(endYearMonth);
   const expanded: SimulationLifeEvent[] = [];
+  const birthYear = profile.birth_year;
+  const birthMonth = profile.birth_month;
 
   for (const event of lifeEvents) {
     const intervalYears = event.repeat_interval_years;
     const intervalMonths = intervalYears != null ? intervalYears * 12 : null;
     const stopAfter = event.stop_after_occurrences;
+    const stopAfterAge = event.stop_after_age;
     let occurrences = 0;
     let currentYearMonth = event.year_month;
 
@@ -93,6 +103,15 @@ export const expandLifeEvents = ({
       const currentIndex = yearMonthToElapsedMonths(currentYearMonth);
       if (currentIndex > endIndex) {
         break;
+      }
+      if (stopAfterAge != null) {
+        if (birthYear == null || birthMonth == null) {
+          throw new Error("Profile birth year/month is required to apply stop_after_age.");
+        }
+        const age = calculateAgeAtYearMonth(currentYearMonth, birthYear, birthMonth);
+        if (age != null && age > stopAfterAge) {
+          break;
+        }
       }
       occurrences += 1;
       if (currentIndex >= startIndex) {

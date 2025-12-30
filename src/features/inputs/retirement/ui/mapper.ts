@@ -27,6 +27,7 @@ export const toRetirementPayload = (
   amount: value.amount,
   year_month: toMonthStartDate(value.year_month),
   repeat_interval_years: null,
+  stop_after_age: null,
   stop_after_occurrences: null,
   category: "retirement_bonus",
   auto_toggle_key: null,

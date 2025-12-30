@@ -103,6 +103,7 @@ const toSimulationLifeEvent = (event: Tables<"life_events">): SimulationLifeEven
   amount: event.amount,
   year_month: toRequiredYearMonth(event.year_month),
   repeat_interval_years: event.repeat_interval_years,
+  stop_after_age: event.stop_after_age,
   stop_after_occurrences: event.stop_after_occurrences,
   category: event.category,
   auto_toggle_key: event.auto_toggle_key,

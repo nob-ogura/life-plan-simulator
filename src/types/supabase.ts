@@ -145,6 +145,7 @@ export type Database = {
           label: string;
           land_price: number | null;
           repeat_interval_years: number | null;
+          stop_after_age: number | null;
           stop_after_occurrences: number | null;
           user_id: string;
           year_month: string;
@@ -159,6 +160,7 @@ export type Database = {
           label: string;
           land_price?: number | null;
           repeat_interval_years?: number | null;
+          stop_after_age?: number | null;
           stop_after_occurrences?: number | null;
           user_id: string;
           year_month: string;
@@ -173,6 +175,7 @@ export type Database = {
           label?: string;
           land_price?: number | null;
           repeat_interval_years?: number | null;
+          stop_after_age?: number | null;
           stop_after_occurrences?: number | null;
           user_id?: string;
           year_month?: string;

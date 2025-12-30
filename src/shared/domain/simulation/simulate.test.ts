@@ -82,6 +82,7 @@ const createInput = (): SimulationInput => ({
       amount: 1000000,
       year_month: "2030-01",
       repeat_interval_years: null,
+      stop_after_age: null,
       stop_after_occurrences: null,
       category: "housing_purchase",
       auto_toggle_key: "HOUSING_PURCHASE_STOP_RENT",

@@ -67,6 +67,7 @@ create table if not exists public.life_events (
   amount numeric(12, 2) not null,
   year_month date not null,
   repeat_interval_years integer,
+  stop_after_age integer,
   stop_after_occurrences integer,
   category text not null,
   auto_toggle_key text,

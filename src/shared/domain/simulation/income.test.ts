@@ -98,6 +98,7 @@ describe("income calculation", () => {
         amount: 300000,
         year_month: "2025-03",
         repeat_interval_years: null,
+        stop_after_age: null,
         stop_after_occurrences: null,
         category: "retirement_bonus",
         auto_toggle_key: null,

@@ -53,6 +53,7 @@ describe("life events", () => {
         amount: 10000,
         year_month: "2025-01",
         repeat_interval_years: 1,
+        stop_after_age: null,
         stop_after_occurrences: 3,
         category: "travel",
         auto_toggle_key: null,
@@ -66,6 +67,49 @@ describe("life events", () => {
     expect(getMonth(input, "2026-01").eventAmount).toBe(10000);
     expect(getMonth(input, "2027-01").eventAmount).toBe(10000);
     expect(getMonth(input, "2028-01").eventAmount).toBe(0);
+  });
+
+  it("stops repeating events when stop_after_age is reached", () => {
+    const input = createBaseInput();
+    input.lifeEvents = [
+      {
+        amount: 10000,
+        year_month: "2025-01",
+        repeat_interval_years: 1,
+        stop_after_age: 36,
+        stop_after_occurrences: null,
+        category: "travel",
+        auto_toggle_key: null,
+        building_price: null,
+        land_price: null,
+        down_payment: null,
+      },
+    ];
+
+    expect(getMonth(input, "2025-01").eventAmount).toBe(10000);
+    expect(getMonth(input, "2026-01").eventAmount).toBe(10000);
+    expect(getMonth(input, "2027-01").eventAmount).toBe(0);
+  });
+
+  it("stops at the earlier of stop_after_occurrences and stop_after_age", () => {
+    const input = createBaseInput();
+    input.lifeEvents = [
+      {
+        amount: 10000,
+        year_month: "2025-01",
+        repeat_interval_years: 1,
+        stop_after_age: 35,
+        stop_after_occurrences: 5,
+        category: "travel",
+        auto_toggle_key: null,
+        building_price: null,
+        land_price: null,
+        down_payment: null,
+      },
+    ];
+
+    expect(getMonth(input, "2025-01").eventAmount).toBe(10000);
+    expect(getMonth(input, "2026-01").eventAmount).toBe(0);
   });
 
   it("calculates mortgage principal and real estate tax using settings", () => {
@@ -93,6 +137,7 @@ describe("life events", () => {
       amount: 0,
       year_month: "2025-03",
       repeat_interval_years: null,
+      stop_after_age: null,
       stop_after_occurrences: null,
       category: "housing_purchase",
       auto_toggle_key: null,
@@ -121,6 +166,7 @@ describe("life events", () => {
       amount: 0,
       year_month: "2025-03",
       repeat_interval_years: null,
+      stop_after_age: null,
       stop_after_occurrences: null,
       category: "housing_purchase",
       auto_toggle_key: null,
@@ -162,6 +208,7 @@ describe("life events", () => {
         amount: 0,
         year_month: "2025-03",
         repeat_interval_years: null,
+        stop_after_age: null,
         stop_after_occurrences: null,
         category: "housing_purchase",
         auto_toggle_key: null,
@@ -183,6 +230,7 @@ describe("life events", () => {
         amount: 0,
         year_month: "2025-03",
         repeat_interval_years: null,
+        stop_after_age: null,
         stop_after_occurrences: null,
         category: "housing_purchase",
         auto_toggle_key: null,

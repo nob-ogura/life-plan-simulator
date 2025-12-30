@@ -305,6 +305,7 @@ describe("Schema Migrations", () => {
         "amount",
         "year_month",
         "repeat_interval_years",
+        "stop_after_age",
         "stop_after_occurrences",
         "category",
         "auto_toggle_key",

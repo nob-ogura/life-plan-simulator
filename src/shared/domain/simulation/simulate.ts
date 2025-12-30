@@ -294,6 +294,7 @@ export const simulateLifePlan = (input: SimulationInput): SimulationResult => {
     lifeEvents: input.lifeEvents,
     startYearMonth: timeline[0].yearMonth,
     endYearMonth: timeline[timeline.length - 1].yearMonth,
+    profile: input.profiles,
   });
   const housingPurchases = expandedLifeEvents
     .filter((event) => event.category === "housing_purchase")
