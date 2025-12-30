@@ -19,7 +19,7 @@ export const filterSimulationMonthsByRange = (
   range: DashboardDisplayRange,
 ) => {
   if (range === "recent-5-years") {
-    return months.length > RECENT_YEARS_MONTHS ? months.slice(-RECENT_YEARS_MONTHS) : months;
+    return months.length > RECENT_YEARS_MONTHS ? months.slice(0, RECENT_YEARS_MONTHS) : months;
   }
 
   return months;
