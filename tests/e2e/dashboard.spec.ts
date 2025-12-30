@@ -8,6 +8,8 @@ test("display range toggle updates graph and table", async ({ authenticatedPage:
   await familySection.getByLabel("本人（月）").fill("4");
   await familySection.getByLabel("配偶者（年）").fill("1988");
   await familySection.getByLabel("配偶者（月）").fill("7");
+  await familySection.getByLabel("配偶者（年）").fill("1988");
+  await familySection.getByLabel("配偶者（月）").fill("7");
   await familySection.getByRole("button", { name: "保存" }).click();
   await expectToast(page, "保存しました。");
 
@@ -110,6 +112,74 @@ test("display range toggle updates graph and table", async ({ authenticatedPage:
   expect(allFirstMonth).not.toBe(recentFirstMonthAgain);
   expect(allCumulative).not.toBe(recentCumulative);
   expect(allAverage).not.toBe(recentAverage);
+});
+
+test("cashflow table uses virtual scroll and updates on range change", async ({
+  authenticatedPage: page,
+}) => {
+  await page.goto("/inputs");
+
+  const familySection = page.locator("details", { hasText: "家族構成" });
+  await familySection.getByLabel("本人（年）").fill("1985");
+  await familySection.getByLabel("本人（月）").fill("4");
+  await familySection.getByLabel("配偶者（年）").fill("1988");
+  await familySection.getByLabel("配偶者（月）").fill("7");
+  await familySection.getByRole("button", { name: "保存" }).click();
+  await expectToast(page, "保存しました。");
+
+  const simulationSection = page.locator("details", {
+    has: page.getByText("シミュレーション設定", { exact: true }),
+  });
+  await simulationSection.locator("summary").click();
+  await simulationSection.getByLabel("開始オフセット（月）").fill("0");
+  await simulationSection.getByLabel("終了年齢").fill("90");
+  await simulationSection.getByLabel("単身").fill("65000");
+  await simulationSection.getByLabel("配偶者分").fill("130000");
+  await simulationSection.getByLabel("諸経費率").fill("1.03");
+  await simulationSection.getByLabel("固定資産税率").fill("0.014");
+  await simulationSection.getByLabel("評価額掛目").fill("0.7");
+  await simulationSection.getByRole("button", { name: "保存" }).click();
+  await expectToast(page, "保存しました。");
+
+  await page.goto("/");
+
+  const cashflowSection = page.locator("section", {
+    has: page.getByRole("heading", { name: "月次キャッシュフロー表" }),
+  });
+
+  const readTableMonths = async () => {
+    const label = await cashflowSection.getByText(/\d+ヶ月/).textContent();
+    const match = label?.match(/(\d+)ヶ月/);
+    expect(match).not.toBeNull();
+    return Number(match?.[1] ?? 0);
+  };
+
+  const readFirstMonth = async () => {
+    const firstRow = cashflowSection.locator("div.divide-y > div").first();
+    return (await firstRow.locator("div").first().textContent())?.trim() ?? "";
+  };
+
+  const recentMonths = await expect.poll(readTableMonths).toBe(60).then(readTableMonths);
+  await expect(cashflowSection.getByTestId("cashflow-scroll")).toBeVisible();
+  await expect
+    .poll(() => cashflowSection.locator("div.divide-y > div").count())
+    .toBeLessThan(recentMonths);
+
+  const recentFirstMonth = await readFirstMonth();
+  const scrollContainer = cashflowSection.getByTestId("cashflow-scroll");
+  await scrollContainer.evaluate((node) => {
+    node.scrollTop = node.scrollHeight * 0.5;
+  });
+  await expect.poll(readFirstMonth).not.toBe(recentFirstMonth);
+
+  await page.getByRole("button", { name: "全期間" }).click();
+  const allMonths = await expect
+    .poll(readTableMonths)
+    .toBeGreaterThan(recentMonths)
+    .then(readTableMonths);
+  await expect
+    .poll(() => cashflowSection.locator("div.divide-y > div").count())
+    .toBeLessThan(allMonths);
 });
 
 test("depletion month is highlighted on asset trend chart", async ({ authenticatedPage: page }) => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -39,6 +39,9 @@ const summaryCardDefinitions = [
 ] as const;
 
 const cashflowColumns = ["年月", "収入", "支出", "差分", "残高"];
+const CASHFLOW_ROW_HEIGHT = 44;
+const CASHFLOW_VIEWPORT_HEIGHT = 320;
+const CASHFLOW_OVERSCAN = 6;
 
 const formatAmount = (value: number) =>
   `${new Intl.NumberFormat("ja-JP").format(Math.round(value))}円`;
@@ -50,7 +53,6 @@ export function DashboardSimulationView({ months }: DashboardSimulationViewProps
     [months, displayRange],
   );
   const hasSimulation = months.length > 0;
-  const previewMonths = hasSimulation ? filteredMonths.slice(0, 6) : [];
   const summaryMetrics = useMemo(() => calculateSummaryMetrics(filteredMonths), [filteredMonths]);
   const depletionYearMonth = useMemo(() => findDepletionYearMonth(months), [months]);
   const depletionYearMonthInRange = useMemo(
@@ -177,7 +179,9 @@ export function DashboardSimulationView({ months }: DashboardSimulationViewProps
             </p>
             <h2 className="mt-1 text-lg font-semibold">月次キャッシュフロー表</h2>
           </div>
-          <span className="text-xs text-muted-foreground">仮想スクロール予定</span>
+          <span className="text-xs text-muted-foreground">
+            {hasSimulation ? `${filteredMonths.length}ヶ月` : "仮想スクロール"}
+          </span>
         </div>
         <div className="mt-4 overflow-hidden rounded-xl border border-border">
           <div className="grid grid-cols-5 gap-px bg-border text-xs font-semibold text-muted-foreground">
@@ -187,32 +191,99 @@ export function DashboardSimulationView({ months }: DashboardSimulationViewProps
               </div>
             ))}
           </div>
-          <div className="divide-y divide-border bg-background">
-            {previewMonths.length > 0
-              ? previewMonths.map((month) => {
-                  const net = month.totalIncome - month.totalExpense + month.eventAmount;
-                  return (
-                    <div key={month.yearMonth} className="grid grid-cols-5 px-3 py-3 text-xs">
-                      <div className="text-muted-foreground">{month.yearMonth}</div>
-                      <div>{formatAmount(month.totalIncome)}</div>
-                      <div>{formatAmount(month.totalExpense)}</div>
-                      <div>{formatAmount(net)}</div>
-                      <div>{formatAmount(month.totalBalance)}</div>
-                    </div>
-                  );
-                })
-              : Array.from({ length: 6 }, (_, index) => `placeholder-${index + 1}`).map((rowId) => (
-                  <div key={rowId} className="grid grid-cols-5 px-3 py-3 text-xs">
-                    <div className="text-muted-foreground">----</div>
-                    <div className="text-muted-foreground">--</div>
-                    <div className="text-muted-foreground">--</div>
-                    <div className="text-muted-foreground">--</div>
-                    <div className="text-muted-foreground">--</div>
-                  </div>
-                ))}
-          </div>
+          <CashflowTable months={filteredMonths} />
         </div>
       </section>
     </>
+  );
+}
+
+type CashflowTableProps = {
+  months: SimulationMonthlyResult[];
+};
+
+function CashflowTable({ months }: CashflowTableProps) {
+  const displayMonths = useMemo(
+    () => (months.length > 1 ? [...months].reverse() : months),
+    [months],
+  );
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [scrollTop, setScrollTop] = useState(0);
+  const rangeKey =
+    displayMonths.length === 0
+      ? "empty"
+      : `${displayMonths[0].yearMonth}-${displayMonths[displayMonths.length - 1].yearMonth}-${
+          displayMonths.length
+        }`;
+
+  useEffect(() => {
+    if (rangeKey) {
+      setScrollTop(0);
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTop = 0;
+      }
+    }
+  }, [rangeKey]);
+
+  const totalRows = displayMonths.length;
+  const totalHeight = totalRows * CASHFLOW_ROW_HEIGHT;
+  const viewportHeight = Math.min(totalHeight, CASHFLOW_VIEWPORT_HEIGHT);
+  const startIndex = Math.max(0, Math.floor(scrollTop / CASHFLOW_ROW_HEIGHT) - CASHFLOW_OVERSCAN);
+  const endIndex = Math.min(
+    totalRows,
+    Math.ceil((scrollTop + viewportHeight) / CASHFLOW_ROW_HEIGHT) + CASHFLOW_OVERSCAN,
+  );
+  const visibleMonths = displayMonths.slice(startIndex, endIndex);
+  const paddingTop = startIndex * CASHFLOW_ROW_HEIGHT;
+  const paddingBottom = Math.max(
+    0,
+    totalHeight - paddingTop - visibleMonths.length * CASHFLOW_ROW_HEIGHT,
+  );
+
+  if (displayMonths.length === 0) {
+    return (
+      <div className="divide-y divide-border bg-background">
+        {Array.from({ length: 6 }, (_, index) => `placeholder-${index + 1}`).map((rowId) => (
+          <div
+            key={rowId}
+            className="grid h-11 grid-cols-5 items-center px-3 text-xs text-muted-foreground"
+          >
+            <div>----</div>
+            <div>--</div>
+            <div>--</div>
+            <div>--</div>
+            <div>--</div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div
+      ref={scrollContainerRef}
+      className="overflow-auto bg-background"
+      style={{ height: viewportHeight }}
+      onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
+      data-testid="cashflow-scroll"
+    >
+      <div
+        className="divide-y divide-border"
+        style={{ paddingTop, paddingBottom, minHeight: totalHeight }}
+      >
+        {visibleMonths.map((month) => {
+          const net = month.totalIncome - month.totalExpense + month.eventAmount;
+          return (
+            <div key={month.yearMonth} className="grid h-11 grid-cols-5 items-center px-3 text-xs">
+              <div className="text-muted-foreground">{month.yearMonth}</div>
+              <div>{formatAmount(month.totalIncome)}</div>
+              <div>{formatAmount(month.totalExpense)}</div>
+              <div>{formatAmount(net)}</div>
+              <div>{formatAmount(month.totalBalance)}</div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }
