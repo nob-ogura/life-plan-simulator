@@ -15,20 +15,20 @@ import {
 } from "@/components/form/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { upsertRetirementBonusAction } from "@/features/inputs/life-events/commands/upsert-retirement-bonus/action";
+import { zodResolver } from "@/lib/zod-resolver";
+import { toRetirementPayload } from "./mapper";
 import {
   type RetirementSectionInput,
   type RetirementSectionPayload,
   RetirementSectionSchema,
-  toRetirementPayload,
-} from "@/features/inputs/forms/sections";
-import { upsertRetirementBonusAction } from "@/features/inputs/life-events/commands/upsert-retirement-bonus/action";
-import { zodResolver } from "@/lib/zod-resolver";
+} from "./schema";
 
-type RetirementBonusSectionFormProps = {
+type RetirementBonusFormProps = {
   defaultValues: RetirementSectionInput;
 };
 
-export function RetirementBonusSectionForm({ defaultValues }: RetirementBonusSectionFormProps) {
+export function RetirementBonusForm({ defaultValues }: RetirementBonusFormProps) {
   const router = useRouter();
   const [submitError, setSubmitError] = useState<string | null>(null);
   const form = useForm<RetirementSectionInput>({

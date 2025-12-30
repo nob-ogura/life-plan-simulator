@@ -6,29 +6,29 @@ import { AssetForm } from "@/features/inputs/assets/ui/AssetForm";
 import { buildAssetFormDefaults } from "@/features/inputs/assets/ui/mapper";
 import { SupabaseListChildrenRepository } from "@/features/inputs/children/queries/list-children/repository";
 import { SupabaseListExpensesRepository } from "@/features/inputs/expenses/queries/list-expenses/repository";
-import { BonusSectionForm } from "@/features/inputs/forms/BonusSectionForm";
-import { ExpenseSectionForm } from "@/features/inputs/forms/ExpenseSectionForm";
-import { FamilySectionForm } from "@/features/inputs/forms/FamilySectionForm";
-import { HousingSectionForm } from "@/features/inputs/forms/HousingSectionForm";
-import { IncomeSectionForm } from "@/features/inputs/forms/IncomeSectionForm";
-import { PensionSectionForm } from "@/features/inputs/forms/PensionSectionForm";
-import { RetirementBonusSectionForm } from "@/features/inputs/forms/RetirementBonusSectionForm";
-import { SimulationSectionForm } from "@/features/inputs/forms/SimulationSectionForm";
+import { ExpenseForm } from "@/features/inputs/expenses/ui/ExpenseForm";
+import { buildExpenseSectionDefaults } from "@/features/inputs/expenses/ui/mapper";
+import { FamilyForm } from "@/features/inputs/family/ui/FamilyForm";
+import { buildFamilySectionDefaults } from "@/features/inputs/family/ui/mapper";
+import { HousingForm } from "@/features/inputs/housing/ui/HousingForm";
+import { buildHousingSectionDefaults } from "@/features/inputs/housing/ui/mapper";
+import { SupabaseListIncomeStreamsRepository } from "@/features/inputs/income-streams/queries/list-income-streams/repository";
+import { BonusForm } from "@/features/inputs/income-streams/ui/BonusForm";
+import { IncomeForm } from "@/features/inputs/income-streams/ui/IncomeForm";
 import {
   buildBonusSectionDefaults,
-  buildExpenseSectionDefaults,
-  buildFamilySectionDefaults,
-  buildHousingSectionDefaults,
   buildIncomeSectionDefaults,
-  buildPensionSectionDefaults,
-  buildRetirementSectionDefaults,
-  buildSimulationSectionDefaults,
-} from "@/features/inputs/forms/sections";
-import { SupabaseListIncomeStreamsRepository } from "@/features/inputs/income-streams/queries/list-income-streams/repository";
+} from "@/features/inputs/income-streams/ui/mapper";
 import { SupabaseListLifeEventsRepository } from "@/features/inputs/life-events/queries/list-life-events/repository";
 import { LifeEventSection } from "@/features/inputs/life-events/ui/LifeEventSection";
 import { SupabaseListMortgagesRepository } from "@/features/inputs/mortgages/queries/list-mortgages/repository";
+import { buildPensionSectionDefaults } from "@/features/inputs/pension/ui/mapper";
+import { PensionForm } from "@/features/inputs/pension/ui/PensionForm";
 import { SupabaseListRentalsRepository } from "@/features/inputs/rentals/queries/list-rentals/repository";
+import { buildRetirementSectionDefaults } from "@/features/inputs/retirement/ui/mapper";
+import { RetirementBonusForm } from "@/features/inputs/retirement/ui/RetirementBonusForm";
+import { buildSimulationSectionDefaults } from "@/features/inputs/simulation/ui/mapper";
+import { SimulationForm } from "@/features/inputs/simulation/ui/SimulationForm";
 import { createServerAuthSession } from "@/shared/cross-cutting/auth/server-auth";
 import { createServerSupabaseClient } from "@/shared/cross-cutting/infrastructure/supabase.server";
 import type { Tables } from "@/types/supabase";
@@ -215,7 +215,7 @@ export default async function InputsPage() {
         { label: "子ども", value: formatCount(data.children.length, "人") },
       ],
       note: "本人・配偶者の生年月は必須項目です。未入力の場合は保存できません。",
-      form: <FamilySectionForm defaultValues={familySectionDefaults} />,
+      form: <FamilyForm defaultValues={familySectionDefaults} />,
       defaultOpen: true,
     },
     {
@@ -232,7 +232,7 @@ export default async function InputsPage() {
         },
       ],
       note: "手取り月額、昇給率、期間を入力して保存します。",
-      form: <IncomeSectionForm defaultValues={incomeSectionDefaults} />,
+      form: <IncomeForm defaultValues={incomeSectionDefaults} />,
     },
     {
       id: "bonus",
@@ -248,7 +248,7 @@ export default async function InputsPage() {
         },
       ],
       note: "定期収入ごとのボーナス月・金額・変化点を管理します。",
-      form: <BonusSectionForm defaultValues={bonusSectionDefaults} />,
+      form: <BonusForm defaultValues={bonusSectionDefaults} />,
     },
     {
       id: "expenses",
@@ -261,7 +261,7 @@ export default async function InputsPage() {
         { label: "主な支出ラベル", value: data.expenses[0]?.label ?? "未登録" },
       ],
       note: "支出の月額・インフレ率・期間・カテゴリを入力して保存します。",
-      form: <ExpenseSectionForm defaultValues={expenseSectionDefaults} />,
+      form: <ExpenseForm defaultValues={expenseSectionDefaults} />,
     },
     {
       id: "housing",
@@ -276,7 +276,7 @@ export default async function InputsPage() {
         { label: "賃貸", value: formatCount(data.rentals.length) },
       ],
       note: "購入/賃貸の情報を入力して保存します。",
-      form: <HousingSectionForm defaultValues={housingSectionDefaults} />,
+      form: <HousingForm defaultValues={housingSectionDefaults} />,
     },
     {
       id: "events",
@@ -302,7 +302,7 @@ export default async function InputsPage() {
         { label: "登録名", value: retirementBonuses[0]?.label ?? "未登録" },
       ],
       note: "退職金は 1 件のみ保存され、再保存すると上書きされます。",
-      form: <RetirementBonusSectionForm defaultValues={retirementSectionDefaults} />,
+      form: <RetirementBonusForm defaultValues={retirementSectionDefaults} />,
     },
     {
       id: "pension",
@@ -317,7 +317,7 @@ export default async function InputsPage() {
         },
       ],
       note: "年金開始年齢は将来の年金収入の計算に反映されます。",
-      form: <PensionSectionForm defaultValues={pensionSectionDefaults} />,
+      form: <PensionForm defaultValues={pensionSectionDefaults} />,
     },
     {
       id: "assets",
@@ -355,7 +355,7 @@ export default async function InputsPage() {
       ],
       note: "係数設定を変更するとシミュレーション結果に反映されます。",
       form: (
-        <SimulationSectionForm
+        <SimulationForm
           defaultValues={simulationSectionDefaults}
           settingsId={simulationSettingsId}
         />

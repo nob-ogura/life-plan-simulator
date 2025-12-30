@@ -18,22 +18,18 @@ import { Input } from "@/components/ui/input";
 import { createChildAction } from "@/features/inputs/children/commands/create-child/action";
 import { deleteChildAction } from "@/features/inputs/children/commands/delete-child/action";
 import { updateChildAction } from "@/features/inputs/children/commands/update-child/action";
-import {
-  type FamilySectionInput,
-  type FamilySectionPayload,
-  FamilySectionSchema,
-  toFamilyPayload,
-} from "@/features/inputs/forms/sections";
 import { upsertProfileAction } from "@/features/inputs/profiles/commands/upsert-profile/action";
 import { zodResolver } from "@/lib/zod-resolver";
 import { useAuth } from "@/shared/cross-cutting/auth";
+import { toFamilyPayload } from "./mapper";
+import { type FamilySectionInput, type FamilySectionPayload, FamilySectionSchema } from "./schema";
 
-type FamilySectionFormProps = {
+type FamilyFormProps = {
   defaultValues: FamilySectionInput;
   onSave?: (payload: ReturnType<typeof toFamilyPayload>) => void;
 };
 
-export function FamilySectionForm({ defaultValues, onSave }: FamilySectionFormProps) {
+export function FamilyForm({ defaultValues, onSave }: FamilyFormProps) {
   const router = useRouter();
   const { session, isReady } = useAuth();
   const [submitError, setSubmitError] = useState<string | null>(null);

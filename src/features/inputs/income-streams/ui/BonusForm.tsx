@@ -15,23 +15,24 @@ import {
 } from "@/components/form/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { updateIncomeStreamAction } from "@/features/inputs/income-streams/commands/update-income-stream/action";
+import { toOptionalMonthStartDate } from "@/features/inputs/shared/date";
+import { zodResolver } from "@/lib/zod-resolver";
+import { useAuth } from "@/shared/cross-cutting/auth";
+
 import {
   type BonusSectionInput,
   type BonusSectionPayload,
   BonusSectionSchema,
-  toOptionalMonthStartDate,
-} from "@/features/inputs/forms/sections";
-import { updateIncomeStreamAction } from "@/features/inputs/income-streams/commands/update-income-stream/action";
-import { zodResolver } from "@/lib/zod-resolver";
-import { useAuth } from "@/shared/cross-cutting/auth";
+} from "./bonus-schema";
 
 const monthOptions = Array.from({ length: 12 }, (_, index) => index + 1);
 
-type BonusSectionFormProps = {
+type BonusFormProps = {
   defaultValues: BonusSectionInput;
 };
 
-export function BonusSectionForm({ defaultValues }: BonusSectionFormProps) {
+export function BonusForm({ defaultValues }: BonusFormProps) {
   const router = useRouter();
   const { session, isReady } = useAuth();
   const [submitError, setSubmitError] = useState<string | null>(null);

@@ -15,20 +15,21 @@ import {
 } from "@/components/form/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  type PensionSectionInput,
-  type PensionSectionPayload,
-  PensionSectionSchema,
-} from "@/features/inputs/forms/sections";
 import { upsertProfileAction } from "@/features/inputs/profiles/commands/upsert-profile/action";
 import { zodResolver } from "@/lib/zod-resolver";
 import { useAuth } from "@/shared/cross-cutting/auth";
 
-type PensionSectionFormProps = {
+import {
+  type PensionSectionInput,
+  type PensionSectionPayload,
+  PensionSectionSchema,
+} from "./schema";
+
+type PensionFormProps = {
   defaultValues: PensionSectionInput;
 };
 
-export function PensionSectionForm({ defaultValues }: PensionSectionFormProps) {
+export function PensionForm({ defaultValues }: PensionFormProps) {
   const router = useRouter();
   const { session, isReady } = useAuth();
   const [submitError, setSubmitError] = useState<string | null>(null);

@@ -5,10 +5,9 @@ import { useMemo, useState } from "react";
 import { type UseFormReturn, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-
-import { toMonthStartDate } from "@/features/inputs/forms/sections";
 import { createLifeEventAction } from "@/features/inputs/life-events/commands/create-life-event/action";
 import { deleteLifeEventAction } from "@/features/inputs/life-events/commands/delete-life-event/action";
+import { toMonthStartDate } from "@/features/inputs/shared/date";
 import { zodResolver } from "@/lib/zod-resolver";
 import type { Tables } from "@/types/supabase";
 

@@ -15,99 +15,54 @@ import {
 } from "@/components/form/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { createExpenseAction } from "@/features/inputs/expenses/commands/create-expense/action";
-import { deleteExpenseAction } from "@/features/inputs/expenses/commands/delete-expense/action";
-import { updateExpenseAction } from "@/features/inputs/expenses/commands/update-expense/action";
-import {
-  type ExpenseSectionInput,
-  type ExpenseSectionPayload,
-  ExpenseSectionSchema,
-  toExpensePayloads,
-} from "@/features/inputs/forms/sections";
+import { bulkSaveIncomeStreamsAction } from "@/features/inputs/income-streams/commands/bulk-save-income-streams/action";
 import { zodResolver } from "@/lib/zod-resolver";
-import { useAuth } from "@/shared/cross-cutting/auth";
 
-type ExpenseSectionFormProps = {
-  defaultValues: ExpenseSectionInput;
+import { type IncomeSectionInput, IncomeSectionSchema } from "./schema";
+
+type IncomeFormProps = {
+  defaultValues: IncomeSectionInput;
 };
 
-export function ExpenseSectionForm({ defaultValues }: ExpenseSectionFormProps) {
+export function IncomeForm({ defaultValues }: IncomeFormProps) {
   const router = useRouter();
-  const { session, isReady } = useAuth();
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const form = useForm<ExpenseSectionInput>({
+  const form = useForm<IncomeSectionInput>({
     defaultValues,
-    resolver: zodResolver(ExpenseSectionSchema),
+    resolver: zodResolver(IncomeSectionSchema),
     mode: "onSubmit",
   });
   const { fields, append, remove } = useFieldArray({
     control: form.control,
-    name: "expenses",
+    name: "streams",
     keyName: "fieldKey",
   });
   const initialIdsRef = useRef<string[]>(
-    (defaultValues.expenses ?? []).map((expense) => expense.id).filter(Boolean) as string[],
+    (defaultValues.streams ?? []).map((stream) => stream.id).filter(Boolean) as string[],
   );
 
   useEffect(() => {
     form.reset(defaultValues);
-    initialIdsRef.current = (defaultValues.expenses ?? [])
-      .map((expense) => expense.id)
+    initialIdsRef.current = (defaultValues.streams ?? [])
+      .map((stream) => stream.id)
       .filter(Boolean) as string[];
   }, [defaultValues, form]);
 
-  const onSubmit = form.handleSubmit(async (value) => {
+  const onSubmit = form.handleSubmit(async () => {
     setSubmitError(null);
-    if (!isReady || !session?.user?.id) {
-      setSubmitError("ログイン情報を取得できませんでした。");
-      return;
-    }
-
-    const parsedResult = ExpenseSectionSchema.safeParse(value);
-    const parsed = (parsedResult.success ? parsedResult.data : value) as ExpenseSectionPayload;
-    const payloads = toExpensePayloads(parsed);
-    const currentIds = new Set(
-      parsed.expenses.map((expense) => expense.id).filter(Boolean) as string[],
-    );
-    const removedIds = initialIdsRef.current.filter((id) => !currentIds.has(id));
-    const createPayloads = parsed.expenses.flatMap((expense, index) =>
-      expense.id ? [] : [payloads[index]],
-    );
-    const updatePayloads = parsed.expenses.flatMap((expense, index) =>
-      expense.id ? [{ id: expense.id, payload: payloads[index] }] : [],
-    );
 
     try {
-      if (removedIds.length > 0) {
-        const results = await Promise.all(removedIds.map((id) => deleteExpenseAction({ id })));
-        if (results.some((result) => !result.ok)) {
-          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
-          return;
-        }
+      const rawValues = form.getValues();
+      const res = await bulkSaveIncomeStreamsAction({
+        initial_ids: initialIdsRef.current,
+        streams: rawValues.streams ?? [],
+      });
+      if (res.ok) {
+        toast.success("保存しました。");
+        router.refresh();
+      } else {
+        setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
       }
-
-      if (createPayloads.length > 0) {
-        const results = await Promise.all(
-          createPayloads.map((payload) => createExpenseAction(payload)),
-        );
-        if (results.some((result) => !result.ok)) {
-          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
-          return;
-        }
-      }
-
-      if (updatePayloads.length > 0) {
-        const results = await Promise.all(
-          updatePayloads.map(({ id, payload }) => updateExpenseAction({ id, patch: payload })),
-        );
-        if (results.some((result) => !result.ok)) {
-          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
-          return;
-        }
-      }
-
-      toast.success("保存しました。");
-      router.refresh();
     } catch (error) {
       console.error(error);
       setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
@@ -121,9 +76,9 @@ export function ExpenseSectionForm({ defaultValues }: ExpenseSectionFormProps) {
       <form className="space-y-4" onSubmit={onSubmit} noValidate>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <p className="text-sm font-semibold">支出項目</p>
+            <p className="text-sm font-semibold">定期収入</p>
             <p className="text-xs text-muted-foreground">
-              月額、インフレ率、期間、カテゴリを登録します。
+              手取り月額、昇給率、期間を入力してください。
             </p>
           </div>
           <Button
@@ -133,9 +88,8 @@ export function ExpenseSectionForm({ defaultValues }: ExpenseSectionFormProps) {
             onClick={() =>
               append({
                 label: "",
-                amount_monthly: "",
-                inflation_rate: "",
-                category: "",
+                take_home_monthly: "",
+                raise_rate: "",
                 start_year_month: "",
                 end_year_month: "",
               })
@@ -145,7 +99,7 @@ export function ExpenseSectionForm({ defaultValues }: ExpenseSectionFormProps) {
           </Button>
         </div>
         {fields.length === 0 ? (
-          <p className="text-xs text-muted-foreground">支出項目の登録はありません。</p>
+          <p className="text-xs text-muted-foreground">定期収入の登録はありません。</p>
         ) : (
           <div className="space-y-4">
             {fields.map((field, index) => (
@@ -154,7 +108,7 @@ export function ExpenseSectionForm({ defaultValues }: ExpenseSectionFormProps) {
                 className="space-y-4 rounded-md border border-border bg-card p-4"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-semibold">支出 {index + 1}</p>
+                  <p className="text-sm font-semibold">収入 {index + 1}</p>
                   <Button type="button" variant="ghost" size="sm" onClick={() => remove(index)}>
                     削除
                   </Button>
@@ -162,12 +116,12 @@ export function ExpenseSectionForm({ defaultValues }: ExpenseSectionFormProps) {
                 <div className="grid gap-4 md:grid-cols-2">
                   <FormField
                     control={form.control}
-                    name={`expenses.${index}.label` as const}
+                    name={`streams.${index}.label` as const}
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>ラベル</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="例: 生活費" />
+                          <Input {...field} placeholder="例: 給与" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -175,12 +129,12 @@ export function ExpenseSectionForm({ defaultValues }: ExpenseSectionFormProps) {
                   />
                   <FormField
                     control={form.control}
-                    name={`expenses.${index}.amount_monthly` as const}
+                    name={`streams.${index}.take_home_monthly` as const}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>月額</FormLabel>
+                        <FormLabel>手取り月額</FormLabel>
                         <FormControl>
-                          <Input {...field} inputMode="numeric" placeholder="例: 180000" />
+                          <Input {...field} inputMode="numeric" placeholder="例: 300000" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -188,12 +142,12 @@ export function ExpenseSectionForm({ defaultValues }: ExpenseSectionFormProps) {
                   />
                   <FormField
                     control={form.control}
-                    name={`expenses.${index}.inflation_rate` as const}
+                    name={`streams.${index}.raise_rate` as const}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>インフレ率</FormLabel>
+                        <FormLabel>昇給率</FormLabel>
                         <FormControl>
-                          <Input {...field} inputMode="decimal" placeholder="例: 0.01" />
+                          <Input {...field} inputMode="decimal" placeholder="例: 0.02" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -201,20 +155,7 @@ export function ExpenseSectionForm({ defaultValues }: ExpenseSectionFormProps) {
                   />
                   <FormField
                     control={form.control}
-                    name={`expenses.${index}.category` as const}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>カテゴリ</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="例: 生活費" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name={`expenses.${index}.start_year_month` as const}
+                    name={`streams.${index}.start_year_month` as const}
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>開始年月</FormLabel>
@@ -227,7 +168,7 @@ export function ExpenseSectionForm({ defaultValues }: ExpenseSectionFormProps) {
                   />
                   <FormField
                     control={form.control}
-                    name={`expenses.${index}.end_year_month` as const}
+                    name={`streams.${index}.end_year_month` as const}
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>終了年月</FormLabel>

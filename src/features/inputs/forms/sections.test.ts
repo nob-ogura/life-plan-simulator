@@ -1,14 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import { AssetFormSchema } from "@/features/inputs/assets/ui/schema";
-import {
-  BonusSectionSchema,
-  FamilySectionSchema,
-  HousingSectionSchema,
-  IncomeSectionSchema,
-  PensionSectionSchema,
-  SimulationSectionSchema,
-} from "./sections";
+import { FamilySectionSchema } from "@/features/inputs/family/ui/schema";
+import { HousingSectionSchema } from "@/features/inputs/housing/ui/schema";
+import { BonusSectionSchema } from "@/features/inputs/income-streams/ui/bonus-schema";
+import { IncomeSectionSchema } from "@/features/inputs/income-streams/ui/schema";
+import { PensionSectionSchema } from "@/features/inputs/pension/ui/schema";
+import { SimulationSectionSchema } from "@/features/inputs/simulation/ui/schema";
 
 const findIssueMessage = (
   issues: Array<{ path: Array<PropertyKey>; message: string }>,

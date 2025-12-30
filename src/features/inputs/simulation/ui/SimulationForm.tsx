@@ -15,17 +15,18 @@ import {
 } from "@/components/form/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  type SimulationSectionInput,
-  type SimulationSectionPayload,
-  SimulationSectionSchema,
-} from "@/features/inputs/forms/sections";
 import { createSimulationSettingsAction } from "@/features/inputs/simulation-settings/commands/create-simulation-settings/action";
 import { updateSimulationSettingsAction } from "@/features/inputs/simulation-settings/commands/update-simulation-settings/action";
 import { zodResolver } from "@/lib/zod-resolver";
 import { useAuth } from "@/shared/cross-cutting/auth";
 
-type SimulationSectionFormProps = {
+import {
+  type SimulationSectionInput,
+  type SimulationSectionPayload,
+  SimulationSectionSchema,
+} from "./schema";
+
+type SimulationFormProps = {
   defaultValues: SimulationSectionInput;
   settingsId?: string | null;
 };
@@ -33,7 +34,7 @@ type SimulationSectionFormProps = {
 const omitUndefined = <T extends Record<string, unknown>>(payload: T) =>
   Object.fromEntries(Object.entries(payload).filter(([, value]) => value !== undefined)) as T;
 
-export function SimulationSectionForm({ defaultValues, settingsId }: SimulationSectionFormProps) {
+export function SimulationForm({ defaultValues, settingsId }: SimulationFormProps) {
   const router = useRouter();
   const { session, isReady } = useAuth();
   const [submitError, setSubmitError] = useState<string | null>(null);

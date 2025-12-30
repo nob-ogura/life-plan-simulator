@@ -15,12 +15,6 @@ import {
 } from "@/components/form/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  type HousingSectionInput,
-  type HousingSectionPayload,
-  HousingSectionSchema,
-  toHousingPayloads,
-} from "@/features/inputs/forms/sections";
 import { createMortgageAction } from "@/features/inputs/mortgages/commands/create-mortgage/action";
 import { deleteMortgageAction } from "@/features/inputs/mortgages/commands/delete-mortgage/action";
 import { updateMortgageAction } from "@/features/inputs/mortgages/commands/update-mortgage/action";
@@ -29,12 +23,18 @@ import { deleteRentalAction } from "@/features/inputs/rentals/commands/delete-re
 import { updateRentalAction } from "@/features/inputs/rentals/commands/update-rental/action";
 import { zodResolver } from "@/lib/zod-resolver";
 import { useAuth } from "@/shared/cross-cutting/auth";
+import { toHousingPayloads } from "./mapper";
+import {
+  type HousingSectionInput,
+  type HousingSectionPayload,
+  HousingSectionSchema,
+} from "./schema";
 
-type HousingSectionFormProps = {
+type HousingFormProps = {
   defaultValues: HousingSectionInput;
 };
 
-export function HousingSectionForm({ defaultValues }: HousingSectionFormProps) {
+export function HousingForm({ defaultValues }: HousingFormProps) {
   const router = useRouter();
   const { session, isReady } = useAuth();
   const [submitError, setSubmitError] = useState<string | null>(null);

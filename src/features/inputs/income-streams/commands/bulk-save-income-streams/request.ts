@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { IncomeSectionSchema } from "@/features/inputs/forms/sections";
+import { IncomeSectionSchema } from "@/features/inputs/income-streams/ui/schema";
 
 export const BulkSaveIncomeStreamsRequestSchema = z
   .object({
