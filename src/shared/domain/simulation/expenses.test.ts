@@ -82,4 +82,60 @@ describe("expense calculation", () => {
     expect(getMonth(input, "2025-03").totalExpense).toBe(80000);
     expect(getMonth(input, "2025-04").totalExpense).toBe(0);
   });
+
+  it("keeps the rental end month when it is before the housing purchase stop month", () => {
+    const input = createBaseInput();
+    input.rentals = [
+      {
+        id: "rental-1",
+        rent_monthly: 80000,
+        start_year_month: "2025-01",
+        end_year_month: "2025-02",
+      },
+    ];
+    input.lifeEvents = [
+      {
+        amount: 0,
+        year_month: "2025-04",
+        repeat_interval_years: null,
+        stop_after_occurrences: null,
+        category: "housing_purchase",
+        auto_toggle_key: "HOUSING_PURCHASE_STOP_RENT",
+        building_price: 0,
+        land_price: 0,
+        down_payment: 0,
+      },
+    ];
+
+    expect(getMonth(input, "2025-02").totalExpense).toBe(80000);
+    expect(getMonth(input, "2025-03").totalExpense).toBe(0);
+  });
+
+  it("stops rent before the housing purchase when it is earlier than the rental end month", () => {
+    const input = createBaseInput();
+    input.rentals = [
+      {
+        id: "rental-1",
+        rent_monthly: 80000,
+        start_year_month: "2025-01",
+        end_year_month: "2025-06",
+      },
+    ];
+    input.lifeEvents = [
+      {
+        amount: 0,
+        year_month: "2025-04",
+        repeat_interval_years: null,
+        stop_after_occurrences: null,
+        category: "housing_purchase",
+        auto_toggle_key: "HOUSING_PURCHASE_STOP_RENT",
+        building_price: 0,
+        land_price: 0,
+        down_payment: 0,
+      },
+    ];
+
+    expect(getMonth(input, "2025-03").totalExpense).toBe(80000);
+    expect(getMonth(input, "2025-04").totalExpense).toBe(0);
+  });
 });

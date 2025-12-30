@@ -109,6 +109,9 @@ const getRentalStopMonth = (lifeEvents: SimulationLifeEvent[]): YearMonth | null
     if (event.auto_toggle_key !== STOP_RENT_AUTO_TOGGLE_KEY) {
       continue;
     }
+    if (event.category !== "housing_purchase") {
+      continue;
+    }
     if (earliestEventMonth == null) {
       earliestEventMonth = event.year_month;
     } else if (
