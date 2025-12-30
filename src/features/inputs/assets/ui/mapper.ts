@@ -14,8 +14,15 @@ export const buildAssetFormDefaults = (assets: Array<Tables<"assets">>): AssetFo
   };
 };
 
-export const toAssetPayload = (value: AssetFormPayload): CreateAssetRequest => ({
-  cash_balance: value.cash_balance,
-  investment_balance: value.investment_balance,
-  return_rate: value.return_rate,
-});
+export const toAssetPayload = (value: AssetFormPayload): CreateAssetRequest => {
+  const payload: CreateAssetRequest = {
+    cash_balance: value.cash_balance,
+    investment_balance: value.investment_balance,
+  };
+
+  if (value.return_rate !== undefined) {
+    payload.return_rate = value.return_rate;
+  }
+
+  return payload;
+};

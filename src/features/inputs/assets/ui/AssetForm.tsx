@@ -31,9 +31,6 @@ type AssetFormProps = {
   assetId?: string | null;
 };
 
-const omitUndefined = <T extends Record<string, unknown>>(payload: T) =>
-  Object.fromEntries(Object.entries(payload).filter(([, value]) => value !== undefined)) as T;
-
 export function AssetForm({ defaultValues, assetId }: AssetFormProps) {
   const router = useRouter();
   const { session, isReady } = useAuth();
@@ -57,7 +54,7 @@ export function AssetForm({ defaultValues, assetId }: AssetFormProps) {
 
     const parsedResult = AssetFormSchema.safeParse(value);
     const parsed = (parsedResult.success ? parsedResult.data : value) as AssetFormPayload;
-    const payload = omitUndefined(toAssetPayload(parsed));
+    const payload = toAssetPayload(parsed);
     try {
       if (assetId) {
         const result = await updateAssetAction({ id: assetId, patch: payload });

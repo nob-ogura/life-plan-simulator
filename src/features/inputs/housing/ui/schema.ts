@@ -8,8 +8,6 @@ import {
   requiredYearMonth,
 } from "@/features/inputs/shared/form-utils";
 
-const requiredString = z.string().trim().min(1, { message: "必須項目です" });
-
 const optionalString = z
   .string()
   .optional()
