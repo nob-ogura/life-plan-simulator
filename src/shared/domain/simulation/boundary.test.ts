@@ -74,7 +74,6 @@ describe("simulation boundary cases", () => {
         building_price: null,
         land_price: null,
         down_payment: null,
-        target_rental_id: null,
       },
     ];
 
@@ -104,7 +103,6 @@ describe("simulation boundary cases", () => {
         building_price: 0,
         land_price: 0,
         down_payment: 0,
-        target_rental_id: "rental-1",
       },
       {
         amount: 0,
@@ -116,7 +114,6 @@ describe("simulation boundary cases", () => {
         building_price: 0,
         land_price: 0,
         down_payment: 0,
-        target_rental_id: "rental-1",
       },
     ];
 
@@ -195,7 +192,6 @@ describe("simulation boundary cases", () => {
         building_price: null,
         land_price: null,
         down_payment: null,
-        target_rental_id: null,
       },
     ];
 
@@ -224,7 +220,6 @@ describe("simulation boundary cases", () => {
       building_price: 10000000,
       land_price: 5000000,
       down_payment: 3000000,
-      target_rental_id: null,
     };
 
     const metrics = deriveHousingPurchaseMetrics(event, settings);

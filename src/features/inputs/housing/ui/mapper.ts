@@ -24,7 +24,6 @@ export const buildHousingSectionDefaults = (
     building_price: toNumberInput(mortgage.building_price),
     land_price: toNumberInput(mortgage.land_price),
     down_payment: toNumberInput(mortgage.down_payment),
-    target_rental_id: mortgage.target_rental_id ?? "",
   })),
   rentals: rentals.map((rental) => ({
     id: rental.id,
@@ -48,7 +47,6 @@ export const toHousingPayloads = (
     building_price: mortgage.building_price,
     land_price: mortgage.land_price,
     down_payment: mortgage.down_payment,
-    target_rental_id: mortgage.target_rental_id ? mortgage.target_rental_id : null,
   })),
   rentals: value.rentals.map((rental) => ({
     rent_monthly: rental.rent_monthly,

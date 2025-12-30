@@ -20,7 +20,6 @@ describe("housing section schema", () => {
           building_price: "",
           land_price: "",
           down_payment: "",
-          target_rental_id: "",
         },
       ],
       rentals: [],

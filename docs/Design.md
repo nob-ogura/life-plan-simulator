@@ -38,11 +38,11 @@
 - `children`: id, user_id, label, birth_year_month date nullable, due_year_month date nullable, note。出生済みは birth_year_month、誕生予定は due_year_month を設定し、両方 null を禁止する check constraint を付与。
 - `income_streams`: id, user_id, label, take_home_monthly, bonus_months int[] default '{}', bonus_amount, change_year_month date nullable, bonus_amount_after nullable, raise_rate decimal default 0.01, start_year_month date, end_year_month date nullable。
 - `expenses`: id, user_id, label, amount_monthly, inflation_rate decimal default 0.0, category, start_year_month date, end_year_month date nullable。
-- `rentals`: id, user_id, rent_monthly, start_year_month date, end_year_month date nullable。※MVPでは1件のみを想定。
+- `rentals`: id, user_id, rent_monthly, start_year_month date, end_year_month date nullable。※一度に所有する賃貸は1件のみを前提。
 - `assets`: id, user_id, cash_balance, investment_balance, return_rate decimal default 0.03。
   - return_rate は investment_balance（運用資産）にのみ適用し、cash_balance は常に利回り0%として扱う。
 - `mortgages`: id, user_id, principal, annual_rate decimal default 0.015, years, start_year_month date, building_price, land_price, down_payment。
-- `life_events`: id, user_id, label, amount, year_month date, repeat_interval_years int nullable, stop_after_occurrences int nullable, category (housing/car/travel/etc), auto_toggle_key nullable, building_price nullable, land_price nullable, down_payment nullable, target_rental_id nullable。
+- `life_events`: id, user_id, label, amount, year_month date, repeat_interval_years int nullable, stop_after_occurrences int nullable, category (housing/car/travel/etc), auto_toggle_key nullable, building_price nullable, land_price nullable, down_payment nullable。
   - auto_toggle_key: システム制御用。MVPでは `HOUSING_PURCHASE_STOP_RENT` (住宅購入時に家賃支払いを停止) のみを実装対象とする。
 - `simulation_settings`: id, user_id, start_offset_months int default 0, end_age int default 100。
   - 係数設定（デフォルト値はDB定義）:
@@ -80,7 +80,7 @@
 - ライフイベント
   - `life_events` をタイムラインに展開。repeat_interval_years があれば該当月ごとに生成。
   - category が housing_purchase の場合、building_price / land_price / down_payment を必須入力として principal 計算と固定資産税計算に利用する。
-  - auto_toggle_key == `HOUSING_PURCHASE_STOP_RENT` の場合、対象 rental を住宅購入月の前月で終了（MVPでは単一 rental 前提、将来は target_rental_id で指定可能）。
+  - auto_toggle_key == `HOUSING_PURCHASE_STOP_RENT` の場合、対象 rental を住宅購入月の前月で終了（単一 rental 前提）。
 - 資産推移
   - 月次収支 = total_income - total_expense + event_amount。
   - 資金の流れ:

@@ -37,7 +37,7 @@
 ## フェーズ3: データモデル & CRUD スライス
 - 目的: 入力データを永続化できる最小の API/ストアを揃え、以降の UI/計算の土台にする。
 - 実装内容:
-  - テーブル: `children`, `income_streams`, `expenses`, `rentals`, `assets`, `mortgages`, `life_events` のスキーマとインデックスを Supabase migration として作成（`profiles` / `simulation_settings` はフェーズ2で作成済み）。`mortgages` に `target_rental_id` (NULL可, `rentals(id)` への FK, `user_id` と複合インデックス) を追加し、複数 rental 連動ロジックの受け皿を先行して用意する。退職金は `life_events` の category `retirement_bonus` で扱い、年金額・諸係数（諸経費率・固定資産税率・評価額掛目など）は `simulation_settings` に保持する。
+  - テーブル: `children`, `income_streams`, `expenses`, `rentals`, `assets`, `mortgages`, `life_events` のスキーマとインデックスを Supabase migration として作成（`profiles` / `simulation_settings` はフェーズ2で作成済み）。退職金は `life_events` の category `retirement_bonus` で扱い、年金額・諸係数（諸経費率・固定資産税率・評価額掛目など）は `simulation_settings` に保持する。
   - 制約/標準化: すべての日付は月初 (`YYYY-MM-01`) に正規化、金額は `amount >= 0`、`repeat_interval_years > 0`、`children` は `birth_year_month` または `due_year_month` のどちらか必須、`life_events(year_month)` にインデックスを付与。`profiles` には本人/配偶者いずれかの生年月入力が必須になるようチェックを検討。
   - パフォーマンス: 全テーブルの `user_id` に BTREE インデックスを付与し、RLS 下でもクエリ性能を維持する。
   - セキュリティ: 本フェーズで作成する全テーブルに対し migration で `enable row level security;` と `auth.uid() = user_id` ポリシーを付与する。
@@ -105,11 +105,11 @@
 ## フェーズ7: 住宅イベント・自動停止ロジック強化
 - 目的: 住宅購入イベントと家賃停止、繰り返しイベントの自動展開など、要件の連動ロジックを仕上げる。
 - 実装内容:
-  - 住宅購入ロジックを拡張: 複数 rental / `target_rental_id` 対応や例外ケース（途中解約など）を扱う。
+- 住宅購入ロジックを拡張: end_month の編集による早期終了を尊重する。
   - 繰り返しイベントのタイムライン展開と停止条件（回数/年齢）の計算・UIを強化（フェーズ4のベース実装を発展）。
   - 住宅ローン諸経費率・固定資産税率・評価額掛目を `simulation_settings` から参照し、計算結果への反映を精緻化（フェーズ4でのハードコード排除を前提）。
 - DOD:
-  - 複数 rental / target_rental_id など拡張ケースでも家賃停止ロジックが期待通り動作する。
+- 単一 rental 前提の家賃停止ロジックが期待通り動作する（end_month の編集による早期終了も反映）。
   - 繰り返しイベントの停止条件（回数/年齢）が UI と計算で一致している。
   - 上記シナリオのドメイン単体テストと E2E の双方がグリーン。
 

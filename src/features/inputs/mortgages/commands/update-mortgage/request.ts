@@ -9,7 +9,6 @@ const UpdateMortgagePatchSchema = z
     building_price: z.number(),
     land_price: z.number(),
     down_payment: z.number(),
-    target_rental_id: z.string().min(1).nullable().optional(),
   })
   .partial()
   .strict();

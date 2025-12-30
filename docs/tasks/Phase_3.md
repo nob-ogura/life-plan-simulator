@@ -7,14 +7,12 @@
 - 作業内容:
   - `children`, `income_streams`, `expenses`, `rentals`, `assets`, `mortgages`, `life_events` を作成。
   - `docs/Design.md` のデータモデルに沿ったカラム/型/デフォルト値を定義する。
-  - `mortgages.target_rental_id`（NULL 可、`rentals(id)` 参照）を追加する。
   - `life_events` に `auto_toggle_key`/`repeat_interval_years`/`stop_after_occurrences` を含める。
 - 受入基準（Gherkin）:
   - シナリオ: コアテーブルが設計通りに作成されている
     - 前提: Supabase migration が適用済みである
     - もし: 各テーブルのスキーマを確認する
     - ならば: `docs/Design.md` に定義された主要カラムとデフォルト値が存在する
-    - かつ: `mortgages.target_rental_id` が `rentals(id)` を参照している
 
 ## Task 2: 制約と日付正規化ルールの実装
 - 目的: データ品質を DB 側で担保する。
@@ -35,13 +33,12 @@
 - 作業内容:
   - 全テーブルの `user_id` に BTREE インデックスを付与する。
   - `life_events(year_month)` にインデックスを付与する。
-  - `mortgages(user_id, target_rental_id)` の複合インデックスを追加する。
 - 受入基準（Gherkin）:
   - シナリオ: 必須インデックスが作成されている
     - 前提: migration が適用済みである
     - もし: インデックス一覧を確認する
     - ならば: すべてのテーブルに `user_id` インデックスが存在する
-    - かつ: `life_events(year_month)` と `mortgages(user_id, target_rental_id)` が存在する
+    - かつ: `life_events(year_month)` が存在する
 
 ## Task 4: RLS 有効化とポリシー作成
 - 目的: ユーザー単位でデータを隔離する。

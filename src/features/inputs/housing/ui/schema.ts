@@ -8,12 +8,6 @@ import {
   requiredYearMonth,
 } from "@/features/inputs/shared/form-utils";
 
-const optionalString = z
-  .string()
-  .optional()
-  .transform((value) => (value ?? "").trim())
-  .transform((value) => (value === "" ? undefined : value));
-
 const MortgageFormSchema = z.object({
   id: z.string().optional(),
   principal: requiredNumericString,
@@ -23,7 +17,6 @@ const MortgageFormSchema = z.object({
   building_price: requiredNumericString,
   land_price: requiredNumericString,
   down_payment: requiredNumericString,
-  target_rental_id: optionalString,
 });
 
 const RentalFormSchema = z.object({

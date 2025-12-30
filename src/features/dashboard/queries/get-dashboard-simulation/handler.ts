@@ -97,7 +97,6 @@ const toSimulationMortgage = (mortgage: Tables<"mortgages">): SimulationMortgage
   building_price: mortgage.building_price,
   land_price: mortgage.land_price,
   down_payment: mortgage.down_payment,
-  target_rental_id: mortgage.target_rental_id,
 });
 
 const toSimulationLifeEvent = (event: Tables<"life_events">): SimulationLifeEvent => ({
@@ -110,7 +109,6 @@ const toSimulationLifeEvent = (event: Tables<"life_events">): SimulationLifeEven
   building_price: event.building_price,
   land_price: event.land_price,
   down_payment: event.down_payment,
-  target_rental_id: event.target_rental_id,
 });
 
 const hasRequiredProfile = (profile: Tables<"profiles"> | null): profile is Tables<"profiles"> =>

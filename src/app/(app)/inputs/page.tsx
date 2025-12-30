@@ -266,16 +266,16 @@ export default async function InputsPage() {
     {
       id: "housing",
       title: "住宅",
-      description: "住宅購入・ローン・賃貸情報をまとめて管理します。",
-      summary: `住宅購入 ${formatCount(data.mortgages.length)} / 賃貸 ${formatCount(
-        data.rentals.length,
+      description: "賃貸・住宅購入情報をまとめて管理します。",
+      summary: `賃貸 ${formatCount(data.rentals.length)} / 住宅購入 ${formatCount(
+        data.mortgages.length,
       )}`,
       status: statusLabel(data.mortgages.length > 0 || data.rentals.length > 0),
       rows: [
-        { label: "住宅購入", value: formatCount(data.mortgages.length) },
         { label: "賃貸", value: formatCount(data.rentals.length) },
+        { label: "住宅購入", value: formatCount(data.mortgages.length) },
       ],
-      note: "購入/賃貸の情報を入力して保存します。",
+      note: "賃貸/住宅購入の情報を入力して保存します。",
       form: <HousingForm defaultValues={housingSectionDefaults} />,
     },
     {

@@ -146,7 +146,6 @@ export type Database = {
           land_price: number | null;
           repeat_interval_years: number | null;
           stop_after_occurrences: number | null;
-          target_rental_id: string | null;
           user_id: string;
           year_month: string;
         };
@@ -161,7 +160,6 @@ export type Database = {
           land_price?: number | null;
           repeat_interval_years?: number | null;
           stop_after_occurrences?: number | null;
-          target_rental_id?: string | null;
           user_id: string;
           year_month: string;
         };
@@ -176,7 +174,6 @@ export type Database = {
           land_price?: number | null;
           repeat_interval_years?: number | null;
           stop_after_occurrences?: number | null;
-          target_rental_id?: string | null;
           user_id?: string;
           year_month?: string;
         };
@@ -191,7 +188,6 @@ export type Database = {
           land_price: number;
           principal: number;
           start_year_month: string;
-          target_rental_id: string | null;
           user_id: string;
           years: number;
         };
@@ -203,7 +199,6 @@ export type Database = {
           land_price: number;
           principal: number;
           start_year_month: string;
-          target_rental_id?: string | null;
           user_id: string;
           years: number;
         };
@@ -215,19 +210,10 @@ export type Database = {
           land_price?: number;
           principal?: number;
           start_year_month?: string;
-          target_rental_id?: string | null;
           user_id?: string;
           years?: number;
         };
-        Relationships: [
-          {
-            foreignKeyName: "mortgages_target_rental_id_fkey";
-            columns: ["target_rental_id"];
-            isOneToOne: false;
-            referencedRelation: "rentals";
-            referencedColumns: ["id"];
-          },
-        ];
+        Relationships: [];
       };
       profiles: {
         Row: {

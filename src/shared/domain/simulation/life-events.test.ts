@@ -56,7 +56,6 @@ describe("life events", () => {
         building_price: null,
         land_price: null,
         down_payment: null,
-        target_rental_id: null,
       },
     ];
 
@@ -99,7 +98,6 @@ describe("life events", () => {
         building_price: 20000000,
         land_price: 10000000,
         down_payment: 5000000,
-        target_rental_id: null,
       },
     ];
 
@@ -121,7 +119,6 @@ describe("life events", () => {
         building_price: null,
         land_price: 10000000,
         down_payment: 5000000,
-        target_rental_id: null,
       },
     ];
 

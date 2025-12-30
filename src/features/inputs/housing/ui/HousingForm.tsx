@@ -190,6 +190,94 @@ export function HousingForm({ defaultValues }: HousingFormProps) {
         <div className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
+              <p className="text-sm font-semibold">賃貸</p>
+              <p className="text-xs text-muted-foreground">家賃と期間を入力します。</p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                appendRental({
+                  rent_monthly: "",
+                  start_year_month: "",
+                  end_year_month: "",
+                })
+              }
+            >
+              追加
+            </Button>
+          </div>
+          {rentalFields.length === 0 ? (
+            <p className="text-xs text-muted-foreground">賃貸の登録はありません。</p>
+          ) : (
+            <div className="space-y-4">
+              {rentalFields.map((field, index) => (
+                <div
+                  key={field.fieldKey}
+                  className="space-y-4 rounded-md border border-border bg-card p-4"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-semibold">賃貸 {index + 1}</p>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeRental(index)}
+                    >
+                      削除
+                    </Button>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <FormField
+                      control={form.control}
+                      name={`rentals.${index}.rent_monthly` as const}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>家賃（月額）</FormLabel>
+                          <FormControl>
+                            <Input {...field} inputMode="numeric" placeholder="例: 120000" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={`rentals.${index}.start_year_month` as const}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>開始年月</FormLabel>
+                          <FormControl>
+                            <Input {...field} type="month" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={`rentals.${index}.end_year_month` as const}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>終了年月</FormLabel>
+                          <FormControl>
+                            <Input {...field} type="month" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
               <p className="text-sm font-semibold">住宅購入</p>
               <p className="text-xs text-muted-foreground">
                 建物価格・土地価格・頭金・返済年数・金利を入力します。
@@ -208,7 +296,6 @@ export function HousingForm({ defaultValues }: HousingFormProps) {
                   building_price: "",
                   land_price: "",
                   down_payment: "",
-                  target_rental_id: "",
                 })
               }
             >
@@ -320,94 +407,6 @@ export function HousingForm({ defaultValues }: HousingFormProps) {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>借入開始年月</FormLabel>
-                          <FormControl>
-                            <Input {...field} type="month" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <p className="text-sm font-semibold">賃貸</p>
-              <p className="text-xs text-muted-foreground">家賃と期間を入力します。</p>
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                appendRental({
-                  rent_monthly: "",
-                  start_year_month: "",
-                  end_year_month: "",
-                })
-              }
-            >
-              追加
-            </Button>
-          </div>
-          {rentalFields.length === 0 ? (
-            <p className="text-xs text-muted-foreground">賃貸の登録はありません。</p>
-          ) : (
-            <div className="space-y-4">
-              {rentalFields.map((field, index) => (
-                <div
-                  key={field.fieldKey}
-                  className="space-y-4 rounded-md border border-border bg-card p-4"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-semibold">賃貸 {index + 1}</p>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeRental(index)}
-                    >
-                      削除
-                    </Button>
-                  </div>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <FormField
-                      control={form.control}
-                      name={`rentals.${index}.rent_monthly` as const}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>家賃（月額）</FormLabel>
-                          <FormControl>
-                            <Input {...field} inputMode="numeric" placeholder="例: 120000" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`rentals.${index}.start_year_month` as const}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>開始年月</FormLabel>
-                          <FormControl>
-                            <Input {...field} type="month" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`rentals.${index}.end_year_month` as const}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>終了年月</FormLabel>
                           <FormControl>
                             <Input {...field} type="month" />
                           </FormControl>

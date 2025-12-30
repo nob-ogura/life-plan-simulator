@@ -12,7 +12,6 @@ const UpdateLifeEventPatchSchema = z
     building_price: z.number().nullable().optional(),
     land_price: z.number().nullable().optional(),
     down_payment: z.number().nullable().optional(),
-    target_rental_id: z.string().min(1).nullable().optional(),
   })
   .partial()
   .strict();

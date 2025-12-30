@@ -103,16 +103,10 @@ const calculateExpenseForItem = (expense: SimulationExpense, yearMonth: YearMont
 
 const STOP_RENT_AUTO_TOGGLE_KEY = "HOUSING_PURCHASE_STOP_RENT";
 
-const getRentalStopMonth = (
-  rentalId: SimulationRental["id"],
-  lifeEvents: SimulationLifeEvent[],
-): YearMonth | null => {
+const getRentalStopMonth = (lifeEvents: SimulationLifeEvent[]): YearMonth | null => {
   let earliestEventMonth: YearMonth | null = null;
   for (const event of lifeEvents) {
     if (event.auto_toggle_key !== STOP_RENT_AUTO_TOGGLE_KEY) {
-      continue;
-    }
-    if (event.target_rental_id != null && event.target_rental_id !== rentalId) {
       continue;
     }
     if (earliestEventMonth == null) {
@@ -132,12 +126,12 @@ const getRentalStopMonth = (
 const applyAutoToggleToRentals = (
   rentals: SimulationRental[],
   lifeEvents: SimulationLifeEvent[],
-): SimulationRental[] =>
-  rentals.map((rental) => {
-    const stopMonth = getRentalStopMonth(rental.id, lifeEvents);
-    if (stopMonth == null) {
-      return rental;
-    }
+): SimulationRental[] => {
+  const stopMonth = getRentalStopMonth(lifeEvents);
+  if (stopMonth == null) {
+    return rentals;
+  }
+  return rentals.map((rental) => {
     const effectiveEnd =
       rental.end_year_month == null ? stopMonth : minYearMonth(stopMonth, rental.end_year_month);
     if (effectiveEnd === rental.end_year_month) {
@@ -145,6 +139,7 @@ const applyAutoToggleToRentals = (
     }
     return { ...rental, end_year_month: effectiveEnd };
   });
+};
 
 const calculateRentForRental = (rental: SimulationRental, yearMonth: YearMonth): number => {
   if (!isYearMonthWithinRange(yearMonth, rental.start_year_month, rental.end_year_month)) {

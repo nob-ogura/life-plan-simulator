@@ -104,7 +104,6 @@ describe("income calculation", () => {
         building_price: null,
         land_price: null,
         down_payment: null,
-        target_rental_id: null,
       },
     ];
 

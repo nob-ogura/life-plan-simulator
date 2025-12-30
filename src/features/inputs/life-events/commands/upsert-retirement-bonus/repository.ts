@@ -30,7 +30,6 @@ export class SupabaseUpsertRetirementBonusRepository implements UpsertRetirement
       building_price: null,
       land_price: null,
       down_payment: null,
-      target_rental_id: null,
     };
 
     const { data, error } = await scopeByUserId(

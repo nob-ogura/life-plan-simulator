@@ -16,9 +16,6 @@ create index if not exists idx_assets_user_id
 create index if not exists idx_mortgages_user_id
   on public.mortgages using btree (user_id);
 
-create index if not exists idx_mortgages_user_id_target_rental_id
-  on public.mortgages using btree (user_id, target_rental_id);
-
 create index if not exists idx_life_events_user_id
   on public.life_events using btree (user_id);
 

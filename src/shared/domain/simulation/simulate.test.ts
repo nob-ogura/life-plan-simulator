@@ -75,7 +75,6 @@ const createInput = (): SimulationInput => ({
       building_price: 20000000,
       land_price: 10000000,
       down_payment: 5000000,
-      target_rental_id: "rental-1",
     },
   ],
   lifeEvents: [
@@ -89,7 +88,6 @@ const createInput = (): SimulationInput => ({
       building_price: 20000000,
       land_price: 10000000,
       down_payment: 5000000,
-      target_rental_id: "rental-1",
     },
   ],
 });

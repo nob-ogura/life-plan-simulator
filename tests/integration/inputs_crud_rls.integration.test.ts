@@ -555,7 +555,6 @@ describeIf("Inputs CRUD + RLS (Endpoint/Handler + Supabase)", () => {
         building_price: 250000,
         land_price: 50000,
         down_payment: 20000,
-        target_rental_id: null,
       },
       {
         principal: 280000,
@@ -565,7 +564,6 @@ describeIf("Inputs CRUD + RLS (Endpoint/Handler + Supabase)", () => {
         building_price: 220000,
         land_price: 60000,
         down_payment: 15000,
-        target_rental_id: null,
       },
       { annual_rate: 0.02 },
       clientA,
@@ -604,7 +602,6 @@ describeIf("Inputs CRUD + RLS (Endpoint/Handler + Supabase)", () => {
         building_price: null,
         land_price: null,
         down_payment: null,
-        target_rental_id: null,
       },
       {
         label: "Car",
@@ -617,7 +614,6 @@ describeIf("Inputs CRUD + RLS (Endpoint/Handler + Supabase)", () => {
         building_price: null,
         land_price: null,
         down_payment: null,
-        target_rental_id: null,
       },
       { amount: 2500 },
       clientA,
@@ -650,7 +646,6 @@ describeIf("Inputs CRUD + RLS (Endpoint/Handler + Supabase)", () => {
       building_price: null,
       land_price: null,
       down_payment: null,
-      target_rental_id: null,
     });
 
     const second = await upsertEndpoint.handle({
@@ -664,7 +659,6 @@ describeIf("Inputs CRUD + RLS (Endpoint/Handler + Supabase)", () => {
       building_price: null,
       land_price: null,
       down_payment: null,
-      target_rental_id: null,
     });
 
     expect(second.id).toBe(first.id);

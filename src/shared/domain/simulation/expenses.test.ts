@@ -76,7 +76,6 @@ describe("expense calculation", () => {
         building_price: 0,
         land_price: 0,
         down_payment: 0,
-        target_rental_id: "rental-1",
       },
     ];
 

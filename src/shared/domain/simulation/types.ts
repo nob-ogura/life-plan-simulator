@@ -56,7 +56,6 @@ export type SimulationMortgage = Pick<
   | "building_price"
   | "land_price"
   | "down_payment"
-  | "target_rental_id"
 >;
 
 export type SimulationLifeEvent = Pick<
@@ -70,7 +69,6 @@ export type SimulationLifeEvent = Pick<
   | "building_price"
   | "land_price"
   | "down_payment"
-  | "target_rental_id"
 >;
 
 export type SimulationInput = {

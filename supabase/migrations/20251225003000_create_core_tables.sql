@@ -57,8 +57,7 @@ create table if not exists public.mortgages (
   start_year_month date not null,
   building_price numeric(12, 2) not null,
   land_price numeric(12, 2) not null,
-  down_payment numeric(12, 2) not null,
-  target_rental_id uuid references public.rentals(id)
+  down_payment numeric(12, 2) not null
 );
 
 create table if not exists public.life_events (
@@ -73,6 +72,5 @@ create table if not exists public.life_events (
   auto_toggle_key text,
   building_price numeric(12, 2),
   land_price numeric(12, 2),
-  down_payment numeric(12, 2),
-  target_rental_id uuid
+  down_payment numeric(12, 2)
 );

@@ -71,14 +71,6 @@ const expectColumnDefault = (block: TableBlock, column: string, defaultPattern: 
   ).toBe(true);
 };
 
-const expectColumnReference = (block: TableBlock, column: string, referencePattern: RegExp) => {
-  const matcher = new RegExp(`${column}\\b[^\\n]*references\\s+${referencePattern.source}`, "i");
-  expect(
-    matcher.test(block.block),
-    `Expected ${block.file} to reference ${referencePattern} for ${column}`,
-  ).toBe(true);
-};
-
 const expectPattern = (pattern: RegExp, label: string) => {
   const migrations = readMigrationSql();
   const matched = migrations.some(({ sql }) => pattern.test(sql));
@@ -294,11 +286,9 @@ describe("Schema Migrations", () => {
         "building_price",
         "land_price",
         "down_payment",
-        "target_rental_id",
       ]);
 
       expectColumnDefault(block, "annual_rate", /0\.015/);
-      expectColumnReference(block, "target_rental_id", /public\.rentals\s*\(id\)/i);
     });
 
     it("creates life_events with required columns", () => {
@@ -321,7 +311,6 @@ describe("Schema Migrations", () => {
         "building_price",
         "land_price",
         "down_payment",
-        "target_rental_id",
       ]);
     });
 
@@ -405,7 +394,6 @@ describe("Schema Migrations", () => {
       expectIndex("mortgages", ["user_id"]);
       expectIndex("life_events", ["user_id"]);
       expectIndex("life_events", ["year_month"]);
-      expectIndex("mortgages", ["user_id", "target_rental_id"]);
     });
 
     it("enables RLS and adds per-user policies for core tables", () => {
