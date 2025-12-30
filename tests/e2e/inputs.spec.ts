@@ -153,12 +153,12 @@ test("housing section accepts input and updates summary", async ({ authenticated
     has: page.getByText("住宅", { exact: true }),
   });
 
-  await housingSection.getByText("住宅", { exact: true }).click();
+  await housingSection.locator("summary").click();
 
   await expect(housingSection.getByText("住宅購入の登録はありません。")).toBeVisible();
   await expect(housingSection.getByText("賃貸の登録はありません。")).toBeVisible();
 
-  await housingSection.getByRole("button", { name: "追加" }).first().click();
+  await housingSection.getByRole("button", { name: "追加" }).nth(1).click();
   await housingSection.getByLabel("建物価格").fill("25000000");
   await housingSection.getByLabel("土地価格").fill("12000000");
   await housingSection.getByLabel("頭金").fill("5000000");
@@ -167,7 +167,7 @@ test("housing section accepts input and updates summary", async ({ authenticated
   await housingSection.getByLabel("借入額").fill("32000000");
   await housingSection.getByLabel("借入開始年月").fill("2025-04");
 
-  await housingSection.getByRole("button", { name: "追加" }).nth(1).click();
+  await housingSection.getByRole("button", { name: "追加" }).first().click();
   await housingSection.getByLabel("家賃（月額）").fill("120000");
   await housingSection.getByLabel("開始年月", { exact: true }).fill("2025-04");
   await housingSection.getByLabel("終了年月").fill("2030-03");

@@ -1,51 +1,42 @@
 # Repository Guidelines
 
-This repository is a Next.js (App Router) application for a life-plan simulator, using
-TypeScript, Tailwind CSS, Supabase, and Playwright/Vitest for tests. Use `pnpm` for all
-package scripts.
-
 ## Project Structure & Module Organization
-
-- `src/app`: route handlers and UI for the App Router.
-- `src/components`: shared UI components.
-- `src/features`: feature-scoped modules.
-- `src/lib`: utilities and client setup (e.g., Supabase helpers).
-- `src/shared`: cross-cutting domain helpers/types.
-- `src/types`: generated and shared TypeScript types (including Supabase).
-- `src/test`: test setup and factories.
-- `tests/e2e`: Playwright specs (`*.spec.ts`).
-- `tests/integration`: Vitest integration tests (`*.integration.test.ts`).
-- `supabase/migrations`: database migrations.
-- `docs`: supporting documentation.
+- `src/app`: Next.js App Router pages and route handlers.
+- `src/features`: Feature-level modules (domain UI + logic).
+- `src/shared`: Cross-cutting utilities, domain logic, and shared UI.
+- `src/components`: Reusable UI primitives/components.
+- `src/lib` and `src/types`: Supporting helpers and shared types.
+- `tests/e2e`: Playwright end-to-end tests.
+- `tests/integration`: Vitest integration tests.
+- `supabase/migrations`: Database migrations.
+- `docs`: Project documentation.
 
 ## Build, Test, and Development Commands
-
-- `pnpm dev`: run the local dev server on http://localhost:3000.
-- `pnpm build`: build the production bundle.
-- `pnpm start`: run the built app.
-- `pnpm lint`: run Biome lint + fixes.
-- `pnpm format`: format code with Biome.
-- `pnpm typecheck`: TypeScript typecheck without emit.
-- `pnpm test:unit`: run Vitest unit tests.
-- `pnpm test:integration`: run Vitest integration tests.
-- `pnpm test:e2e`: run Playwright end-to-end tests.
-- `pnpm supabase:push`: apply migrations to remote Supabase.
-- `pnpm supabase:gen-types`: regenerate Supabase types into `src/types/supabase.ts`.
+- `pnpm dev`: Start local dev server at http://localhost:3000.
+- `pnpm build`: Create production build.
+- `pnpm start`: Run the production server.
+- `pnpm format`: Apply Biome formatting.
+- `pnpm lint`: Run Biome checks with auto-fix.
+- `pnpm typecheck`: TypeScript type check.
+- `pnpm test:unit`: Run Vitest unit tests.
+- `pnpm test:integration`: Run Vitest integration tests.
+- `pnpm test:e2e`: Run Playwright E2E tests.
 
 ## Coding Style & Naming Conventions
-
-Formatting and linting are enforced by Biome (`biome.json`) with 2-space indentation and
-a 100 character line width. Prefer TypeScript, keep imports organized, and follow existing
-file naming patterns, especially for tests: `*.spec.ts` (e2e) and `*.integration.test.ts`.
+- Formatting and linting are enforced by Biome (2-space indentation, line width 100).
+- Prefer TypeScript strictness and explicit types at module boundaries.
+- React component files are typically PascalCase (e.g., `LifeEventSection.tsx`).
+- Test file patterns:
+  - Unit: `*.test.ts` / `*.test.tsx` (often co-located in `src/`).
+  - Integration: `*.integration.test.ts` in `tests/integration`.
+  - E2E: `*.spec.ts` in `tests/e2e`.
 
 ## Testing Guidelines
+- Unit and integration tests run with Vitest; E2E tests run with Playwright.
+- Integration tests that hit Supabase require env vars in `.env`:
+  `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`.
+- Keep tests deterministic; prefer fixtures over shared state.
 
-Vitest is used for unit/integration tests; Playwright is used for e2e. Shared test setup
-lives in `src/test/setup.ts` and factories in `src/test/factories`. Integration tests that
-touch Supabase require `.env` values for Supabase keys. For e2e auth, the test-only
-endpoint `POST /__e2e/login` can be used (enabled via `NODE_ENV=test` or `E2E_ENABLED=true`).
-
-## Security & Configuration Tips
-
-Store secrets in `.env` or `.env.local` and never commit them. Supabase keys are required
-for integration tests and type generation; verify they are set before running those tasks.
+## Configuration & Data
+- Create local config via `cp .env.example .env` and fill required values.
+- Supabase migrations live in `supabase/migrations`; update types with `pnpm supabase:gen-types` after schema changes.
