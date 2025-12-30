@@ -9,7 +9,7 @@ import type { Database } from "@/types/supabase";
 
 import {
   assertSupabaseEnv,
-  cleanupUserData,
+  cleanupTestUser,
   createAdminClient,
   createTestUser,
   createUserClient,
@@ -47,7 +47,7 @@ describe("Dashboard Simulation Flow", () => {
 
   afterAll(async () => {
     if (!hasSupabaseEnv || !admin || !user) return;
-    await cleanupUserData(admin, user.id);
+    await cleanupTestUser(admin, user.id);
   });
 
   itIf(

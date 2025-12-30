@@ -91,7 +91,7 @@ import type { Database } from "@/types/supabase";
 
 import {
   assertSupabaseEnv,
-  cleanupUserData,
+  cleanupTestUser,
   createAdminClient,
   createTestUser,
   createUserClient,
@@ -357,10 +357,8 @@ describeIf("Inputs CRUD + RLS (Endpoint/Handler + Supabase)", () => {
     if (!hasSupabaseEnv) {
       return;
     }
-    await cleanupUserData(admin, userA.id);
-    await cleanupUserData(admin, userB.id);
-    await admin.auth.admin.deleteUser(userA.id);
-    await admin.auth.admin.deleteUser(userB.id);
+    await cleanupTestUser(admin, userA.id);
+    await cleanupTestUser(admin, userB.id);
   });
 
   it("validates assets CRUD and RLS", async () => {

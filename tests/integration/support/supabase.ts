@@ -83,3 +83,14 @@ export const cleanupUserData = async (
     }
   }
 };
+
+export const cleanupTestUser = async (
+  admin: ReturnType<typeof createAdminClient>,
+  userId: string,
+) => {
+  await cleanupUserData(admin, userId);
+  const { error } = await admin.auth.admin.deleteUser(userId);
+  if (error) {
+    throw error;
+  }
+};
