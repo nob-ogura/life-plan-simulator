@@ -68,14 +68,12 @@ test("display range toggle updates graph and table", async ({ authenticatedPage:
     return Number(match?.[1] ?? 0);
   };
 
-  const readFirstMonth = async () => {
-    const firstRow = cashflowSection.locator("div.divide-y > div").first();
-    return (await firstRow.locator("div").first().textContent())?.trim() ?? "";
-  };
+  const scrollContainer = cashflowSection.getByTestId("cashflow-scroll");
+  const readScrollHeight = async () => scrollContainer.evaluate((node) => node.scrollHeight ?? 0);
 
   const recentMonths = await readGraphMonths();
   expect(recentMonths).toBe(60);
-  const recentFirstMonth = await readFirstMonth();
+  const recentScrollHeight = await readScrollHeight();
 
   await page.getByRole("button", { name: "全期間" }).click();
 
@@ -91,10 +89,10 @@ test("display range toggle updates graph and table", async ({ authenticatedPage:
     .poll(readGraphMonths)
     .toBeGreaterThan(recentMonths)
     .then(() => readGraphMonths());
-  const allFirstMonth = await expect
-    .poll(readFirstMonth)
-    .not.toBe(recentFirstMonth)
-    .then(() => readFirstMonth());
+  const allScrollHeight = await expect
+    .poll(readScrollHeight)
+    .toBeGreaterThan(recentScrollHeight)
+    .then(() => readScrollHeight());
 
   await page.getByRole("button", { name: "直近5年" }).click();
 
@@ -104,12 +102,12 @@ test("display range toggle updates graph and table", async ({ authenticatedPage:
     .poll(readGraphMonths)
     .toBe(60)
     .then(() => readGraphMonths());
-  const recentFirstMonthAgain = await expect
-    .poll(readFirstMonth)
-    .toBe(recentFirstMonth)
-    .then(() => readFirstMonth());
+  const recentScrollHeightAgain = await expect
+    .poll(readScrollHeight)
+    .toBe(recentScrollHeight)
+    .then(() => readScrollHeight());
   expect(allMonths).toBeGreaterThan(recentMonthsAgain);
-  expect(allFirstMonth).not.toBe(recentFirstMonthAgain);
+  expect(allScrollHeight).toBeGreaterThan(recentScrollHeightAgain);
   expect(allCumulative).not.toBe(recentCumulative);
   expect(allAverage).not.toBe(recentAverage);
 });

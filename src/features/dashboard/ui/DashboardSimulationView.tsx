@@ -203,10 +203,7 @@ type CashflowTableProps = {
 };
 
 function CashflowTable({ months }: CashflowTableProps) {
-  const displayMonths = useMemo(
-    () => (months.length > 1 ? [...months].reverse() : months),
-    [months],
-  );
+  const displayMonths = useMemo(() => months, [months]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [scrollTop, setScrollTop] = useState(0);
   const rangeKey =
