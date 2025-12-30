@@ -6,5 +6,3 @@ Organize code by module and slice:
 - Slice represents a single use case or endpoint.
 - Each slice keeps RER (request/endpoint/response) together to reduce context switching.
 - One endpoint equals one class. If you add another endpoint, create another slice.
-
-The example slice in `src/features/example/sample` is a minimal RER template.
