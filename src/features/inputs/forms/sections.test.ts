@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { AssetFormSchema } from "@/features/inputs/assets/ui/schema";
 import {
-  AssetSectionSchema,
   BonusSectionSchema,
   FamilySectionSchema,
   HousingSectionSchema,
@@ -188,7 +188,7 @@ describe("inputs form schemas", () => {
   });
 
   it("requires asset balances with Japanese messages", () => {
-    const result = AssetSectionSchema.safeParse({
+    const result = AssetFormSchema.safeParse({
       cash_balance: "",
       investment_balance: "",
       return_rate: "",

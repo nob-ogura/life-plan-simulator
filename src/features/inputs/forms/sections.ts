@@ -1,5 +1,4 @@
 import { z } from "zod";
-import type { CreateAssetRequest } from "@/features/inputs/assets/commands/create-asset/request";
 import type { CreateChildRequest } from "@/features/inputs/children/commands/create-child/request";
 import type { CreateExpenseRequest } from "@/features/inputs/expenses/commands/create-expense/request";
 import type { CreateIncomeStreamRequest } from "@/features/inputs/income-streams/commands/create-income-stream/request";
@@ -208,15 +207,6 @@ export const PensionSectionSchema = z.object({
 export type PensionSectionInput = z.input<typeof PensionSectionSchema>;
 export type PensionSectionPayload = z.output<typeof PensionSectionSchema>;
 
-export const AssetSectionSchema = z.object({
-  cash_balance: requiredNumericString,
-  investment_balance: requiredNumericString,
-  return_rate: optionalNumericString,
-});
-
-export type AssetSectionInput = z.input<typeof AssetSectionSchema>;
-export type AssetSectionPayload = z.output<typeof AssetSectionSchema>;
-
 export const SimulationSectionSchema = z.object({
   start_offset_months: optionalNumericString,
   end_age: requiredNumericString,
@@ -324,15 +314,6 @@ export const buildPensionSectionDefaults = (
   pension_start_age: toNumberInput(profile?.pension_start_age),
 });
 
-export const buildAssetSectionDefaults = (assets: Array<Tables<"assets">>): AssetSectionInput => {
-  const asset = assets[0];
-  return {
-    cash_balance: toNumberInput(asset?.cash_balance),
-    investment_balance: toNumberInput(asset?.investment_balance),
-    return_rate: toNumberInput(asset?.return_rate),
-  };
-};
-
 export const buildSimulationSectionDefaults = (
   settings: Tables<"simulation_settings"> | null,
 ): SimulationSectionInput => ({
@@ -439,7 +420,7 @@ export const toHousingPayloads = (
     building_price: mortgage.building_price,
     land_price: mortgage.land_price,
     down_payment: mortgage.down_payment,
-    target_rental_id: mortgage.target_rental_id ?? null,
+    target_rental_id: mortgage.target_rental_id ? mortgage.target_rental_id : null,
   })),
   rentals: value.rentals.map((rental) => ({
     rent_monthly: rental.rent_monthly,
@@ -477,10 +458,4 @@ export const toRetirementPayload = (
   land_price: null,
   down_payment: null,
   target_rental_id: null,
-});
-
-export const toAssetPayload = (value: AssetSectionPayload): CreateAssetRequest => ({
-  cash_balance: value.cash_balance,
-  investment_balance: value.investment_balance,
-  return_rate: value.return_rate,
 });

@@ -17,30 +17,30 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createAssetAction } from "@/features/inputs/assets/commands/create-asset/action";
 import { updateAssetAction } from "@/features/inputs/assets/commands/update-asset/action";
+import { toAssetPayload } from "@/features/inputs/assets/ui/mapper";
 import {
-  type AssetSectionInput,
-  type AssetSectionPayload,
-  AssetSectionSchema,
-  toAssetPayload,
-} from "@/features/inputs/forms/sections";
+  type AssetFormInput,
+  type AssetFormPayload,
+  AssetFormSchema,
+} from "@/features/inputs/assets/ui/schema";
 import { zodResolver } from "@/lib/zod-resolver";
 import { useAuth } from "@/shared/cross-cutting/auth";
 
-type AssetSectionFormProps = {
-  defaultValues: AssetSectionInput;
+type AssetFormProps = {
+  defaultValues: AssetFormInput;
   assetId?: string | null;
 };
 
 const omitUndefined = <T extends Record<string, unknown>>(payload: T) =>
   Object.fromEntries(Object.entries(payload).filter(([, value]) => value !== undefined)) as T;
 
-export function AssetSectionForm({ defaultValues, assetId }: AssetSectionFormProps) {
+export function AssetForm({ defaultValues, assetId }: AssetFormProps) {
   const router = useRouter();
   const { session, isReady } = useAuth();
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const form = useForm<AssetSectionInput>({
+  const form = useForm<AssetFormInput>({
     defaultValues,
-    resolver: zodResolver(AssetSectionSchema),
+    resolver: zodResolver(AssetFormSchema),
     mode: "onSubmit",
   });
 
@@ -55,8 +55,8 @@ export function AssetSectionForm({ defaultValues, assetId }: AssetSectionFormPro
       return;
     }
 
-    const parsedResult = AssetSectionSchema.safeParse(value);
-    const parsed = (parsedResult.success ? parsedResult.data : value) as AssetSectionPayload;
+    const parsedResult = AssetFormSchema.safeParse(value);
+    const parsed = (parsedResult.success ? parsedResult.data : value) as AssetFormPayload;
     const payload = omitUndefined(toAssetPayload(parsed));
     try {
       if (assetId) {

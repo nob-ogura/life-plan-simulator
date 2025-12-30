@@ -2,9 +2,10 @@ import { ChevronDown } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { SupabaseListAssetsRepository } from "@/features/inputs/assets/queries/list-assets/repository";
+import { AssetForm } from "@/features/inputs/assets/ui/AssetForm";
+import { buildAssetFormDefaults } from "@/features/inputs/assets/ui/mapper";
 import { SupabaseListChildrenRepository } from "@/features/inputs/children/queries/list-children/repository";
 import { SupabaseListExpensesRepository } from "@/features/inputs/expenses/queries/list-expenses/repository";
-import { AssetSectionForm } from "@/features/inputs/forms/AssetSectionForm";
 import { BonusSectionForm } from "@/features/inputs/forms/BonusSectionForm";
 import { ExpenseSectionForm } from "@/features/inputs/forms/ExpenseSectionForm";
 import { FamilySectionForm } from "@/features/inputs/forms/FamilySectionForm";
@@ -14,7 +15,6 @@ import { PensionSectionForm } from "@/features/inputs/forms/PensionSectionForm";
 import { RetirementBonusSectionForm } from "@/features/inputs/forms/RetirementBonusSectionForm";
 import { SimulationSectionForm } from "@/features/inputs/forms/SimulationSectionForm";
 import {
-  buildAssetSectionDefaults,
   buildBonusSectionDefaults,
   buildExpenseSectionDefaults,
   buildFamilySectionDefaults,
@@ -194,7 +194,7 @@ export default async function InputsPage() {
   const housingSectionDefaults = buildHousingSectionDefaults(data.mortgages, data.rentals);
   const retirementSectionDefaults = buildRetirementSectionDefaults(retirementBonuses);
   const pensionSectionDefaults = buildPensionSectionDefaults(profile);
-  const assetSectionDefaults = buildAssetSectionDefaults(data.assets);
+  const assetSectionDefaults = buildAssetFormDefaults(data.assets);
   const simulationSectionDefaults = buildSimulationSectionDefaults(data.simulationSettings);
   const assetId = data.assets[0]?.id ?? null;
   const simulationSettingsId = data.simulationSettings?.id ?? null;
@@ -331,7 +331,7 @@ export default async function InputsPage() {
         { label: "運用利回り", value: formatNumber(data.assets[0]?.return_rate) },
       ],
       note: "投資設定は 1 件のみ保存され、保存すると上書きされます。",
-      form: <AssetSectionForm defaultValues={assetSectionDefaults} assetId={assetId} />,
+      form: <AssetForm defaultValues={assetSectionDefaults} assetId={assetId} />,
     },
     {
       id: "simulation",
