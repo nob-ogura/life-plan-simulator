@@ -83,8 +83,11 @@ describe("LifeEventSection", () => {
     fireEvent.change(screen.getByLabelText("繰り返し間隔（年）"), {
       target: { value: "1" },
     });
-    fireEvent.change(screen.getByLabelText("繰り返し回数"), {
+    fireEvent.change(screen.getByLabelText("停止回数"), {
       target: { value: "3" },
+    });
+    fireEvent.change(screen.getByLabelText("停止年齢"), {
+      target: { value: "60" },
     });
 
     fireEvent.click(screen.getByRole("button", { name: "保存" }));
@@ -96,6 +99,7 @@ describe("LifeEventSection", () => {
         year_month: "2026-05-01",
         repeat_interval_years: 1,
         stop_after_occurrences: 3,
+        stop_after_age: 60,
         category: "travel",
         auto_toggle_key: null,
         building_price: null,

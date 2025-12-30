@@ -131,7 +131,7 @@ export function LifeEventAddModal({
               />
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-3">
               <FormField
                 control={form.control}
                 name="repeat_interval_years"
@@ -150,7 +150,7 @@ export function LifeEventAddModal({
                 name="stop_after_occurrences"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>繰り返し回数</FormLabel>
+                    <FormLabel>停止回数</FormLabel>
                     <FormControl>
                       <Input {...field} inputMode="numeric" placeholder="例: 3" />
                     </FormControl>
@@ -158,7 +158,25 @@ export function LifeEventAddModal({
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="stop_after_age"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>停止年齢</FormLabel>
+                    <FormControl>
+                      <Input {...field} inputMode="numeric" placeholder="例: 60" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
+            <p className="text-xs text-muted-foreground">
+              停止回数・停止年齢が未入力の場合は無制限になります。
+              <br />
+              両方指定した場合は、より早く到達する条件で停止します。
+            </p>
 
             {isHousingPurchase ? (
               <div className="rounded-md border border-border/70 bg-muted/40 p-4">

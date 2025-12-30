@@ -33,6 +33,29 @@ const optionalNumericString = z
   })
   .transform((value) => (value === "" ? undefined : Number(value)));
 
+const optionalIntegerString = z
+  .string()
+  .optional()
+  .transform((value) => (value ?? "").trim())
+  .refine((value) => value === "" || /^\d+$/.test(value), {
+    message: "整数で入力してください",
+  })
+  .transform((value) => (value === "" ? undefined : Number(value)));
+
+const optionalPositiveInteger = optionalIntegerString.refine(
+  (value) => value === undefined || value > 0,
+  {
+    message: "正の整数で入力してください",
+  },
+);
+
+const optionalAgeInteger = optionalIntegerString.refine(
+  (value) => value === undefined || (value >= 0 && value <= 120),
+  {
+    message: "0〜120の整数で入力してください",
+  },
+);
+
 const requiredYearMonth = z
   .string()
   .trim()
@@ -51,7 +74,8 @@ const LifeEventFormSchema = z
     amount: requiredNumericString,
     year_month: requiredYearMonth,
     repeat_interval_years: optionalNumericString,
-    stop_after_occurrences: optionalNumericString,
+    stop_after_occurrences: optionalPositiveInteger,
+    stop_after_age: optionalAgeInteger,
     category: categorySchema,
     building_price: optionalNumericString,
     land_price: optionalNumericString,
@@ -112,6 +136,7 @@ const defaultValues: LifeEventFormInput = {
   year_month: "",
   repeat_interval_years: "",
   stop_after_occurrences: "",
+  stop_after_age: "",
   category: "",
   building_price: "",
   land_price: "",
@@ -169,6 +194,7 @@ export function useLifeEventActions(
         year_month: toMonthStartDate(parsed.year_month),
         repeat_interval_years: parsed.repeat_interval_years ?? null,
         stop_after_occurrences: parsed.stop_after_occurrences ?? null,
+        stop_after_age: parsed.stop_after_age ?? null,
         category: parsed.category,
         auto_toggle_key: null,
         building_price: parsed.building_price ?? null,

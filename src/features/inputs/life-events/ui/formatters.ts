@@ -28,7 +28,15 @@ export const formatRepeat = (event: Tables<"life_events">) => {
   const interval = event.repeat_interval_years ?? null;
   if (!interval || interval <= 0) return "なし";
   const intervalLabel = `${interval}年ごと`;
-  const stop = event.stop_after_occurrences ?? null;
-  if (!stop || stop <= 0) return `${intervalLabel}（停止なし）`;
-  return `${intervalLabel}（${stop}回）`;
+  const stopLabels: string[] = [];
+  const stopOccurrences = event.stop_after_occurrences ?? null;
+  if (stopOccurrences != null && stopOccurrences > 0) {
+    stopLabels.push(`${stopOccurrences}回`);
+  }
+  const stopAge = event.stop_after_age ?? null;
+  if (stopAge != null && stopAge >= 0) {
+    stopLabels.push(`${stopAge}歳`);
+  }
+  if (stopLabels.length === 0) return `${intervalLabel}（停止なし）`;
+  return `${intervalLabel}（停止: ${stopLabels.join(" / ")}）`;
 };

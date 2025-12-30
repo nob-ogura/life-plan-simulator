@@ -211,7 +211,7 @@ test("life event section accepts input and updates summary", async ({
   await modal.getByLabel("発生年月").fill("2030-04");
   await modal.getByLabel("カテゴリ").fill("travel");
   await modal.getByLabel("繰り返し間隔（年）").fill("1");
-  await modal.getByLabel("繰り返し回数").fill("3");
+  await modal.getByLabel("停止回数").fill("3");
 
   await modal.getByRole("button", { name: "保存" }).click();
 
@@ -223,7 +223,7 @@ test("life event section accepts input and updates summary", async ({
   await expect(eventList.getByText(label, { exact: true })).toBeVisible();
   await expect(eventList.getByText("旅行 · 2030年04月")).toBeVisible();
   await expect(eventList.getByText("750,000円")).toBeVisible();
-  await expect(eventList.getByText("繰り返し: 1年ごと（3回）")).toBeVisible();
+  await expect(eventList.getByText("繰り返し: 1年ごと（停止: 3回）")).toBeVisible();
 
   await expect(
     lifeEventSection.locator("dt", { hasText: "イベント数" }).locator("..").locator("dd"),
