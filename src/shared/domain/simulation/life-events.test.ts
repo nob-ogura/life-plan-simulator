@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   calculateMortgagePrincipal,
   calculateRealEstateTaxMonthly,
+  deriveHousingPurchaseMetrics,
   type SimulationInput,
+  type SimulationLifeEvent,
+  type SimulationSettings,
   simulateLifePlan,
 } from "@/shared/domain/simulation";
 
@@ -83,6 +86,73 @@ describe("life events", () => {
         taxRate: 0.014,
       }),
     ).toBeCloseTo(24500);
+  });
+
+  it("derives housing purchase metrics from simulation settings", () => {
+    const event: SimulationLifeEvent = {
+      amount: 0,
+      year_month: "2025-03",
+      repeat_interval_years: null,
+      stop_after_occurrences: null,
+      category: "housing_purchase",
+      auto_toggle_key: null,
+      building_price: 20000000,
+      land_price: 10000000,
+      down_payment: 5000000,
+    };
+    const settings: SimulationSettings = {
+      start_offset_months: 0,
+      end_age: 70,
+      pension_amount_single: 0,
+      pension_amount_spouse: 0,
+      mortgage_transaction_cost_rate: 1.08,
+      real_estate_tax_rate: 0.02,
+      real_estate_evaluation_rate: 0.5,
+    };
+
+    const metrics = deriveHousingPurchaseMetrics(event, settings);
+
+    expect(metrics.principal).toBeCloseTo(27400000);
+    expect(metrics.realEstateTaxMonthly).toBeCloseTo(25000);
+  });
+
+  it("updates housing purchase metrics when settings change", () => {
+    const event: SimulationLifeEvent = {
+      amount: 0,
+      year_month: "2025-03",
+      repeat_interval_years: null,
+      stop_after_occurrences: null,
+      category: "housing_purchase",
+      auto_toggle_key: null,
+      building_price: 20000000,
+      land_price: 10000000,
+      down_payment: 5000000,
+    };
+    const baseSettings: SimulationSettings = {
+      start_offset_months: 0,
+      end_age: 70,
+      pension_amount_single: 0,
+      pension_amount_spouse: 0,
+      mortgage_transaction_cost_rate: 1.02,
+      real_estate_tax_rate: 0.01,
+      real_estate_evaluation_rate: 0.6,
+    };
+    const updatedSettings: SimulationSettings = {
+      ...baseSettings,
+      mortgage_transaction_cost_rate: 1.08,
+      real_estate_tax_rate: 0.02,
+      real_estate_evaluation_rate: 0.5,
+    };
+
+    const baseMetrics = deriveHousingPurchaseMetrics(event, baseSettings);
+    const updatedMetrics = deriveHousingPurchaseMetrics(event, updatedSettings);
+
+    expect(baseMetrics.principal).toBeCloseTo(25600000);
+    expect(baseMetrics.realEstateTaxMonthly).toBeCloseTo(15000);
+    expect(updatedMetrics.principal).toBeCloseTo(27400000);
+    expect(updatedMetrics.realEstateTaxMonthly).toBeCloseTo(25000);
+    expect(updatedMetrics.principal).not.toBe(baseMetrics.principal);
+    expect(updatedMetrics.realEstateTaxMonthly).not.toBe(baseMetrics.realEstateTaxMonthly);
   });
 
   it("adds real estate tax from the housing purchase month", () => {
