@@ -49,7 +49,7 @@ test("income section accepts input and updates summary", async ({ authenticatedP
 
   await incomeSection.getByText("収入", { exact: true }).click();
 
-  await expect(incomeSection.getByText("収入ストリームの登録はありません。")).toBeVisible();
+  await expect(incomeSection.getByText("定期収入の登録はありません。")).toBeVisible();
 
   await incomeSection.getByRole("button", { name: "追加" }).click();
   await incomeSection.getByLabel("ラベル").fill("給与");
@@ -60,10 +60,10 @@ test("income section accepts input and updates summary", async ({ authenticatedP
   await incomeSection.getByRole("button", { name: "保存" }).click();
 
   await expectToast(page, "保存しました。");
-  await expect(incomeSection.getByText("収入ストリームの登録はありません。")).toBeHidden();
+  await expect(incomeSection.getByText("定期収入の登録はありません。")).toBeHidden();
 
   await expect(
-    incomeSection.locator("dt", { hasText: "収入ストリーム" }).locator("..").locator("dd"),
+    incomeSection.locator("dt", { hasText: "定期収入" }).locator("..").locator("dd"),
   ).toHaveText("1件");
   await expect(
     incomeSection.locator("dt", { hasText: "主な収入ラベル" }).locator("..").locator("dd"),

@@ -75,7 +75,7 @@ export function IncomeSectionForm({ defaultValues }: IncomeSectionFormProps) {
       <form className="space-y-4" onSubmit={onSubmit} noValidate>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <p className="text-sm font-semibold">収入ストリーム</p>
+            <p className="text-sm font-semibold">定期収入</p>
             <p className="text-xs text-muted-foreground">
               手取り月額、昇給率、期間を入力してください。
             </p>
@@ -98,7 +98,7 @@ export function IncomeSectionForm({ defaultValues }: IncomeSectionFormProps) {
           </Button>
         </div>
         {fields.length === 0 ? (
-          <p className="text-xs text-muted-foreground">収入ストリームの登録はありません。</p>
+          <p className="text-xs text-muted-foreground">定期収入の登録はありません。</p>
         ) : (
           <div className="space-y-4">
             {fields.map((field, index) => (

@@ -103,12 +103,12 @@ export function BonusSectionForm({ defaultValues }: BonusSectionFormProps) {
         <div>
           <p className="text-sm font-semibold">ボーナス設定</p>
           <p className="text-xs text-muted-foreground">
-            収入ストリームごとのボーナス月・金額・変化点を設定します。
+            定期収入ごとのボーナス月・金額・変化点を設定します。
           </p>
         </div>
         {fields.length === 0 ? (
           <p className="text-xs text-muted-foreground">
-            収入ストリームがありません。先に収入フォームで登録してください。
+            定期収入がありません。先に収入フォームで登録してください。
           </p>
         ) : (
           <div className="space-y-4">

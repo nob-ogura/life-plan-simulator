@@ -222,10 +222,10 @@ export default async function InputsPage() {
       id: "income",
       title: "収入",
       description: "月次の収入、昇給率、期間を入力するセクションです。",
-      summary: `収入ストリーム ${formatCount(data.incomeStreams.length)}`,
+      summary: `定期収入 ${formatCount(data.incomeStreams.length)}`,
       status: statusLabel(data.incomeStreams.length > 0),
       rows: [
-        { label: "収入ストリーム", value: formatCount(data.incomeStreams.length) },
+        { label: "定期収入", value: formatCount(data.incomeStreams.length) },
         {
           label: "主な収入ラベル",
           value: data.incomeStreams[0]?.label ?? "未登録",
@@ -237,7 +237,7 @@ export default async function InputsPage() {
     {
       id: "bonus",
       title: "ボーナス",
-      description: "収入ストリームに紐づくボーナス設定を管理します。",
+      description: "定期収入に紐づくボーナス設定を管理します。",
       summary: `ボーナス設定 ${formatCount(bonusStreams.length)}`,
       status: statusLabel(bonusStreams.length > 0),
       rows: [
@@ -247,7 +247,7 @@ export default async function InputsPage() {
           value: bonusStreams[0]?.label ?? "未登録",
         },
       ],
-      note: "収入ストリームごとのボーナス月・金額・変化点を管理します。",
+      note: "定期収入ごとのボーナス月・金額・変化点を管理します。",
       form: <BonusSectionForm defaultValues={bonusSectionDefaults} />,
     },
     {
