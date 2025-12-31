@@ -104,3 +104,7 @@ pnpm supabase db push
 ```bash
 pnpm supabase:gen-types
 ```
+
+## Deployment (Vercel)
+
+Vercel のプレビュー/本番デプロイ設定は `docs/Vercel.md` を参照してください。
