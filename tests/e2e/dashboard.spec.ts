@@ -214,7 +214,11 @@ test("depletion month is highlighted on asset trend chart", async ({ authenticat
   await assetSection.getByLabel("運用利回り").fill("0");
   await assetSection.getByRole("button", { name: "保存" }).click();
   await expectToast(page, "保存しました。");
-  await expect(assetSection.getByText("資産設定 登録済み")).toBeVisible();
+  await page.reload();
+  const refreshedAssetSection = page.locator("details", {
+    has: page.getByText("投資設定", { exact: true }),
+  });
+  await expect(refreshedAssetSection.getByText("資産設定 登録済み")).toBeVisible();
 
   const expenseSection = page.locator("details", {
     has: page.getByText("支出", { exact: true }),

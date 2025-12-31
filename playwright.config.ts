@@ -6,7 +6,7 @@ export default defineConfig({
     baseURL: "http://127.0.0.1:3000",
   },
   webServer: {
-    command: "pnpm dev -p 3000",
+    command: "pnpm dev -H 127.0.0.1 -p 3000",
     env: {
       E2E_ENABLED: "true",
     },
