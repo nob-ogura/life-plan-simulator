@@ -2,15 +2,16 @@ import "server-only";
 
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
-
-import { getCurrentYearMonth, toMonthStartDate } from "@/lib/year-month";
-import { addMonths } from "@/shared/domain/simulation";
-import { createServerSupabaseClient } from "@/shared/cross-cutting/infrastructure/supabase.server";
 import {
   canRetryWithoutStopAfterAge,
   omitStopAfterAge,
 } from "@/features/inputs/life-events/infrastructure/stop-after-age-compat";
+import { getCurrentYearMonth, toMonthStartDate } from "@/lib/year-month";
+import { createServerSupabaseClient } from "@/shared/cross-cutting/infrastructure/supabase.server";
+import { addMonths } from "@/shared/domain/simulation";
 import type { Database } from "@/types/supabase";
+
+type LifeEventInsert = Database["public"]["Tables"]["life_events"]["Insert"];
 
 const isE2EEnabled = () => process.env.E2E_ENABLED === "true";
 
@@ -47,9 +48,7 @@ const createAdminClient = () => {
 
 const clearUserData = async (
   userId: string,
-  supabase:
-    | ReturnType<typeof createServerSupabaseClient>
-    | ReturnType<typeof createAdminClient>,
+  supabase: ReturnType<typeof createServerSupabaseClient> | ReturnType<typeof createAdminClient>,
 ) => {
   await supabase.from("rentals").delete().eq("user_id", userId);
   await supabase.from("life_events").delete().eq("user_id", userId);
@@ -69,6 +68,39 @@ const buildHousingPurchaseSeed = (currentYearMonth: string) => {
   };
 };
 
+const buildRepeatStopSeed = (currentYearMonth: string) => {
+  const startYearMonth = currentYearMonth;
+  const repeatIntervalYears = 1;
+  const stopAfterOccurrences = 2;
+  const eventAmount = 50000;
+  const intervalMonths = repeatIntervalYears * 12;
+  const eventYearMonth = addMonths(startYearMonth, intervalMonths * (stopAfterOccurrences - 1));
+  const afterStopYearMonth = addMonths(startYearMonth, intervalMonths * stopAfterOccurrences);
+
+  return {
+    startYearMonth,
+    repeatIntervalYears,
+    stopAfterOccurrences,
+    eventAmount,
+    eventYearMonth,
+    afterStopYearMonth,
+  };
+};
+
+const insertLifeEvent = async (
+  client: ReturnType<typeof createServerSupabaseClient> | ReturnType<typeof createAdminClient>,
+  payload: LifeEventInsert,
+) => {
+  const { error } = await client.from("life_events").insert(payload);
+  if (canRetryWithoutStopAfterAge(error, payload.stop_after_age)) {
+    const { error: retryError } = await client
+      .from("life_events")
+      .insert(omitStopAfterAge(payload));
+    return retryError ?? null;
+  }
+  return error ?? null;
+};
+
 export const POST = async (request: Request) => {
   if (!isE2EEnabled()) {
     return new Response(null, { status: 404 });
@@ -80,14 +112,16 @@ export const POST = async (request: Request) => {
       typeof payload.scenario === "string" ? payload.scenario : "housing-purchase-stop";
     const requestedUserId = typeof payload.userId === "string" ? payload.userId : null;
 
-    if (scenario !== "housing-purchase-stop") {
+    if (scenario !== "housing-purchase-stop" && scenario !== "repeat-stop") {
       return NextResponse.json(
         { ok: false, message: "Unknown E2E seed scenario." },
         { status: 400 },
       );
     }
 
-    let client: ReturnType<typeof createServerSupabaseClient> | ReturnType<typeof createAdminClient>;
+    let client:
+      | ReturnType<typeof createServerSupabaseClient>
+      | ReturnType<typeof createAdminClient>;
     let userId = requestedUserId;
 
     if (!userId) {
@@ -103,7 +137,6 @@ export const POST = async (request: Request) => {
       return NextResponse.json({ ok: false, message: "Unauthorized." }, { status: 401 });
     }
     const currentYearMonth = getCurrentYearMonth();
-    const seed = buildHousingPurchaseSeed(currentYearMonth);
 
     await clearUserData(userId, client);
 
@@ -149,45 +182,63 @@ export const POST = async (request: Request) => {
       );
     }
 
-    const { error: rentalError } = await client.from("rentals").insert({
-      user_id: userId,
-      rent_monthly: seed.rentMonthly,
-      start_year_month: toMonthStartDate(seed.startYearMonth),
-      end_year_month: null,
-    });
-    if (rentalError) {
-      return NextResponse.json(
-        { ok: false, message: "Failed to seed rentals.", detail: rentalError.message },
-        { status: 500 },
-      );
-    }
-
-    const lifeEventPayload = {
-      user_id: userId,
-      label: "Housing Purchase",
-      amount: 0,
-      year_month: toMonthStartDate(seed.purchaseYearMonth),
-      repeat_interval_years: null,
-      stop_after_age: null,
-      stop_after_occurrences: null,
-      category: "housing_purchase",
-      auto_toggle_key: "HOUSING_PURCHASE_STOP_RENT",
-      building_price: 0,
-      land_price: 0,
-      down_payment: 0,
-    };
-    const { error: lifeEventError } = await client.from("life_events").insert(lifeEventPayload);
-    if (canRetryWithoutStopAfterAge(lifeEventError, lifeEventPayload.stop_after_age)) {
-      const { error: retryError } = await client
-        .from("life_events")
-        .insert(omitStopAfterAge(lifeEventPayload));
-      if (retryError) {
+    if (scenario === "housing-purchase-stop") {
+      const seed = buildHousingPurchaseSeed(currentYearMonth);
+      const { error: rentalError } = await client.from("rentals").insert({
+        user_id: userId,
+        rent_monthly: seed.rentMonthly,
+        start_year_month: toMonthStartDate(seed.startYearMonth),
+        end_year_month: null,
+      });
+      if (rentalError) {
         return NextResponse.json(
-          { ok: false, message: "Failed to seed life events.", detail: retryError.message },
+          { ok: false, message: "Failed to seed rentals.", detail: rentalError.message },
           { status: 500 },
         );
       }
-    } else if (lifeEventError) {
+
+      const lifeEventPayload = {
+        user_id: userId,
+        label: "Housing Purchase",
+        amount: 0,
+        year_month: toMonthStartDate(seed.purchaseYearMonth),
+        repeat_interval_years: null,
+        stop_after_age: null,
+        stop_after_occurrences: null,
+        category: "housing_purchase",
+        auto_toggle_key: "HOUSING_PURCHASE_STOP_RENT",
+        building_price: 0,
+        land_price: 0,
+        down_payment: 0,
+      };
+      const lifeEventError = await insertLifeEvent(client, lifeEventPayload);
+      if (lifeEventError) {
+        return NextResponse.json(
+          { ok: false, message: "Failed to seed life events.", detail: lifeEventError.message },
+          { status: 500 },
+        );
+      }
+
+      return NextResponse.json({ ok: true, userId, ...seed });
+    }
+
+    const seed = buildRepeatStopSeed(currentYearMonth);
+    const lifeEventPayload = {
+      user_id: userId,
+      label: "Recurring Travel",
+      amount: seed.eventAmount,
+      year_month: toMonthStartDate(seed.startYearMonth),
+      repeat_interval_years: seed.repeatIntervalYears,
+      stop_after_age: null,
+      stop_after_occurrences: seed.stopAfterOccurrences,
+      category: "travel",
+      auto_toggle_key: null,
+      building_price: null,
+      land_price: null,
+      down_payment: null,
+    };
+    const lifeEventError = await insertLifeEvent(client, lifeEventPayload);
+    if (lifeEventError) {
       return NextResponse.json(
         { ok: false, message: "Failed to seed life events.", detail: lifeEventError.message },
         { status: 500 },
