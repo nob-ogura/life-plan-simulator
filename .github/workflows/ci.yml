@@ -62,20 +62,10 @@ jobs:
 
       - name: Export Supabase env
         run: |
-          python - <<'PY'
-          import json
-          import os
-          import subprocess
-
-          status = subprocess.check_output(
-              ["pnpm", "exec", "supabase", "status", "--output", "json"], text=True
-          )
-          data = json.loads(status)
-          with open(os.environ["GITHUB_ENV"], "a") as env_file:
-              env_file.write(f"NEXT_PUBLIC_SUPABASE_URL={data['api_url']}\n")
-              env_file.write(f"NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY={data['anon_key']}\n")
-              env_file.write(f"SUPABASE_SECRET_KEY={data['service_role_key']}\n")
-          PY
+          pnpm exec supabase status --output env > supabase.env
+          awk -F= '/^API_URL=/{print "NEXT_PUBLIC_SUPABASE_URL="$2}' supabase.env >> "$GITHUB_ENV"
+          awk -F= '/^ANON_KEY=/{print "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="$2}' supabase.env >> "$GITHUB_ENV"
+          awk -F= '/^SERVICE_ROLE_KEY=/{print "SUPABASE_SECRET_KEY="$2}' supabase.env >> "$GITHUB_ENV"
 
       - name: Integration tests
         run: pnpm test:integration
