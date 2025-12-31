@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -29,12 +29,41 @@ type FamilyFormProps = {
   onSave?: (payload: ReturnType<typeof toFamilyPayload>) => void;
 };
 
+const toYearMonthSortKey = (value?: string | null) => {
+  if (!value) {
+    return Number.POSITIVE_INFINITY;
+  }
+  const normalized = value.replace("-", "");
+  const numeric = Number(normalized);
+  return Number.isNaN(numeric) ? Number.POSITIVE_INFINITY : numeric;
+};
+
+const sortChildrenByBirthYearMonth = (children: FamilySectionInput["children"]) =>
+  children
+    .map((child, index) => ({ child, index }))
+    .sort((a, b) => {
+      const aKey = toYearMonthSortKey(a.child.birth_year_month);
+      const bKey = toYearMonthSortKey(b.child.birth_year_month);
+      if (aKey === bKey) {
+        return a.index - b.index;
+      }
+      return aKey - bKey;
+    })
+    .map(({ child }) => child);
+
 export function FamilyForm({ defaultValues, onSave }: FamilyFormProps) {
   const router = useRouter();
   const { session, isReady } = useAuth();
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const sortedDefaultValues = useMemo(
+    () => ({
+      ...defaultValues,
+      children: sortChildrenByBirthYearMonth(defaultValues.children ?? []),
+    }),
+    [defaultValues],
+  );
   const form = useForm<FamilySectionInput>({
-    defaultValues,
+    defaultValues: sortedDefaultValues,
     resolver: zodResolver(FamilySectionSchema),
     mode: "onSubmit",
   });
@@ -44,15 +73,15 @@ export function FamilyForm({ defaultValues, onSave }: FamilyFormProps) {
     keyName: "fieldKey",
   });
   const initialChildIdsRef = useRef<string[]>(
-    (defaultValues.children ?? []).map((child) => child.id).filter(Boolean) as string[],
+    (sortedDefaultValues.children ?? []).map((child) => child.id).filter(Boolean) as string[],
   );
 
   useEffect(() => {
-    form.reset(defaultValues);
-    initialChildIdsRef.current = (defaultValues.children ?? [])
+    form.reset(sortedDefaultValues);
+    initialChildIdsRef.current = (sortedDefaultValues.children ?? [])
       .map((child) => child.id)
       .filter(Boolean) as string[];
-  }, [defaultValues, form]);
+  }, [form, sortedDefaultValues]);
 
   const onSubmit = form.handleSubmit(async (value) => {
     setSubmitError(null);
