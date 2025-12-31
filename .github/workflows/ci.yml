@@ -55,7 +55,7 @@ jobs:
         run: pnpm test:unit
 
       - name: Start Supabase
-        run: pnpm exec supabase start
+        run: pnpm exec supabase start --exclude realtime,storage-api,studio,edge-runtime
 
       - name: Apply migrations
         run: pnpm exec supabase db reset
