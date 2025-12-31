@@ -31,9 +31,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
-      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
       E2E_ENABLED: "true"
     steps:
       - name: Checkout
@@ -57,6 +54,29 @@ jobs:
       - name: Unit tests
         run: pnpm test:unit
 
+      - name: Start Supabase
+        run: pnpm exec supabase start
+
+      - name: Apply migrations
+        run: pnpm exec supabase db reset
+
+      - name: Export Supabase env
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import subprocess
+
+          status = subprocess.check_output(
+              ["pnpm", "exec", "supabase", "status", "--output", "json"], text=True
+          )
+          data = json.loads(status)
+          with open(os.environ["GITHUB_ENV"], "a") as env_file:
+              env_file.write(f"NEXT_PUBLIC_SUPABASE_URL={data['api_url']}\n")
+              env_file.write(f"NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY={data['anon_key']}\n")
+              env_file.write(f"SUPABASE_SECRET_KEY={data['service_role_key']}\n")
+          PY
+
       - name: Integration tests
         run: pnpm test:integration
 
@@ -65,6 +85,23 @@ jobs:
 
       - name: E2E tests
         run: pnpm test:e2e
+
+      - name: Dump Supabase logs
+        if: failure()
+        run: |
+          echo "::group::supabase status"
+          pnpm exec supabase status || true
+          echo "::endgroup::"
+          echo "::group::docker ps"
+          docker ps -a || true
+          echo "::endgroup::"
+          echo "::group::docker logs (supabase containers)"
+          for name in $(docker ps -a --format '{{.Names}}' | grep '^supabase_' || true); do
+            echo "::group::docker logs ${name}"
+            docker logs "${name}" || true
+            echo "::endgroup::"
+          done
+          echo "::endgroup::"
 
   build:
     runs-on: ubuntu-latest
