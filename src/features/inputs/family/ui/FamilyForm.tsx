@@ -38,7 +38,7 @@ const toYearMonthSortKey = (value?: string | null) => {
   return Number.isNaN(numeric) ? Number.POSITIVE_INFINITY : numeric;
 };
 
-const sortChildrenByBirthYearMonth = (children: FamilySectionInput["children"]) =>
+const sortChildrenByBirthYearMonth = (children: NonNullable<FamilySectionInput["children"]> = []) =>
   children
     .map((child, index) => ({ child, index }))
     .sort((a, b) => {
