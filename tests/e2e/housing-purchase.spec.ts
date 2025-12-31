@@ -1,0 +1,55 @@
+import { expect, test } from "./fixtures";
+
+const formatAmount = (value: number) =>
+  `${new Intl.NumberFormat("ja-JP").format(Math.round(value))}円`;
+
+test("housing purchase stops rent in the month before purchase", async ({
+  authenticatedPage: page,
+}) => {
+  const userId = (page as typeof page & { e2eUserId?: string }).e2eUserId;
+  if (!userId) {
+    throw new Error("Missing E2E user id for seed request.");
+  }
+  const seedResponse = await page.request.post("/__e2e/seed", {
+    data: { scenario: "housing-purchase-stop", userId },
+  });
+  const fallbackResponse =
+    seedResponse.status() === 404
+      ? await page.request.post("/e2e/seed", {
+          data: { scenario: "housing-purchase-stop", userId },
+        })
+      : seedResponse;
+
+  if (!fallbackResponse.ok()) {
+    const detail = await fallbackResponse.text();
+    throw new Error(
+      `E2E seed failed: ${fallbackResponse.status()} ${fallbackResponse.statusText()} ${detail}`,
+    );
+  }
+  const seed = await fallbackResponse.json();
+
+  await page.goto("/");
+
+  const cashflowSection = page.locator("section", {
+    has: page.getByRole("heading", { name: "月次キャッシュフロー表" }),
+  });
+  const scrollContainer = cashflowSection.getByTestId("cashflow-scroll");
+  await expect(scrollContainer).toBeVisible();
+  await scrollContainer.evaluate((node) => {
+    node.scrollTop = 0;
+  });
+
+  const expenseFor = (yearMonth: string) => {
+    const row = cashflowSection
+      .locator("div.divide-y > div")
+      .filter({ hasText: yearMonth })
+      .first();
+    return row.locator("div").nth(2);
+  };
+
+  const expectedRent = formatAmount(seed.rentMonthly);
+  const expectedZero = formatAmount(0);
+
+  await expect(expenseFor(seed.stopYearMonth)).toHaveText(expectedRent);
+  await expect(expenseFor(seed.purchaseYearMonth)).toHaveText(expectedZero);
+});

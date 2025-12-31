@@ -37,6 +37,7 @@ export const test = base.extend<Fixtures>({
     expect(response.ok()).toBeTruthy();
     const result = await response.json();
     const userId = typeof result?.userId === "string" ? result.userId : null;
+    (page as Page & { e2eUserId?: string }).e2eUserId = userId ?? undefined;
 
     try {
       await use(page);

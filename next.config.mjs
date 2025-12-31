@@ -7,6 +7,10 @@ const nextConfig = {
         source: "/__e2e/login",
         destination: "/e2e/login",
       },
+      {
+        source: "/__e2e/seed",
+        destination: "/e2e/seed",
+      },
     ];
   },
 };

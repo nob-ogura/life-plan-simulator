@@ -1,0 +1,202 @@
+import "server-only";
+
+import { createClient } from "@supabase/supabase-js";
+import { NextResponse } from "next/server";
+
+import { getCurrentYearMonth, toMonthStartDate } from "@/lib/year-month";
+import { addMonths } from "@/shared/domain/simulation";
+import { createServerSupabaseClient } from "@/shared/cross-cutting/infrastructure/supabase.server";
+import {
+  canRetryWithoutStopAfterAge,
+  omitStopAfterAge,
+} from "@/features/inputs/life-events/infrastructure/stop-after-age-compat";
+import type { Database } from "@/types/supabase";
+
+const isE2EEnabled = () => process.env.E2E_ENABLED === "true";
+
+const readJsonBody = async (request: Request) => {
+  try {
+    return await request.json();
+  } catch {
+    return {};
+  }
+};
+
+const getSupabaseAdminEnv = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
+
+  if (!supabaseUrl || !supabaseSecretKey) {
+    throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SECRET_KEY.");
+  }
+
+  return { supabaseUrl, supabaseSecretKey };
+};
+
+const createAdminClient = () => {
+  const { supabaseUrl, supabaseSecretKey } = getSupabaseAdminEnv();
+
+  return createClient<Database>(supabaseUrl, supabaseSecretKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+  });
+};
+
+const clearUserData = async (
+  userId: string,
+  supabase:
+    | ReturnType<typeof createServerSupabaseClient>
+    | ReturnType<typeof createAdminClient>,
+) => {
+  await supabase.from("rentals").delete().eq("user_id", userId);
+  await supabase.from("life_events").delete().eq("user_id", userId);
+};
+
+const buildHousingPurchaseSeed = (currentYearMonth: string) => {
+  const startYearMonth = currentYearMonth;
+  const purchaseYearMonth = addMonths(startYearMonth, 3);
+  const stopYearMonth = addMonths(purchaseYearMonth, -1);
+  const rentMonthly = 100000;
+
+  return {
+    startYearMonth,
+    purchaseYearMonth,
+    stopYearMonth,
+    rentMonthly,
+  };
+};
+
+export const POST = async (request: Request) => {
+  if (!isE2EEnabled()) {
+    return new Response(null, { status: 404 });
+  }
+
+  try {
+    const payload = await readJsonBody(request);
+    const scenario =
+      typeof payload.scenario === "string" ? payload.scenario : "housing-purchase-stop";
+    const requestedUserId = typeof payload.userId === "string" ? payload.userId : null;
+
+    if (scenario !== "housing-purchase-stop") {
+      return NextResponse.json(
+        { ok: false, message: "Unknown E2E seed scenario." },
+        { status: 400 },
+      );
+    }
+
+    let client: ReturnType<typeof createServerSupabaseClient> | ReturnType<typeof createAdminClient>;
+    let userId = requestedUserId;
+
+    if (!userId) {
+      const supabase = createServerSupabaseClient();
+      const { data } = await supabase.auth.getUser();
+      userId = data.user?.id ?? null;
+      client = supabase;
+    } else {
+      client = createAdminClient();
+    }
+
+    if (!userId) {
+      return NextResponse.json({ ok: false, message: "Unauthorized." }, { status: 401 });
+    }
+    const currentYearMonth = getCurrentYearMonth();
+    const seed = buildHousingPurchaseSeed(currentYearMonth);
+
+    await clearUserData(userId, client);
+
+    const { error: profileError } = await client.from("profiles").upsert(
+      {
+        user_id: userId,
+        birth_year: 1990,
+        birth_month: 1,
+        spouse_birth_year: null,
+        spouse_birth_month: null,
+        pension_start_age: 65,
+      },
+      { onConflict: "user_id" },
+    );
+    if (profileError) {
+      return NextResponse.json(
+        { ok: false, message: "Failed to seed profile.", detail: profileError.message },
+        { status: 500 },
+      );
+    }
+
+    const { error: settingsError } = await client.from("simulation_settings").upsert(
+      {
+        user_id: userId,
+        start_offset_months: 0,
+        end_age: 90,
+        pension_amount_single: 0,
+        pension_amount_spouse: 0,
+        mortgage_transaction_cost_rate: 1,
+        real_estate_tax_rate: 0,
+        real_estate_evaluation_rate: 0,
+      },
+      { onConflict: "user_id" },
+    );
+    if (settingsError) {
+      return NextResponse.json(
+        {
+          ok: false,
+          message: "Failed to seed simulation settings.",
+          detail: settingsError.message,
+        },
+        { status: 500 },
+      );
+    }
+
+    const { error: rentalError } = await client.from("rentals").insert({
+      user_id: userId,
+      rent_monthly: seed.rentMonthly,
+      start_year_month: toMonthStartDate(seed.startYearMonth),
+      end_year_month: null,
+    });
+    if (rentalError) {
+      return NextResponse.json(
+        { ok: false, message: "Failed to seed rentals.", detail: rentalError.message },
+        { status: 500 },
+      );
+    }
+
+    const lifeEventPayload = {
+      user_id: userId,
+      label: "Housing Purchase",
+      amount: 0,
+      year_month: toMonthStartDate(seed.purchaseYearMonth),
+      repeat_interval_years: null,
+      stop_after_age: null,
+      stop_after_occurrences: null,
+      category: "housing_purchase",
+      auto_toggle_key: "HOUSING_PURCHASE_STOP_RENT",
+      building_price: 0,
+      land_price: 0,
+      down_payment: 0,
+    };
+    const { error: lifeEventError } = await client.from("life_events").insert(lifeEventPayload);
+    if (canRetryWithoutStopAfterAge(lifeEventError, lifeEventPayload.stop_after_age)) {
+      const { error: retryError } = await client
+        .from("life_events")
+        .insert(omitStopAfterAge(lifeEventPayload));
+      if (retryError) {
+        return NextResponse.json(
+          { ok: false, message: "Failed to seed life events.", detail: retryError.message },
+          { status: 500 },
+        );
+      }
+    } else if (lifeEventError) {
+      return NextResponse.json(
+        { ok: false, message: "Failed to seed life events.", detail: lifeEventError.message },
+        { status: 500 },
+      );
+    }
+
+    return NextResponse.json({ ok: true, userId, ...seed });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error.";
+    return NextResponse.json({ ok: false, message }, { status: 500 });
+  }
+};
