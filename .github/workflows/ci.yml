@@ -63,9 +63,39 @@ jobs:
       - name: Export Supabase env
         run: |
           pnpm exec supabase status --output env > supabase.env
-          awk -F= '/^API_URL=/{print "NEXT_PUBLIC_SUPABASE_URL="$2}' supabase.env >> "$GITHUB_ENV"
-          awk -F= '/^ANON_KEY=/{print "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="$2}' supabase.env >> "$GITHUB_ENV"
-          awk -F= '/^SERVICE_ROLE_KEY=/{print "SUPABASE_SECRET_KEY="$2}' supabase.env >> "$GITHUB_ENV"
+          python - <<'PY'
+          import os
+          env = {}
+          with open("supabase.env", "r") as f:
+            for raw in f:
+              line = raw.strip()
+              if not line or line.startswith("#"):
+                continue
+              if line.startswith("export "):
+                line = line[len("export "):]
+              if "=" not in line:
+                continue
+              key, value = line.split("=", 1)
+              env[key] = value.strip().strip('"').strip("'")
+
+          def pick(*names: str) -> str:
+            for name in names:
+              value = env.get(name)
+              if value:
+                return value
+            return ""
+
+          api_url = pick("API_URL", "SUPABASE_URL", "KONG_HTTP_URL", "KONG_URL")
+          anon_key = pick("PUBLISHABLE_KEY", "ANON_KEY", "SUPABASE_ANON_KEY")
+          service_key = pick("SERVICE_ROLE_KEY", "SECRET_KEY", "SUPABASE_SERVICE_ROLE_KEY")
+          if not api_url or not anon_key or not service_key:
+            raise SystemExit(f"Missing Supabase status fields: api={bool(api_url)} anon={bool(anon_key)} service={bool(service_key)}. Raw keys: {sorted(env.keys())}")
+
+          with open(os.environ["GITHUB_ENV"], "a") as env_file:
+            env_file.write(f"NEXT_PUBLIC_SUPABASE_URL={api_url}\n")
+            env_file.write(f"NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY={anon_key}\n")
+            env_file.write(f"SUPABASE_SECRET_KEY={service_key}\n")
+          PY
 
       - name: Integration tests
         run: pnpm test:integration
