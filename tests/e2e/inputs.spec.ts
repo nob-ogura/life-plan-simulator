@@ -129,7 +129,7 @@ test("expense section accepts input and updates summary", async ({ authenticated
   await expenseSection.getByLabel("ラベル").fill("生活費");
   await expenseSection.getByLabel("月額").fill("180000");
   await expenseSection.getByLabel("インフレ率").fill("0.01");
-  await expenseSection.getByLabel("カテゴリ").fill("生活費");
+  await expenseSection.getByLabel("カテゴリ").selectOption({ label: "生活費" });
   await expenseSection.getByLabel("開始年月").fill("2020-04");
   await expenseSection.getByLabel("終了年月").fill("2040-03");
 
@@ -209,7 +209,7 @@ test("life event section accepts input and updates summary", async ({
   await modal.getByLabel("ラベル").fill(label);
   await modal.getByLabel("金額").fill("750000");
   await modal.getByLabel("発生年月").fill("2030-04");
-  await modal.getByLabel("カテゴリ").fill("travel");
+  await modal.getByLabel("カテゴリ").selectOption({ value: "travel" });
   await modal.getByLabel("繰り返し間隔（年）").fill("1");
   await modal.getByLabel("停止回数").fill("3");
 

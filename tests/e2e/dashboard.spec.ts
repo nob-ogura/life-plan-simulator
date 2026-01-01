@@ -223,7 +223,7 @@ test("depletion month is highlighted on asset trend chart", async ({ authenticat
   await expenseSection.getByLabel("ラベル").fill("生活費");
   await expenseSection.getByLabel("月額").fill("500000");
   await expenseSection.getByLabel("インフレ率").fill("0");
-  await expenseSection.getByLabel("カテゴリ").fill("生活費");
+  await expenseSection.getByLabel("カテゴリ").selectOption({ label: "生活費" });
   await expenseSection.getByLabel("開始年月").fill("2020-01");
   await expenseSection.getByLabel("終了年月").fill("2040-12");
   await expenseSection.getByRole("button", { name: "保存" }).click();

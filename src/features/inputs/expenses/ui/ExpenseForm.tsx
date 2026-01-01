@@ -20,6 +20,7 @@ import { deleteExpenseAction } from "@/features/inputs/expenses/commands/delete-
 import { updateExpenseAction } from "@/features/inputs/expenses/commands/update-expense/action";
 import { zodResolver } from "@/lib/zod-resolver";
 import { useAuth } from "@/shared/cross-cutting/auth";
+import { EXPENSE_CATEGORIES } from "@/shared/domain/expenses/categories";
 import { toExpensePayloads } from "./mapper";
 import {
   type ExpenseSectionInput,
@@ -212,7 +213,21 @@ export function ExpenseForm({ defaultValues }: ExpenseFormProps) {
                       <FormItem>
                         <FormLabel>カテゴリ</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="例: 生活費" />
+                          <select
+                            {...field}
+                            className={
+                              "h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm " +
+                              "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring " +
+                              "disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive"
+                            }
+                          >
+                            <option value="">選択してください</option>
+                            {EXPENSE_CATEGORIES.map((category) => (
+                              <option key={category.value} value={category.value}>
+                                {category.label}
+                              </option>
+                            ))}
+                          </select>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
