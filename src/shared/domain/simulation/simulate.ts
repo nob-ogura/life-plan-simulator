@@ -1,3 +1,8 @@
+import {
+  isHousingPurchase,
+  isRetirementBonus,
+  type LifeEventCategory,
+} from "@/shared/domain/life-events/categories";
 import { deriveHousingPurchaseMetrics, expandLifeEvents } from "./life-events";
 import { addMonths, generateMonthlyTimeline, yearMonthToElapsedMonths } from "./timeline";
 import type {
@@ -109,7 +114,7 @@ const getRentalStopMonth = (lifeEvents: SimulationLifeEvent[]): YearMonth | null
     if (event.auto_toggle_key !== STOP_RENT_AUTO_TOGGLE_KEY) {
       continue;
     }
-    if (event.category !== "housing_purchase") {
+    if (!isHousingPurchase(event.category as LifeEventCategory)) {
       continue;
     }
     if (earliestEventMonth == null) {
@@ -156,7 +161,10 @@ const calculateRetirementBonus = (
   lifeEvents: SimulationLifeEvent[],
 ): number =>
   lifeEvents
-    .filter((event) => event.category === "retirement_bonus" && event.year_month === yearMonth)
+    .filter(
+      (event) =>
+        isRetirementBonus(event.category as LifeEventCategory) && event.year_month === yearMonth,
+    )
     .reduce((total, event) => total + event.amount, 0);
 
 const aggregateAssets = (assets: SimulationAsset[]) => {
@@ -225,7 +233,7 @@ const calculateMonthlyCashFlow = (
     return total + purchase.realEstateTaxMonthly;
   }, 0);
   const eventAmount = expandedLifeEvents.reduce((total, event) => {
-    if (event.category === "retirement_bonus") {
+    if (isRetirementBonus(event.category as LifeEventCategory)) {
       return total;
     }
     if (event.year_month !== month.yearMonth) {
@@ -297,7 +305,7 @@ export const simulateLifePlan = (input: SimulationInput): SimulationResult => {
     profile: input.profiles,
   });
   const housingPurchases = expandedLifeEvents
-    .filter((event) => event.category === "housing_purchase")
+    .filter((event) => isHousingPurchase(event.category as LifeEventCategory))
     .map((event) => deriveHousingPurchaseMetrics(event, input.simulationSettings));
   const rentals = applyAutoToggleToRentals(input.rentals, expandedLifeEvents);
 

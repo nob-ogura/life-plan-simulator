@@ -8,10 +8,14 @@ import {
 } from "@/features/inputs/life-events/infrastructure/stop-after-age-compat";
 import { getCurrentYearMonth, toMonthStartDate } from "@/lib/year-month";
 import { createServerSupabaseClient } from "@/shared/cross-cutting/infrastructure/supabase.server";
+import type { LifeEventCategory } from "@/shared/domain/life-events/categories";
 import { addMonths } from "@/shared/domain/simulation";
 import type { Database } from "@/types/supabase";
 
 type LifeEventInsert = Database["public"]["Tables"]["life_events"]["Insert"];
+
+const housingPurchaseCategory: LifeEventCategory = "housing_purchase";
+const travelCategory: LifeEventCategory = "travel";
 
 const isE2EEnabled = () => process.env.E2E_ENABLED === "true";
 
@@ -205,7 +209,7 @@ export const POST = async (request: Request) => {
         repeat_interval_years: null,
         stop_after_age: null,
         stop_after_occurrences: null,
-        category: "housing_purchase",
+        category: housingPurchaseCategory,
         auto_toggle_key: "HOUSING_PURCHASE_STOP_RENT",
         building_price: 0,
         land_price: 0,
@@ -231,7 +235,7 @@ export const POST = async (request: Request) => {
       repeat_interval_years: seed.repeatIntervalYears,
       stop_after_age: null,
       stop_after_occurrences: seed.stopAfterOccurrences,
-      category: "travel",
+      category: travelCategory,
       auto_toggle_key: null,
       building_price: null,
       land_price: null,

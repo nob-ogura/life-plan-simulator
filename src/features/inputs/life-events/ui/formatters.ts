@@ -1,18 +1,11 @@
+import {
+  LIFE_EVENT_CATEGORY_LABELS,
+  LIFE_EVENT_CATEGORIES as SHARED_LIFE_EVENT_CATEGORIES,
+} from "@/shared/domain/life-events/categories";
 import type { Tables } from "@/types/supabase";
 
-export const LIFE_EVENT_CATEGORIES = [
-  { value: "education", label: "教育" },
-  { value: "travel", label: "旅行" },
-  { value: "care", label: "介護" },
-  { value: "medical", label: "医療" },
-  { value: "car", label: "車" },
-  { value: "housing_purchase", label: "住宅購入" },
-  { value: "other", label: "その他" },
-] as const;
-
-export const categoryLabels = new Map<string, string>(
-  LIFE_EVENT_CATEGORIES.map((category) => [category.value, category.label]),
-);
+export const LIFE_EVENT_CATEGORIES = SHARED_LIFE_EVENT_CATEGORIES;
+export const categoryLabels = new Map<string, string>(LIFE_EVENT_CATEGORY_LABELS);
 
 export const formatYearMonth = (value?: string | null) => {
   if (!value) return "未入力";

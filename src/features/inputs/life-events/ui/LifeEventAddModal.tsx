@@ -11,12 +11,12 @@ import {
 } from "@/components/form/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { LIFE_EVENT_CATEGORIES } from "@/features/inputs/life-events/ui/formatters";
 import type {
   LifeEventFormInput,
   LifeEventFormSubmitHandler,
 } from "@/features/inputs/life-events/ui/useLifeEventActions";
 import { cn } from "@/lib/utils";
+import { GENERAL_LIFE_EVENT_CATEGORIES } from "@/shared/domain/life-events/categories";
 
 type LifeEventAddModalProps = {
   isOpen: boolean;
@@ -112,7 +112,7 @@ export function LifeEventAddModal({
                       <Input {...field} list="life-event-categories" placeholder="例: travel" />
                     </FormControl>
                     <datalist id="life-event-categories">
-                      {LIFE_EVENT_CATEGORIES.map((category) => (
+                      {GENERAL_LIFE_EVENT_CATEGORIES.map((category) => (
                         <option
                           key={category.value}
                           value={category.value}

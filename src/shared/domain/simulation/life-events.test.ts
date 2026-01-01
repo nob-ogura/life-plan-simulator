@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { LifeEventCategory } from "@/shared/domain/life-events/categories";
 import {
   calculateMortgagePrincipal,
   calculateRealEstateTaxMonthly,
@@ -8,6 +9,9 @@ import {
   type SimulationSettings,
   simulateLifePlan,
 } from "@/shared/domain/simulation";
+
+const travelCategory: LifeEventCategory = "travel";
+const housingPurchaseCategory: LifeEventCategory = "housing_purchase";
 
 const createBaseInput = (): SimulationInput => ({
   currentYearMonth: "2025-01",
@@ -55,7 +59,7 @@ describe("life events", () => {
         repeat_interval_years: 1,
         stop_after_age: null,
         stop_after_occurrences: 3,
-        category: "travel",
+        category: travelCategory,
         auto_toggle_key: null,
         building_price: null,
         land_price: null,
@@ -78,7 +82,7 @@ describe("life events", () => {
         repeat_interval_years: 1,
         stop_after_age: 36,
         stop_after_occurrences: null,
-        category: "travel",
+        category: travelCategory,
         auto_toggle_key: null,
         building_price: null,
         land_price: null,
@@ -100,7 +104,7 @@ describe("life events", () => {
         repeat_interval_years: 1,
         stop_after_age: 35,
         stop_after_occurrences: 5,
-        category: "travel",
+        category: travelCategory,
         auto_toggle_key: null,
         building_price: null,
         land_price: null,
@@ -139,7 +143,7 @@ describe("life events", () => {
       repeat_interval_years: null,
       stop_after_age: null,
       stop_after_occurrences: null,
-      category: "housing_purchase",
+      category: housingPurchaseCategory,
       auto_toggle_key: null,
       building_price: 20000000,
       land_price: 10000000,
@@ -168,7 +172,7 @@ describe("life events", () => {
       repeat_interval_years: null,
       stop_after_age: null,
       stop_after_occurrences: null,
-      category: "housing_purchase",
+      category: housingPurchaseCategory,
       auto_toggle_key: null,
       building_price: 20000000,
       land_price: 10000000,
@@ -210,7 +214,7 @@ describe("life events", () => {
         repeat_interval_years: null,
         stop_after_age: null,
         stop_after_occurrences: null,
-        category: "housing_purchase",
+        category: housingPurchaseCategory,
         auto_toggle_key: null,
         building_price: 20000000,
         land_price: 10000000,
@@ -232,7 +236,7 @@ describe("life events", () => {
         repeat_interval_years: null,
         stop_after_age: null,
         stop_after_occurrences: null,
-        category: "housing_purchase",
+        category: housingPurchaseCategory,
         auto_toggle_key: null,
         building_price: null,
         land_price: 10000000,

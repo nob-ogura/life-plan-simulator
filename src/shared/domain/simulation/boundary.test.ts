@@ -1,9 +1,14 @@
 import { describe, expect, it } from "vitest";
+import type { LifeEventCategory } from "@/shared/domain/life-events/categories";
 import {
   deriveHousingPurchaseMetrics,
   type SimulationInput,
   simulateLifePlan,
 } from "@/shared/domain/simulation";
+
+const travelCategory: LifeEventCategory = "travel";
+const housingPurchaseCategory: LifeEventCategory = "housing_purchase";
+const retirementBonusCategory: LifeEventCategory = "retirement_bonus";
 
 const createBaseInput = (): SimulationInput => ({
   currentYearMonth: "2025-01",
@@ -70,7 +75,7 @@ describe("simulation boundary cases", () => {
         repeat_interval_years: 2,
         stop_after_age: null,
         stop_after_occurrences: 2,
-        category: "travel",
+        category: travelCategory,
         auto_toggle_key: null,
         building_price: null,
         land_price: null,
@@ -100,7 +105,7 @@ describe("simulation boundary cases", () => {
         repeat_interval_years: null,
         stop_after_age: null,
         stop_after_occurrences: null,
-        category: "housing_purchase",
+        category: housingPurchaseCategory,
         auto_toggle_key: "HOUSING_PURCHASE_STOP_RENT",
         building_price: 0,
         land_price: 0,
@@ -112,7 +117,7 @@ describe("simulation boundary cases", () => {
         repeat_interval_years: null,
         stop_after_age: null,
         stop_after_occurrences: null,
-        category: "housing_purchase",
+        category: housingPurchaseCategory,
         auto_toggle_key: "HOUSING_PURCHASE_STOP_RENT",
         building_price: 0,
         land_price: 0,
@@ -191,7 +196,7 @@ describe("simulation boundary cases", () => {
         repeat_interval_years: null,
         stop_after_age: null,
         stop_after_occurrences: null,
-        category: "retirement_bonus",
+        category: retirementBonusCategory,
         auto_toggle_key: null,
         building_price: null,
         land_price: null,
@@ -220,7 +225,7 @@ describe("simulation boundary cases", () => {
       repeat_interval_years: null,
       stop_after_age: null,
       stop_after_occurrences: null,
-      category: "housing_purchase",
+      category: housingPurchaseCategory,
       auto_toggle_key: null,
       building_price: 10000000,
       land_price: 5000000,

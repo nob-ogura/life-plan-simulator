@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
+import type { LifeEventCategory } from "@/shared/domain/life-events/categories";
 import { type SimulationInput, simulateLifePlan } from "@/shared/domain/simulation";
+
+const housingPurchaseCategory: LifeEventCategory = "housing_purchase";
 
 const deepFreeze = <T>(value: T): T => {
   if (value && typeof value === "object") {
@@ -84,7 +87,7 @@ const createInput = (): SimulationInput => ({
       repeat_interval_years: null,
       stop_after_age: null,
       stop_after_occurrences: null,
-      category: "housing_purchase",
+      category: housingPurchaseCategory,
       auto_toggle_key: "HOUSING_PURCHASE_STOP_RENT",
       building_price: 20000000,
       land_price: 10000000,

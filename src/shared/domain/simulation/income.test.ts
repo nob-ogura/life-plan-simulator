@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
+import type { LifeEventCategory } from "@/shared/domain/life-events/categories";
 import { type SimulationInput, simulateLifePlan } from "@/shared/domain/simulation";
+
+const retirementBonusCategory: LifeEventCategory = "retirement_bonus";
 
 const createBaseInput = (): SimulationInput => ({
   currentYearMonth: "2025-01",
@@ -100,7 +103,7 @@ describe("income calculation", () => {
         repeat_interval_years: null,
         stop_after_age: null,
         stop_after_occurrences: null,
-        category: "retirement_bonus",
+        category: retirementBonusCategory,
         auto_toggle_key: null,
         building_price: null,
         land_price: null,

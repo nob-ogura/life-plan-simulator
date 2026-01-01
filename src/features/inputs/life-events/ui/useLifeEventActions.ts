@@ -9,6 +9,11 @@ import { createLifeEventAction } from "@/features/inputs/life-events/commands/cr
 import { deleteLifeEventAction } from "@/features/inputs/life-events/commands/delete-life-event/action";
 import { toMonthStartDate } from "@/features/inputs/shared/date";
 import { zodResolver } from "@/lib/zod-resolver";
+import {
+  isHousingPurchase as isHousingPurchaseCategory,
+  isRetirementBonus,
+  type LifeEventCategory,
+} from "@/shared/domain/life-events/categories";
 import type { Tables } from "@/types/supabase";
 
 const YEAR_MONTH_REGEX = /^\d{4}-(0[1-9]|1[0-2])$/;
@@ -64,9 +69,12 @@ const requiredYearMonth = z
     message: "YYYY-MM 形式で入力してください",
   });
 
-const categorySchema = requiredString.refine((value) => value !== "retirement_bonus", {
-  message: "退職金は専用フォームで登録してください",
-});
+const categorySchema = requiredString.refine(
+  (value) => !isRetirementBonus(value as LifeEventCategory),
+  {
+    message: "退職金は専用フォームで登録してください",
+  },
+);
 
 const LifeEventFormSchema = z
   .object({
@@ -82,7 +90,7 @@ const LifeEventFormSchema = z
     down_payment: optionalNumericString,
   })
   .superRefine((value, ctx) => {
-    if (value.category !== "housing_purchase") return;
+    if (!isHousingPurchaseCategory(value.category as LifeEventCategory)) return;
     if (value.building_price == null) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -157,9 +165,9 @@ export function useLifeEventActions(
     mode: "onSubmit",
   });
 
-  const watchCategory = form.watch("category");
-  const isRetirementCategory = watchCategory === "retirement_bonus";
-  const isHousingPurchase = watchCategory === "housing_purchase";
+  const watchCategory = form.watch("category") as LifeEventCategory | "";
+  const isRetirementCategory = watchCategory ? isRetirementBonus(watchCategory) : false;
+  const isHousingPurchase = watchCategory ? isHousingPurchaseCategory(watchCategory) : false;
 
   const sortedEvents = useMemo(
     () =>
