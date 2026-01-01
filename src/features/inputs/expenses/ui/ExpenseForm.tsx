@@ -45,16 +45,21 @@ export function ExpenseForm({ defaultValues }: ExpenseFormProps) {
     name: "expenses",
     keyName: "fieldKey",
   });
+  const shouldResetRef = useRef(false);
+  const { isDirty } = form.formState;
   const initialIdsRef = useRef<string[]>(
     (defaultValues.expenses ?? []).map((expense) => expense.id).filter(Boolean) as string[],
   );
 
   useEffect(() => {
-    form.reset(defaultValues);
-    initialIdsRef.current = (defaultValues.expenses ?? [])
-      .map((expense) => expense.id)
-      .filter(Boolean) as string[];
-  }, [defaultValues, form]);
+    if (shouldResetRef.current || !isDirty) {
+      form.reset(defaultValues);
+      initialIdsRef.current = (defaultValues.expenses ?? [])
+        .map((expense) => expense.id)
+        .filter(Boolean) as string[];
+      shouldResetRef.current = false;
+    }
+  }, [defaultValues, form, isDirty]);
 
   const onSubmit = form.handleSubmit(async (value) => {
     setSubmitError(null);
@@ -107,6 +112,7 @@ export function ExpenseForm({ defaultValues }: ExpenseFormProps) {
       }
 
       toast.success("保存しました。");
+      shouldResetRef.current = true;
       router.refresh();
     } catch (error) {
       console.error(error);
