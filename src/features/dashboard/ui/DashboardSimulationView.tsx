@@ -48,6 +48,7 @@ const formatAmount = (value: number) =>
 
 export function DashboardSimulationView({ months }: DashboardSimulationViewProps) {
   const [displayRange, setDisplayRange] = useState<DashboardDisplayRange>(DEFAULT_DISPLAY_RANGE);
+  const [cashflowScrollbarWidth, setCashflowScrollbarWidth] = useState(0);
   const filteredMonths = useMemo(
     () => filterSimulationMonthsByRange(months, displayRange),
     [months, displayRange],
@@ -184,14 +185,20 @@ export function DashboardSimulationView({ months }: DashboardSimulationViewProps
           </span>
         </div>
         <div className="mt-4 overflow-hidden rounded-xl border border-border">
-          <div className="grid grid-cols-5 gap-px bg-border text-xs font-semibold text-muted-foreground">
+          <div
+            className="grid grid-cols-5 divide-x divide-border bg-background text-xs font-semibold text-muted-foreground"
+            style={{ paddingRight: cashflowScrollbarWidth }}
+          >
             {cashflowColumns.map((column) => (
-              <div key={column} className="bg-background px-3 py-2">
+              <div key={column} className="px-3 py-2">
                 {column}
               </div>
             ))}
           </div>
-          <CashflowTable months={filteredMonths} />
+          <CashflowTable
+            months={filteredMonths}
+            onScrollbarWidthChange={setCashflowScrollbarWidth}
+          />
         </div>
       </section>
     </>
@@ -200,9 +207,10 @@ export function DashboardSimulationView({ months }: DashboardSimulationViewProps
 
 type CashflowTableProps = {
   months: SimulationMonthlyResult[];
+  onScrollbarWidthChange?: (width: number) => void;
 };
 
-function CashflowTable({ months }: CashflowTableProps) {
+function CashflowTable({ months, onScrollbarWidthChange }: CashflowTableProps) {
   const displayMonths = useMemo(() => months, [months]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [scrollTop, setScrollTop] = useState(0);
@@ -222,39 +230,44 @@ function CashflowTable({ months }: CashflowTableProps) {
     }
   }, [rangeKey]);
 
-  const totalRows = displayMonths.length;
+  const hasData = displayMonths.length > 0;
+  const placeholderRows = 6;
+  const totalRows = hasData ? displayMonths.length : placeholderRows;
   const totalHeight = totalRows * CASHFLOW_ROW_HEIGHT;
   const viewportHeight = Math.min(totalHeight, CASHFLOW_VIEWPORT_HEIGHT);
-  const startIndex = Math.max(0, Math.floor(scrollTop / CASHFLOW_ROW_HEIGHT) - CASHFLOW_OVERSCAN);
-  const endIndex = Math.min(
-    totalRows,
-    Math.ceil((scrollTop + viewportHeight) / CASHFLOW_ROW_HEIGHT) + CASHFLOW_OVERSCAN,
-  );
-  const visibleMonths = displayMonths.slice(startIndex, endIndex);
-  const paddingTop = startIndex * CASHFLOW_ROW_HEIGHT;
-  const paddingBottom = Math.max(
-    0,
-    totalHeight - paddingTop - visibleMonths.length * CASHFLOW_ROW_HEIGHT,
-  );
+  const startIndex = hasData
+    ? Math.max(0, Math.floor(scrollTop / CASHFLOW_ROW_HEIGHT) - CASHFLOW_OVERSCAN)
+    : 0;
+  const endIndex = hasData
+    ? Math.min(
+        totalRows,
+        Math.ceil((scrollTop + viewportHeight) / CASHFLOW_ROW_HEIGHT) + CASHFLOW_OVERSCAN,
+      )
+    : 0;
+  const visibleMonths = hasData ? displayMonths.slice(startIndex, endIndex) : [];
+  const paddingTop = hasData ? startIndex * CASHFLOW_ROW_HEIGHT : 0;
+  const paddingBottom = hasData
+    ? Math.max(0, totalHeight - paddingTop - visibleMonths.length * CASHFLOW_ROW_HEIGHT)
+    : 0;
 
-  if (displayMonths.length === 0) {
-    return (
-      <div className="divide-y divide-border bg-background">
-        {Array.from({ length: 6 }, (_, index) => `placeholder-${index + 1}`).map((rowId) => (
-          <div
-            key={rowId}
-            className="grid h-11 grid-cols-5 items-center px-3 text-xs text-muted-foreground"
-          >
-            <div>----</div>
-            <div>--</div>
-            <div>--</div>
-            <div>--</div>
-            <div>--</div>
-          </div>
-        ))}
-      </div>
-    );
-  }
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer || !onScrollbarWidthChange) {
+      return;
+    }
+
+    const updateScrollbarWidth = () => {
+      const width = scrollContainer.offsetWidth - scrollContainer.clientWidth;
+      onScrollbarWidthChange(width);
+    };
+
+    updateScrollbarWidth();
+    window.addEventListener("resize", updateScrollbarWidth);
+
+    return () => {
+      window.removeEventListener("resize", updateScrollbarWidth);
+    };
+  }, [onScrollbarWidthChange]);
 
   return (
     <div
@@ -268,18 +281,33 @@ function CashflowTable({ months }: CashflowTableProps) {
         className="divide-y divide-border"
         style={{ paddingTop, paddingBottom, minHeight: totalHeight }}
       >
-        {visibleMonths.map((month) => {
-          const net = month.totalIncome - month.totalExpense + month.eventAmount;
-          return (
-            <div key={month.yearMonth} className="grid h-11 grid-cols-5 items-center px-3 text-xs">
-              <div className="text-muted-foreground">{month.yearMonth}</div>
-              <div>{formatAmount(month.totalIncome)}</div>
-              <div>{formatAmount(month.totalExpense)}</div>
-              <div>{formatAmount(net)}</div>
-              <div>{formatAmount(month.totalBalance)}</div>
-            </div>
-          );
-        })}
+        {hasData
+          ? visibleMonths.map((month) => {
+              const net = month.totalIncome - month.totalExpense + month.eventAmount;
+              return (
+                <div key={month.yearMonth} className="grid h-11 grid-cols-5 items-center text-xs">
+                  <div className="px-3 text-muted-foreground">{month.yearMonth}</div>
+                  <div className="px-3">{formatAmount(month.totalIncome)}</div>
+                  <div className="px-3">{formatAmount(month.totalExpense)}</div>
+                  <div className="px-3">{formatAmount(net)}</div>
+                  <div className="px-3">{formatAmount(month.totalBalance)}</div>
+                </div>
+              );
+            })
+          : Array.from({ length: placeholderRows }, (_, index) => `placeholder-${index + 1}`).map(
+              (rowId) => (
+                <div
+                  key={rowId}
+                  className="grid h-11 grid-cols-5 items-center text-xs text-muted-foreground"
+                >
+                  <div className="px-3">----</div>
+                  <div className="px-3">--</div>
+                  <div className="px-3">--</div>
+                  <div className="px-3">--</div>
+                  <div className="px-3">--</div>
+                </div>
+              ),
+            )}
       </div>
     </div>
   );
