@@ -19,20 +19,14 @@ test("repeating life event stops after the configured condition", async ({
   const seedResponse = await page.request.post("/__e2e/seed", {
     data: { scenario: "repeat-stop", userId },
   });
-  const fallbackResponse =
-    seedResponse.status() === 404
-      ? await page.request.post("/e2e/seed", {
-          data: { scenario: "repeat-stop", userId },
-        })
-      : seedResponse;
 
-  if (!fallbackResponse.ok()) {
-    const detail = await fallbackResponse.text();
+  if (!seedResponse.ok()) {
+    const detail = await seedResponse.text();
     throw new Error(
-      `E2E seed failed: ${fallbackResponse.status()} ${fallbackResponse.statusText()} ${detail}`,
+      `E2E seed failed: ${seedResponse.status()} ${seedResponse.statusText()} ${detail}`,
     );
   }
-  const seed = await fallbackResponse.json();
+  const seed = await seedResponse.json();
 
   await page.goto("/");
 
