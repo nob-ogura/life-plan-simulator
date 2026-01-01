@@ -12,6 +12,7 @@ import { zodResolver } from "@/lib/zod-resolver";
 import {
   isHousingPurchase as isHousingPurchaseCategory,
   isRetirementBonus,
+  LIFE_EVENT_CATEGORY_VALUES,
   type LifeEventCategory,
 } from "@/shared/domain/life-events/categories";
 import type { Tables } from "@/types/supabase";
@@ -69,12 +70,12 @@ const requiredYearMonth = z
     message: "YYYY-MM 形式で入力してください",
   });
 
-const categorySchema = requiredString.refine(
-  (value) => !isRetirementBonus(value as LifeEventCategory),
-  {
+const categorySchema = z
+  .union([z.enum(LIFE_EVENT_CATEGORY_VALUES), z.literal("")])
+  .refine((value) => value !== "", { message: "必須項目です" })
+  .refine((value) => value === "" || !isRetirementBonus(value as LifeEventCategory), {
     message: "退職金は専用フォームで登録してください",
-  },
-);
+  });
 
 const LifeEventFormSchema = z
   .object({

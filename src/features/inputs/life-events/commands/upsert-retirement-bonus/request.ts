@@ -1,4 +1,9 @@
 import { z } from "zod";
+import type { LifeEventCategory } from "@/shared/domain/life-events/categories";
+
+const retirementBonusCategorySchema = z.literal(
+  "retirement_bonus",
+) satisfies z.ZodType<LifeEventCategory>;
 
 export const UpsertRetirementBonusRequestSchema = z
   .object({
@@ -8,7 +13,7 @@ export const UpsertRetirementBonusRequestSchema = z
     repeat_interval_years: z.number().nullable().optional(),
     stop_after_age: z.number().nullable().optional(),
     stop_after_occurrences: z.number().nullable().optional(),
-    category: z.literal("retirement_bonus"),
+    category: retirementBonusCategorySchema,
     auto_toggle_key: z.string().min(1).nullable().optional(),
     building_price: z.number().nullable().optional(),
     land_price: z.number().nullable().optional(),

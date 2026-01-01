@@ -11,6 +11,10 @@ export const LIFE_EVENT_CATEGORIES = [
 
 export type LifeEventCategory = (typeof LIFE_EVENT_CATEGORIES)[number]["value"];
 
+export const LIFE_EVENT_CATEGORY_VALUES = LIFE_EVENT_CATEGORIES.map(
+  (category) => category.value,
+) as [LifeEventCategory, ...LifeEventCategory[]];
+
 export const GENERAL_LIFE_EVENT_CATEGORIES = LIFE_EVENT_CATEGORIES.filter(
   (category) => category.value !== "retirement_bonus",
 );
