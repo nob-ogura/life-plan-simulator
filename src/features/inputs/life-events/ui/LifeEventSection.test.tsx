@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { LifeEventCategory } from "@/shared/domain/life-events/categories";
 import type { Tables } from "@/types/supabase";
 import { LifeEventSection } from "./LifeEventSection";
 
@@ -29,7 +30,7 @@ const fillRequiredFields = (values: {
   label: string;
   amount: string;
   yearMonth: string;
-  category: string;
+  category: LifeEventCategory;
 }) => {
   fireEvent.change(screen.getByLabelText("ラベル"), { target: { value: values.label } });
   fireEvent.change(screen.getByLabelText("金額"), { target: { value: values.amount } });
