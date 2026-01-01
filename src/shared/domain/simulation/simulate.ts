@@ -298,10 +298,15 @@ export const simulateLifePlan = (input: SimulationInput): SimulationResult => {
   if (timeline.length === 0) {
     return { months: [], depletionYearMonth: null };
   }
+  const firstTimeline = timeline[0];
+  const lastTimeline = timeline[timeline.length - 1];
+  if (!firstTimeline || !lastTimeline) {
+    return { months: [], depletionYearMonth: null };
+  }
   const expandedLifeEvents = expandLifeEvents({
     lifeEvents: input.lifeEvents,
-    startYearMonth: timeline[0].yearMonth,
-    endYearMonth: timeline[timeline.length - 1].yearMonth,
+    startYearMonth: firstTimeline.yearMonth,
+    endYearMonth: lastTimeline.yearMonth,
     profile: input.profiles,
   });
   const housingPurchases = expandedLifeEvents

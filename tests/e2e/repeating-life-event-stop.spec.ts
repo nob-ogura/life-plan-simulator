@@ -4,7 +4,12 @@ const formatAmount = (value: number) =>
   `${new Intl.NumberFormat("ja-JP").format(Math.round(value))}円`;
 
 const monthIndex = (yearMonth: string) => {
-  const [year, month] = yearMonth.split("-").map((part) => Number(part));
+  const [yearText, monthText] = yearMonth.split("-");
+  const year = Number(yearText);
+  const month = Number(monthText);
+  if (!Number.isFinite(year) || !Number.isFinite(month)) {
+    throw new Error(`Invalid year-month: ${yearMonth}`);
+  }
   return year * 12 + (month - 1);
 };
 

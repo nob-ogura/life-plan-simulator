@@ -214,12 +214,12 @@ function CashflowTable({ months, onScrollbarWidthChange }: CashflowTableProps) {
   const displayMonths = useMemo(() => months, [months]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [scrollTop, setScrollTop] = useState(0);
-  const rangeKey =
-    displayMonths.length === 0
-      ? "empty"
-      : `${displayMonths[0].yearMonth}-${displayMonths[displayMonths.length - 1].yearMonth}-${
-          displayMonths.length
-        }`;
+  const hasData = displayMonths.length > 0;
+  const rangeKey = !hasData
+    ? "empty"
+    : `${displayMonths[0]!.yearMonth}-${displayMonths[displayMonths.length - 1]!.yearMonth}-${
+        displayMonths.length
+      }`;
 
   useEffect(() => {
     if (rangeKey) {
@@ -230,7 +230,6 @@ function CashflowTable({ months, onScrollbarWidthChange }: CashflowTableProps) {
     }
   }, [rangeKey]);
 
-  const hasData = displayMonths.length > 0;
   const placeholderRows = 6;
   const totalRows = hasData ? displayMonths.length : placeholderRows;
   const totalHeight = totalRows * CASHFLOW_ROW_HEIGHT;

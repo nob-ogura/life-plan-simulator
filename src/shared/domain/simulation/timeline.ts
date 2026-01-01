@@ -11,8 +11,13 @@ const parseYearMonth = (yearMonth: YearMonth): { year: number; month: number } =
   if (!match) {
     throw new Error(`Invalid year-month format: ${yearMonth}`);
   }
-  const year = Number.parseInt(match[1], 10);
-  const month = Number.parseInt(match[2], 10);
+  const yearText = match[1];
+  const monthText = match[2];
+  if (!yearText || !monthText) {
+    throw new Error(`Invalid year-month format: ${yearMonth}`);
+  }
+  const year = Number.parseInt(yearText, 10);
+  const month = Number.parseInt(monthText, 10);
   if (month < 1 || month > 12) {
     throw new Error(`Invalid month in year-month: ${yearMonth}`);
   }

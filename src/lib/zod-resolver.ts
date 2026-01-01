@@ -54,7 +54,10 @@ const parseErrorSchema = (issues: ZodIssue[], validateAllFieldCriteria: boolean)
   const errors: Record<string, FieldError> = {};
 
   for (; issues.length; ) {
-    const issue = issues[0];
+    const issue = issues.shift();
+    if (!issue) {
+      continue;
+    }
     const { code, message, path } = issue;
     const pathKey = path.join(".");
     const unionIssueGroups = getUnionIssueGroups(issue);
@@ -90,8 +93,6 @@ const parseErrorSchema = (issues: ZodIssue[], validateAllFieldCriteria: boolean)
         messages ? ([] as string[]).concat(messages as string[], issue.message) : issue.message,
       ) as FieldError;
     }
-
-    issues.shift();
   }
 
   return errors;
