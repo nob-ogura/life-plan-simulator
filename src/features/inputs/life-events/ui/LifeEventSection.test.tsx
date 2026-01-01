@@ -30,14 +30,16 @@ const fillRequiredFields = (values: {
   label: string;
   amount: string;
   yearMonth: string;
-  category: LifeEventCategory;
+  category?: LifeEventCategory;
 }) => {
   fireEvent.change(screen.getByLabelText("ラベル"), { target: { value: values.label } });
   fireEvent.change(screen.getByLabelText("金額"), { target: { value: values.amount } });
   fireEvent.change(screen.getByLabelText("発生年月"), {
     target: { value: values.yearMonth },
   });
-  fireEvent.change(screen.getByLabelText("カテゴリ"), { target: { value: values.category } });
+  if (values.category) {
+    fireEvent.change(screen.getByLabelText("カテゴリ"), { target: { value: values.category } });
+  }
 };
 
 describe("LifeEventSection", () => {
@@ -57,13 +59,9 @@ describe("LifeEventSection", () => {
       label: "退職金",
       amount: "1000000",
       yearMonth: "2030-03",
-      category: "retirement_bonus",
     });
 
-    expect(screen.getByRole("button", { name: "保存" })).toBeDisabled();
-    expect(screen.getAllByText("退職金は専用フォームで登録してください。").length).toBeGreaterThan(
-      0,
-    );
+    expect(screen.queryByRole("option", { name: "退職金" })).toBeNull();
 
     fireEvent.click(screen.getByRole("button", { name: "保存" }));
     expect(createLifeEventAction).not.toHaveBeenCalled();
