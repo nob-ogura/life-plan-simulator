@@ -54,8 +54,42 @@ jobs:
       - name: Unit tests
         run: pnpm test:unit
 
+      - name: Get Supabase CLI version
+        id: supabase-cli
+        run: |
+          version=$(pnpm exec supabase --version | tail -n 1 | sed -E 's/[^0-9]*([0-9][0-9.]*).*/\1/')
+          if [ -z "$version" ]; then
+            version="unknown"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Supabase Docker images
+        id: cache-supabase
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/supabase-docker
+          key: supabase-docker-${{ runner.os }}-${{ steps.supabase-cli.outputs.version }}
+          restore-keys: |
+            supabase-docker-${{ runner.os }}-
+
+      - name: Load Supabase images
+        if: steps.cache-supabase.outputs.cache-hit == 'true'
+        run: |
+          if [ -f ~/.cache/supabase-docker/images.tar.gz ]; then
+            gzip -dc ~/.cache/supabase-docker/images.tar.gz | docker load
+          fi
+
       - name: Start Supabase
         run: pnpm exec supabase start --exclude realtime,storage-api,studio,edge-runtime
+
+      - name: Save Supabase images
+        if: steps.cache-supabase.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/.cache/supabase-docker
+          IMAGES=$(docker ps -a --format '{{.Names}} {{.Image}}' | awk '$1 ~ /^supabase_/ {print $2}' | sort -u | tr '\n' ' ')
+          if [ -n "$IMAGES" ]; then
+            docker save $IMAGES | gzip -1 > ~/.cache/supabase-docker/images.tar.gz
+          fi
 
       - name: Apply migrations
         run: pnpm exec supabase db reset
