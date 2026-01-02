@@ -117,7 +117,7 @@ export function PensionForm({ defaultValues, simulationSettingsId }: PensionForm
               name="pension_amount_single"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>単身</FormLabel>
+                  <FormLabel>本人</FormLabel>
                   <FormControl>
                     <Input {...field} inputMode="numeric" placeholder="例: 65000" />
                   </FormControl>
@@ -130,9 +130,9 @@ export function PensionForm({ defaultValues, simulationSettingsId }: PensionForm
               name="pension_amount_spouse"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>配偶者分</FormLabel>
+                  <FormLabel>配偶者</FormLabel>
                   <FormControl>
-                    <Input {...field} inputMode="numeric" placeholder="例: 130000" />
+                    <Input {...field} inputMode="numeric" placeholder="例: 65000" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

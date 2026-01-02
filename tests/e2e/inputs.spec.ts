@@ -268,8 +268,8 @@ test("pension section accepts input and updates summary", async ({ authenticated
 
   await pensionSection.locator("summary").click();
   await pensionSection.getByLabel("年金開始年齢").fill("65");
-  await pensionSection.getByLabel("単身").fill("70000");
-  await pensionSection.getByLabel("配偶者分").fill("140000");
+  await pensionSection.getByLabel("本人").fill("70000");
+  await pensionSection.getByLabel("配偶者").fill("140000");
 
   await pensionSection.getByRole("button", { name: "保存" }).click();
 
@@ -278,13 +278,13 @@ test("pension section accepts input and updates summary", async ({ authenticated
     pensionSection.locator("dt", { hasText: "年金開始年齢" }).locator("..").locator("dd"),
   ).toHaveText("65歳");
   await expect(
-    pensionSection.locator("dt", { hasText: "年金月額（単身）" }).locator("..").locator("dd"),
+    pensionSection.locator("dt", { hasText: "年金月額（本人）" }).locator("..").locator("dd"),
   ).toHaveText("70,000円");
   await expect(
     pensionSection.locator("dt", { hasText: "年金月額（配偶者）" }).locator("..").locator("dd"),
   ).toHaveText("140,000円");
   await expect(
-    pensionSection.getByText("開始年齢 65歳 / 単身 70,000円 / 配偶者 140,000円"),
+    pensionSection.getByText("開始年齢 65歳 / 本人 70,000円 / 配偶者 140,000円 / 合計 210,000円"),
   ).toBeVisible();
 });
 

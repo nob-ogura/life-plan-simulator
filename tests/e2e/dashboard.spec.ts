@@ -19,8 +19,8 @@ test("display range toggle updates graph and table", async ({ authenticatedPage:
   });
   await pensionSection.locator("summary").click();
   await pensionSection.getByLabel("年金開始年齢").fill("65");
-  await pensionSection.getByLabel("単身").fill("65000");
-  await pensionSection.getByLabel("配偶者分").fill("130000");
+  await pensionSection.getByLabel("本人").fill("65000");
+  await pensionSection.getByLabel("配偶者").fill("130000");
   await pensionSection.getByRole("button", { name: "保存" }).click();
   await expectToast(page, "保存しました。");
 
@@ -140,8 +140,8 @@ test("cashflow table uses virtual scroll and updates on range change", async ({
   });
   await pensionSection.locator("summary").click();
   await pensionSection.getByLabel("年金開始年齢").fill("65");
-  await pensionSection.getByLabel("単身").fill("65000");
-  await pensionSection.getByLabel("配偶者分").fill("130000");
+  await pensionSection.getByLabel("本人").fill("65000");
+  await pensionSection.getByLabel("配偶者").fill("130000");
   await pensionSection.getByRole("button", { name: "保存" }).click();
   await expectToast(page, "保存しました。");
 
@@ -215,8 +215,8 @@ test("depletion month is highlighted on asset trend chart", async ({ authenticat
   });
   await pensionSection.locator("summary").click();
   await pensionSection.getByLabel("年金開始年齢").fill("65");
-  await pensionSection.getByLabel("単身").fill("0");
-  await pensionSection.getByLabel("配偶者分").fill("0");
+  await pensionSection.getByLabel("本人").fill("0");
+  await pensionSection.getByLabel("配偶者").fill("0");
   await pensionSection.getByRole("button", { name: "保存" }).click();
   await expectToast(page, "保存しました。");
 

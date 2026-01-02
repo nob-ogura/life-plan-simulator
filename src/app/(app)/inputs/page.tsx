@@ -181,6 +181,10 @@ export default async function InputsPage() {
   const pensionStartAge = profile?.pension_start_age ?? null;
   const pensionAmountSingle = data.simulationSettings?.pension_amount_single ?? null;
   const pensionAmountSpouse = data.simulationSettings?.pension_amount_spouse ?? null;
+  const pensionAmountTotal =
+    pensionAmountSingle == null && pensionAmountSpouse == null
+      ? null
+      : (pensionAmountSingle ?? 0) + (pensionAmountSpouse ?? 0);
 
   const hasFamilyData =
     data.children.length > 0 ||
@@ -222,7 +226,7 @@ export default async function InputsPage() {
     {
       id: "income",
       title: "収入",
-      description: "月次の収入、昇給率、期間を入力するセクションです。",
+      description: "月次の収入、昇給率、期間を管理します。",
       summary: `定期収入 ${formatCount(data.incomeStreams.length)}`,
       status: statusLabel(data.incomeStreams.length > 0),
       rows: [
@@ -232,7 +236,7 @@ export default async function InputsPage() {
           value: data.incomeStreams[0]?.label ?? "未登録",
         },
       ],
-      note: "手取り月額、昇給率、期間を入力して保存します。",
+      note: "手取り月額、昇給率、期間を登録します。",
       form: <IncomeForm defaultValues={incomeSectionDefaults} />,
     },
     {
@@ -248,20 +252,20 @@ export default async function InputsPage() {
           value: bonusStreams[0]?.label ?? "未登録",
         },
       ],
-      note: "定期収入ごとのボーナス月・金額・変化点を管理します。",
+      note: "定期収入ごとのボーナス月・金額・変化点を登録します。",
       form: <BonusForm defaultValues={bonusSectionDefaults} />,
     },
     {
       id: "expenses",
       title: "支出",
-      description: "月次支出、インフレ率、期間を登録するセクションです。",
+      description: "月次支出、インフレ率、期間を管理します。",
       summary: `支出 ${formatCount(data.expenses.length)}`,
       status: statusLabel(data.expenses.length > 0),
       rows: [
         { label: "支出項目", value: formatCount(data.expenses.length) },
         { label: "主な支出ラベル", value: data.expenses[0]?.label ?? "未登録" },
       ],
-      note: "支出の月額・インフレ率・期間・カテゴリを入力して保存します。",
+      note: "支出の月額・インフレ率・期間・カテゴリを登録します。",
       form: <ExpenseForm defaultValues={expenseSectionDefaults} />,
     },
     {
@@ -276,13 +280,13 @@ export default async function InputsPage() {
         { label: "賃貸", value: formatCount(data.rentals.length) },
         { label: "住宅購入", value: formatCount(data.mortgages.length) },
       ],
-      note: "賃貸/住宅購入の情報を入力して保存します。",
+      note: "賃貸・住宅購入の情報を登録します。",
       form: <HousingForm defaultValues={housingSectionDefaults} />,
     },
     {
       id: "events",
       title: "ライフイベント",
-      description: "教育費や介護費など、将来イベントを登録するセクションです。",
+      description: "教育費や介護費など、将来イベントを管理します。",
       summary: `イベント ${formatCount(generalEvents.length)}`,
       status: statusLabel(generalEvents.length > 0),
       rows: [
@@ -310,13 +314,21 @@ export default async function InputsPage() {
       title: "年金",
       description: "年金収入の開始年齢と月額を設定します。",
       summary:
-        pensionStartAge != null || pensionAmountSingle != null || pensionAmountSpouse != null
-          ? `開始年齢 ${formatNumber(pensionStartAge, "歳")} / 単身 ${formatAmount(
+        pensionStartAge != null ||
+        pensionAmountSingle != null ||
+        pensionAmountSpouse != null ||
+        pensionAmountTotal != null
+          ? `開始年齢 ${formatNumber(pensionStartAge, "歳")} / 本人 ${formatAmount(
               pensionAmountSingle,
-            )} / 配偶者 ${formatAmount(pensionAmountSpouse)}`
+            )} / 配偶者 ${formatAmount(pensionAmountSpouse)} / 合計 ${formatAmount(
+              pensionAmountTotal,
+            )}`
           : "未設定",
       status: statusLabel(
-        pensionStartAge != null || pensionAmountSingle != null || pensionAmountSpouse != null,
+        pensionStartAge != null ||
+          pensionAmountSingle != null ||
+          pensionAmountSpouse != null ||
+          pensionAmountTotal != null,
         "設定済み",
         "未設定",
       ),
@@ -326,12 +338,16 @@ export default async function InputsPage() {
           value: formatNumber(pensionStartAge, "歳"),
         },
         {
-          label: "年金月額（単身）",
+          label: "年金月額（本人）",
           value: formatAmount(pensionAmountSingle),
         },
         {
           label: "年金月額（配偶者）",
           value: formatAmount(pensionAmountSpouse),
+        },
+        {
+          label: "年金月額（世帯合計）",
+          value: formatAmount(pensionAmountTotal),
         },
       ],
       note: "年金開始年齢と月額は将来の年金収入の計算に反映されます。",
