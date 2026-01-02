@@ -299,7 +299,7 @@ export default async function InputsPage() {
     {
       id: "retirement",
       title: "退職金",
-      description: "退職金は単一レコードとして管理し、イベントとは" + "排他にします。",
+      description: "退職金は単一レコードとして管理します。",
       summary: `退職金 ${formatCount(retirementBonuses.length)}`,
       status: statusLabel(retirementBonuses.length > 0),
       rows: [
