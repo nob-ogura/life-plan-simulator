@@ -253,7 +253,7 @@ test("retirement bonus section accepts input and updates summary", async ({
   await expectToast(page, "保存しました。");
   await expect(
     retirementSection.locator("dt", { hasText: "退職金レコード" }).locator("..").locator("dd"),
-  ).toHaveText("1件");
+  ).toHaveText("登録済");
   await expect(
     retirementSection.locator("dt", { hasText: "登録名" }).locator("..").locator("dd"),
   ).toHaveText("退職金");
