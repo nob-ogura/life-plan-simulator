@@ -27,8 +27,10 @@ import { PensionForm } from "@/features/inputs/pension/ui/PensionForm";
 import { SupabaseListRentalsRepository } from "@/features/inputs/rentals/queries/list-rentals/repository";
 import { buildRetirementSectionDefaults } from "@/features/inputs/retirement/ui/mapper";
 import { RetirementBonusForm } from "@/features/inputs/retirement/ui/RetirementBonusForm";
+import { UI_TEXT } from "@/shared/constants/messages";
 import { createServerAuthSession } from "@/shared/cross-cutting/auth/server-auth";
 import { createServerSupabaseClient } from "@/shared/cross-cutting/infrastructure/supabase.server";
+import { formatValueOrFallback } from "@/shared/utils/formatters";
 import type { Tables } from "@/types/supabase";
 
 type InputsData = {
@@ -55,22 +57,33 @@ const emptyData: InputsData = {
   simulationSettings: null,
 };
 
-const formatYearMonth = (year?: number | null, month?: number | null) => {
-  if (year == null || month == null) return "未入力";
-  return `${year}年${String(month).padStart(2, "0")}月`;
-};
+const formatYearMonth = (year?: number | null, month?: number | null) =>
+  formatValueOrFallback(
+    year == null || month == null ? null : { year, month },
+    ({ year: safeYear, month: safeMonth }) =>
+      `${safeYear}年${String(safeMonth).padStart(2, "0")}月`,
+  );
 
-const formatCount = (count: number, unit = "件") => (count > 0 ? `${count}${unit}` : "未登録");
-const formatRegistered = (count: number) => (count > 0 ? "登録済" : "未登録");
+const formatCount = (count: number, unit: string = UI_TEXT.UNIT_COUNT) =>
+  count > 0 ? `${count}${unit}` : UI_TEXT.NOT_REGISTERED;
+
+const formatRegistered = (count: number) =>
+  count > 0 ? UI_TEXT.REGISTERED : UI_TEXT.NOT_REGISTERED;
 
 const formatAmount = (value?: number | null) =>
-  value == null ? "未入力" : `${new Intl.NumberFormat("ja-JP").format(value)}円`;
+  formatValueOrFallback(value, (safeValue) => {
+    const formatted = new Intl.NumberFormat("ja-JP").format(safeValue);
+    return `${formatted}円`;
+  });
 
 const formatNumber = (value?: number | null, suffix = "") =>
-  value == null ? "未入力" : `${value}${suffix}`;
+  formatValueOrFallback(value, (safeValue) => `${safeValue}${suffix}`);
 
-const statusLabel = (hasData: boolean, filled = "入力済", empty = "未入力") =>
-  hasData ? filled : empty;
+const statusLabel = (
+  hasData: boolean,
+  filled: string = UI_TEXT.ENTERED,
+  empty: string = UI_TEXT.NOT_ENTERED,
+) => (hasData ? filled : empty);
 
 const loadInputsData = async (): Promise<InputsData> => {
   const client = createServerSupabaseClient();
@@ -208,7 +221,7 @@ export default async function InputsPage() {
       id: "family",
       title: "家族構成",
       description: "本人・配偶者・子どもの生年月や予定月をまとめて管理します。",
-      summary: `子ども ${formatCount(data.children.length, "人")}`,
+      summary: `子ども ${formatCount(data.children.length, UI_TEXT.UNIT_PEOPLE)}`,
       status: statusLabel(hasFamilyData),
       rows: [
         { label: "本人", value: formatYearMonth(profile?.birth_year, profile?.birth_month) },
@@ -216,7 +229,7 @@ export default async function InputsPage() {
           label: "配偶者",
           value: formatYearMonth(profile?.spouse_birth_year, profile?.spouse_birth_month),
         },
-        { label: "子ども", value: formatCount(data.children.length, "人") },
+        { label: "子ども", value: formatCount(data.children.length, UI_TEXT.UNIT_PEOPLE) },
       ],
       note: "本人・配偶者の生年月は必須項目です。未入力の場合は保存できません。",
       form: <FamilyForm defaultValues={familySectionDefaults} />,
@@ -231,7 +244,7 @@ export default async function InputsPage() {
         { label: "定期収入", value: formatCount(data.incomeStreams.length) },
         {
           label: "主な収入ラベル",
-          value: data.incomeStreams[0]?.label ?? "未登録",
+          value: data.incomeStreams[0]?.label ?? UI_TEXT.NOT_REGISTERED,
         },
       ],
       note: "手取り月額、昇給率、期間を登録します。",
@@ -247,7 +260,7 @@ export default async function InputsPage() {
         { label: "ボーナス設定", value: formatCount(bonusStreams.length) },
         {
           label: "対象ストリーム",
-          value: bonusStreams[0]?.label ?? "未登録",
+          value: bonusStreams[0]?.label ?? UI_TEXT.NOT_REGISTERED,
         },
       ],
       note: "定期収入ごとのボーナス月・金額・変化点を登録します。",
@@ -261,7 +274,7 @@ export default async function InputsPage() {
       status: statusLabel(data.expenses.length > 0),
       rows: [
         { label: "支出項目", value: formatCount(data.expenses.length) },
-        { label: "主な支出ラベル", value: data.expenses[0]?.label ?? "未登録" },
+        { label: "主な支出ラベル", value: data.expenses[0]?.label ?? UI_TEXT.NOT_REGISTERED },
       ],
       note: "支出の月額・インフレ率・期間・カテゴリを登録します。",
       form: <ExpenseForm defaultValues={expenseSectionDefaults} />,
@@ -289,7 +302,7 @@ export default async function InputsPage() {
       status: statusLabel(generalEvents.length > 0),
       rows: [
         { label: "イベント数", value: formatCount(generalEvents.length) },
-        { label: "主なイベント", value: generalEvents[0]?.label ?? "未登録" },
+        { label: "主なイベント", value: generalEvents[0]?.label ?? UI_TEXT.NOT_REGISTERED },
       ],
       note: "繰り返し設定やカテゴリを含めてイベントを登録します。",
       form: <LifeEventSection events={generalEvents} />,
@@ -302,7 +315,7 @@ export default async function InputsPage() {
       status: statusLabel(retirementBonuses.length > 0),
       rows: [
         { label: "退職金レコード", value: formatRegistered(retirementBonuses.length) },
-        { label: "登録名", value: retirementBonuses[0]?.label ?? "未登録" },
+        { label: "登録名", value: retirementBonuses[0]?.label ?? UI_TEXT.NOT_REGISTERED },
       ],
       note: "退職金は 1 件のみ保存され、再保存すると上書きされます。",
       form: <RetirementBonusForm defaultValues={retirementSectionDefaults} />,
@@ -321,14 +334,14 @@ export default async function InputsPage() {
             )} / 配偶者 ${formatAmount(pensionAmountSpouse)} / 合計 ${formatAmount(
               pensionAmountTotal,
             )}`
-          : "未設定",
+          : UI_TEXT.NOT_ENTERED,
       status: statusLabel(
         pensionStartAge != null ||
           pensionAmountSingle != null ||
           pensionAmountSpouse != null ||
           pensionAmountTotal != null,
-        "設定済",
-        "未設定",
+        UI_TEXT.ENTERED,
+        UI_TEXT.NOT_ENTERED,
       ),
       rows: [
         {

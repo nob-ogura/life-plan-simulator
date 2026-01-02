@@ -2,17 +2,23 @@ import {
   LIFE_EVENT_CATEGORY_LABELS,
   LIFE_EVENT_CATEGORIES as SHARED_LIFE_EVENT_CATEGORIES,
 } from "@/shared/domain/life-events/categories";
+import { formatValueOrFallback } from "@/shared/utils/formatters";
 import type { Tables } from "@/types/supabase";
 
 export const LIFE_EVENT_CATEGORIES = SHARED_LIFE_EVENT_CATEGORIES;
 export const categoryLabels = new Map<string, string>(LIFE_EVENT_CATEGORY_LABELS);
 
-export const formatYearMonth = (value?: string | null) => {
-  if (!value) return "未入力";
-  const trimmed = value.slice(0, 7);
-  const [year, month] = trimmed.split("-");
-  return `${year}年${month}月`;
-};
+export const formatYearMonth = (value?: string | null) =>
+  formatValueOrFallback(
+    value,
+    (safeValue) => {
+      const trimmed = safeValue.slice(0, 7);
+      const [year, month] = trimmed.split("-");
+      return `${year}年${month}月`;
+    },
+    undefined,
+    (safeValue) => safeValue.trim().length === 0,
+  );
 
 export const formatAmount = (amount: number) =>
   `${new Intl.NumberFormat("ja-JP").format(amount)}円`;
