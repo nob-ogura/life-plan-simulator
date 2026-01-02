@@ -216,7 +216,6 @@ export default async function InputsPage() {
       ],
       note: "本人・配偶者の生年月は必須項目です。未入力の場合は保存できません。",
       form: <FamilyForm defaultValues={familySectionDefaults} />,
-      defaultOpen: true,
     },
     {
       id: "income",

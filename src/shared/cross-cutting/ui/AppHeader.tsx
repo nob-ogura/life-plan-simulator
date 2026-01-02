@@ -22,9 +22,6 @@ export function AppHeader() {
           <Link className="transition-colors hover:text-foreground" href="/inputs">
             Inputs
           </Link>
-          <Link className="transition-colors hover:text-foreground" href="/settings">
-            Settings
-          </Link>
         </nav>
         <div className="flex items-center gap-2">
           <AuthButton />
