@@ -4,6 +4,7 @@ test("display range toggle updates graph and table", async ({ authenticatedPage:
   await page.goto("/inputs");
 
   const familySection = page.locator("details", { hasText: "家族構成" });
+  await familySection.locator("summary").click();
   await familySection.getByLabel("本人（年）").fill("1985");
   await familySection.getByLabel("本人（月）").fill("4");
   await familySection.getByLabel("配偶者（年）").fill("1988");
@@ -118,6 +119,7 @@ test("cashflow table uses virtual scroll and updates on range change", async ({
   await page.goto("/inputs");
 
   const familySection = page.locator("details", { hasText: "家族構成" });
+  await familySection.locator("summary").click();
   await familySection.getByLabel("本人（年）").fill("1985");
   await familySection.getByLabel("本人（月）").fill("4");
   await familySection.getByLabel("配偶者（年）").fill("1988");
@@ -184,6 +186,7 @@ test("depletion month is highlighted on asset trend chart", async ({ authenticat
   await page.goto("/inputs");
 
   const familySection = page.locator("details", { hasText: "家族構成" });
+  await familySection.locator("summary").click();
   await familySection.getByLabel("本人（年）").fill("1980");
   await familySection.getByLabel("本人（月）").fill("1");
   await familySection.getByLabel("配偶者（年）").fill("1982");

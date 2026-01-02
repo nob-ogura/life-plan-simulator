@@ -12,6 +12,7 @@ test("family section accepts input and updates summary", async ({ authenticatedP
   await page.goto("/inputs");
 
   const familySection = page.locator("details", { hasText: "家族構成" });
+  await familySection.locator("summary").click();
 
   await expect(familySection.getByText("子どもの登録はありません。")).toBeVisible();
 
