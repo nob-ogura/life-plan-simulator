@@ -5,8 +5,6 @@ import { optionalNumericString, requiredNumericString } from "@/features/inputs/
 export const SimulationSectionSchema = z.object({
   start_offset_months: optionalNumericString,
   end_age: requiredNumericString,
-  pension_amount_single: optionalNumericString,
-  pension_amount_spouse: optionalNumericString,
   mortgage_transaction_cost_rate: optionalNumericString,
   real_estate_tax_rate: optionalNumericString,
   real_estate_evaluation_rate: optionalNumericString,

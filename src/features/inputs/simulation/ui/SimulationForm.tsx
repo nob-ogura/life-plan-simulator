@@ -60,8 +60,6 @@ export function SimulationForm({ defaultValues, settingsId }: SimulationFormProp
     const payload = omitUndefined({
       start_offset_months: parsed.start_offset_months,
       end_age: parsed.end_age,
-      pension_amount_single: parsed.pension_amount_single,
-      pension_amount_spouse: parsed.pension_amount_spouse,
       mortgage_transaction_cost_rate: parsed.mortgage_transaction_cost_rate,
       real_estate_tax_rate: parsed.real_estate_tax_rate,
       real_estate_evaluation_rate: parsed.real_estate_evaluation_rate,
@@ -98,7 +96,7 @@ export function SimulationForm({ defaultValues, settingsId }: SimulationFormProp
         <div>
           <p className="text-sm font-semibold">シミュレーション設定</p>
           <p className="text-xs text-muted-foreground">
-            シミュレーション期間や年金・住宅係数を設定します。
+            シミュレーション期間と住宅係数を設定します。
           </p>
         </div>
 
@@ -129,38 +127,6 @@ export function SimulationForm({ defaultValues, settingsId }: SimulationFormProp
               </FormItem>
             )}
           />
-        </div>
-
-        <div className="rounded-md border border-border/70 bg-muted/40 p-4">
-          <p className="text-xs font-semibold text-muted-foreground">年金月額</p>
-          <div className="mt-3 grid gap-4 md:grid-cols-2">
-            <FormField
-              control={form.control}
-              name="pension_amount_single"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>単身</FormLabel>
-                  <FormControl>
-                    <Input {...field} inputMode="numeric" placeholder="例: 65000" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="pension_amount_spouse"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>配偶者分</FormLabel>
-                  <FormControl>
-                    <Input {...field} inputMode="numeric" placeholder="例: 130000" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
         </div>
 
         <div className="rounded-md border border-border/70 bg-muted/40 p-4">

@@ -179,6 +179,8 @@ export default async function InputsPage() {
 
   const profile = data.profile;
   const pensionStartAge = profile?.pension_start_age ?? null;
+  const pensionAmountSingle = data.simulationSettings?.pension_amount_single ?? null;
+  const pensionAmountSpouse = data.simulationSettings?.pension_amount_spouse ?? null;
 
   const hasFamilyData =
     data.children.length > 0 ||
@@ -193,7 +195,7 @@ export default async function InputsPage() {
   const expenseSectionDefaults = buildExpenseSectionDefaults(data.expenses);
   const housingSectionDefaults = buildHousingSectionDefaults(data.mortgages, data.rentals);
   const retirementSectionDefaults = buildRetirementSectionDefaults(retirementBonuses);
-  const pensionSectionDefaults = buildPensionSectionDefaults(profile);
+  const pensionSectionDefaults = buildPensionSectionDefaults(profile, data.simulationSettings);
   const assetSectionDefaults = buildAssetFormDefaults(data.assets);
   const simulationSectionDefaults = buildSimulationSectionDefaults(data.simulationSettings);
   const assetId = data.assets[0]?.id ?? null;
@@ -305,18 +307,40 @@ export default async function InputsPage() {
     },
     {
       id: "pension",
-      title: "年金開始年齢",
-      description: "年金収入の開始年齢を設定します。",
-      summary: pensionStartAge != null ? `開始年齢 ${pensionStartAge}歳` : "未設定",
-      status: statusLabel(pensionStartAge != null, "設定済み", "未設定"),
+      title: "年金",
+      description: "年金収入の開始年齢と月額を設定します。",
+      summary:
+        pensionStartAge != null || pensionAmountSingle != null || pensionAmountSpouse != null
+          ? `開始年齢 ${formatNumber(pensionStartAge, "歳")} / 単身 ${formatAmount(
+              pensionAmountSingle,
+            )} / 配偶者 ${formatAmount(pensionAmountSpouse)}`
+          : "未設定",
+      status: statusLabel(
+        pensionStartAge != null || pensionAmountSingle != null || pensionAmountSpouse != null,
+        "設定済み",
+        "未設定",
+      ),
       rows: [
         {
           label: "年金開始年齢",
-          value: pensionStartAge != null ? `${pensionStartAge}歳` : "未設定",
+          value: formatNumber(pensionStartAge, "歳"),
+        },
+        {
+          label: "年金月額（単身）",
+          value: formatAmount(pensionAmountSingle),
+        },
+        {
+          label: "年金月額（配偶者）",
+          value: formatAmount(pensionAmountSpouse),
         },
       ],
-      note: "年金開始年齢は将来の年金収入の計算に反映されます。",
-      form: <PensionForm defaultValues={pensionSectionDefaults} />,
+      note: "年金開始年齢と月額は将来の年金収入の計算に反映されます。",
+      form: (
+        <PensionForm
+          defaultValues={pensionSectionDefaults}
+          simulationSettingsId={simulationSettingsId}
+        />
+      ),
     },
     {
       id: "assets",
@@ -342,14 +366,6 @@ export default async function InputsPage() {
         {
           label: "終了年齢",
           value: formatNumber(data.simulationSettings?.end_age, "歳"),
-        },
-        {
-          label: "年金月額（単身）",
-          value: formatAmount(data.simulationSettings?.pension_amount_single),
-        },
-        {
-          label: "年金月額（配偶者）",
-          value: formatAmount(data.simulationSettings?.pension_amount_spouse),
         },
       ],
       note: "係数設定を変更するとシミュレーション結果に反映されます。",

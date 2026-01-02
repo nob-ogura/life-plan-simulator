@@ -16,4 +16,32 @@ describe("pension section schema", () => {
       expect(findIssueMessage(result.error.issues, "pension_start_age")).toBe("必須項目です");
     }
   });
+
+  it("allows empty pension amounts", () => {
+    const result = PensionSectionSchema.safeParse({
+      pension_start_age: "65",
+      pension_amount_single: "",
+      pension_amount_spouse: "",
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.pension_amount_single).toBeUndefined();
+      expect(result.data.pension_amount_spouse).toBeUndefined();
+    }
+  });
+
+  it("rejects non-numeric pension amount with Japanese message", () => {
+    const result = PensionSectionSchema.safeParse({
+      pension_start_age: "65",
+      pension_amount_single: "abc",
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(findIssueMessage(result.error.issues, "pension_amount_single")).toBe(
+        "数値で入力してください",
+      );
+    }
+  });
 });

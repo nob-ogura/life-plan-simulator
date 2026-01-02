@@ -14,14 +14,22 @@ test("display range toggle updates graph and table", async ({ authenticatedPage:
   await familySection.getByRole("button", { name: "保存" }).click();
   await expectToast(page, "保存しました。");
 
+  const pensionSection = page.locator("details", {
+    has: page.getByText("年金", { exact: true }),
+  });
+  await pensionSection.locator("summary").click();
+  await pensionSection.getByLabel("年金開始年齢").fill("65");
+  await pensionSection.getByLabel("単身").fill("65000");
+  await pensionSection.getByLabel("配偶者分").fill("130000");
+  await pensionSection.getByRole("button", { name: "保存" }).click();
+  await expectToast(page, "保存しました。");
+
   const simulationSection = page.locator("details", {
     has: page.getByText("シミュレーション設定", { exact: true }),
   });
   await simulationSection.locator("summary").click();
   await simulationSection.getByLabel("開始オフセット（月）").fill("0");
   await simulationSection.getByLabel("終了年齢").fill("90");
-  await simulationSection.getByLabel("単身").fill("65000");
-  await simulationSection.getByLabel("配偶者分").fill("130000");
   await simulationSection.getByLabel("諸経費率").fill("1.03");
   await simulationSection.getByLabel("固定資産税率").fill("0.014");
   await simulationSection.getByLabel("評価額掛目").fill("0.7");
@@ -127,14 +135,22 @@ test("cashflow table uses virtual scroll and updates on range change", async ({
   await familySection.getByRole("button", { name: "保存" }).click();
   await expectToast(page, "保存しました。");
 
+  const pensionSection = page.locator("details", {
+    has: page.getByText("年金", { exact: true }),
+  });
+  await pensionSection.locator("summary").click();
+  await pensionSection.getByLabel("年金開始年齢").fill("65");
+  await pensionSection.getByLabel("単身").fill("65000");
+  await pensionSection.getByLabel("配偶者分").fill("130000");
+  await pensionSection.getByRole("button", { name: "保存" }).click();
+  await expectToast(page, "保存しました。");
+
   const simulationSection = page.locator("details", {
     has: page.getByText("シミュレーション設定", { exact: true }),
   });
   await simulationSection.locator("summary").click();
   await simulationSection.getByLabel("開始オフセット（月）").fill("0");
   await simulationSection.getByLabel("終了年齢").fill("90");
-  await simulationSection.getByLabel("単身").fill("65000");
-  await simulationSection.getByLabel("配偶者分").fill("130000");
   await simulationSection.getByLabel("諸経費率").fill("1.03");
   await simulationSection.getByLabel("固定資産税率").fill("0.014");
   await simulationSection.getByLabel("評価額掛目").fill("0.7");
@@ -194,14 +210,22 @@ test("depletion month is highlighted on asset trend chart", async ({ authenticat
   await familySection.getByRole("button", { name: "保存" }).click();
   await expectToast(page, "保存しました。");
 
+  const pensionSection = page.locator("details", {
+    has: page.getByText("年金", { exact: true }),
+  });
+  await pensionSection.locator("summary").click();
+  await pensionSection.getByLabel("年金開始年齢").fill("65");
+  await pensionSection.getByLabel("単身").fill("0");
+  await pensionSection.getByLabel("配偶者分").fill("0");
+  await pensionSection.getByRole("button", { name: "保存" }).click();
+  await expectToast(page, "保存しました。");
+
   const simulationSection = page.locator("details", {
     has: page.getByText("シミュレーション設定", { exact: true }),
   });
   await simulationSection.locator("summary").click();
   await simulationSection.getByLabel("開始オフセット（月）").fill("0");
   await simulationSection.getByLabel("終了年齢").fill("70");
-  await simulationSection.getByLabel("単身").fill("0");
-  await simulationSection.getByLabel("配偶者分").fill("0");
   await simulationSection.getByLabel("諸経費率").fill("1.0");
   await simulationSection.getByLabel("固定資産税率").fill("0.0");
   await simulationSection.getByLabel("評価額掛目").fill("0.7");
