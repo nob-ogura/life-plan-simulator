@@ -1,4 +1,33 @@
+import type { Page } from "@playwright/test";
+
 import { expect, expectToast, test } from "./fixtures";
+
+const saveSimulationSettings = async (
+  page: Page,
+  values: {
+    startOffset: string;
+    endAge: string;
+    transactionRate: string;
+    taxRate: string;
+    evaluationRate: string;
+  },
+  returnTo?: string,
+) => {
+  await page.goto("/settings");
+
+  await page.getByLabel("開始オフセット（月）").fill(values.startOffset);
+  await page.getByLabel("終了年齢").fill(values.endAge);
+  await page.getByLabel("諸経費率").fill(values.transactionRate);
+  await page.getByLabel("固定資産税率").fill(values.taxRate);
+  await page.getByLabel("評価額掛目").fill(values.evaluationRate);
+
+  await page.getByRole("button", { name: "保存" }).click();
+  await expectToast(page, "保存しました。");
+
+  if (returnTo) {
+    await page.goto(returnTo);
+  }
+};
 
 test("display range toggle updates graph and table", async ({ authenticatedPage: page }) => {
   await page.goto("/inputs");
@@ -24,17 +53,17 @@ test("display range toggle updates graph and table", async ({ authenticatedPage:
   await pensionSection.getByRole("button", { name: "保存" }).click();
   await expectToast(page, "保存しました。");
 
-  const simulationSection = page.locator("details", {
-    has: page.getByText("シミュレーション設定", { exact: true }),
-  });
-  await simulationSection.locator("summary").click();
-  await simulationSection.getByLabel("開始オフセット（月）").fill("0");
-  await simulationSection.getByLabel("終了年齢").fill("90");
-  await simulationSection.getByLabel("諸経費率").fill("1.03");
-  await simulationSection.getByLabel("固定資産税率").fill("0.014");
-  await simulationSection.getByLabel("評価額掛目").fill("0.7");
-  await simulationSection.getByRole("button", { name: "保存" }).click();
-  await expectToast(page, "保存しました。");
+  await saveSimulationSettings(
+    page,
+    {
+      startOffset: "0",
+      endAge: "90",
+      transactionRate: "1.03",
+      taxRate: "0.014",
+      evaluationRate: "0.7",
+    },
+    "/inputs",
+  );
 
   const incomeSection = page.locator("details", {
     has: page.getByText("収入", { exact: true }),
@@ -145,17 +174,13 @@ test("cashflow table uses virtual scroll and updates on range change", async ({
   await pensionSection.getByRole("button", { name: "保存" }).click();
   await expectToast(page, "保存しました。");
 
-  const simulationSection = page.locator("details", {
-    has: page.getByText("シミュレーション設定", { exact: true }),
+  await saveSimulationSettings(page, {
+    startOffset: "0",
+    endAge: "90",
+    transactionRate: "1.03",
+    taxRate: "0.014",
+    evaluationRate: "0.7",
   });
-  await simulationSection.locator("summary").click();
-  await simulationSection.getByLabel("開始オフセット（月）").fill("0");
-  await simulationSection.getByLabel("終了年齢").fill("90");
-  await simulationSection.getByLabel("諸経費率").fill("1.03");
-  await simulationSection.getByLabel("固定資産税率").fill("0.014");
-  await simulationSection.getByLabel("評価額掛目").fill("0.7");
-  await simulationSection.getByRole("button", { name: "保存" }).click();
-  await expectToast(page, "保存しました。");
 
   await page.goto("/");
 
@@ -220,17 +245,17 @@ test("depletion month is highlighted on asset trend chart", async ({ authenticat
   await pensionSection.getByRole("button", { name: "保存" }).click();
   await expectToast(page, "保存しました。");
 
-  const simulationSection = page.locator("details", {
-    has: page.getByText("シミュレーション設定", { exact: true }),
-  });
-  await simulationSection.locator("summary").click();
-  await simulationSection.getByLabel("開始オフセット（月）").fill("0");
-  await simulationSection.getByLabel("終了年齢").fill("70");
-  await simulationSection.getByLabel("諸経費率").fill("1.0");
-  await simulationSection.getByLabel("固定資産税率").fill("0.0");
-  await simulationSection.getByLabel("評価額掛目").fill("0.7");
-  await simulationSection.getByRole("button", { name: "保存" }).click();
-  await expectToast(page, "保存しました。");
+  await saveSimulationSettings(
+    page,
+    {
+      startOffset: "0",
+      endAge: "70",
+      transactionRate: "1.0",
+      taxRate: "0.0",
+      evaluationRate: "0.7",
+    },
+    "/inputs",
+  );
 
   const assetSection = page.locator("details", {
     has: page.getByText("投資設定", { exact: true }),

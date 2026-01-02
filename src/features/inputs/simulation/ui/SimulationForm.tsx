@@ -16,10 +16,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createSimulationSettingsAction } from "@/features/inputs/simulation-settings/commands/create-simulation-settings/action";
+import { resetSimulationSettingsAction } from "@/features/inputs/simulation-settings/commands/reset-simulation-settings/action";
 import { updateSimulationSettingsAction } from "@/features/inputs/simulation-settings/commands/update-simulation-settings/action";
 import { zodResolver } from "@/lib/zod-resolver";
 import { useAuth } from "@/shared/cross-cutting/auth";
-
+import { buildSimulationSectionDefaults } from "./mapper";
 import {
   type SimulationSectionInput,
   type SimulationSectionPayload,
@@ -38,6 +39,7 @@ export function SimulationForm({ defaultValues, settingsId }: SimulationFormProp
   const router = useRouter();
   const { session, isReady } = useAuth();
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isResetting, setIsResetting] = useState(false);
   const form = useForm<SimulationSectionInput>({
     defaultValues,
     resolver: zodResolver(SimulationSectionSchema),
@@ -88,7 +90,33 @@ export function SimulationForm({ defaultValues, settingsId }: SimulationFormProp
     }
   });
 
+  const handleReset = async () => {
+    setSubmitError(null);
+    if (!isReady || !session?.user?.id) {
+      setSubmitError("ログイン情報を取得できませんでした。");
+      return;
+    }
+
+    setIsResetting(true);
+    try {
+      const result = await resetSimulationSettingsAction({});
+      if (!result.ok) {
+        setSubmitError("初期値に戻せませんでした。時間をおいて再度お試しください。");
+        return;
+      }
+      form.reset(buildSimulationSectionDefaults(result.data));
+      toast.success("初期値に戻しました。");
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+      setSubmitError("初期値に戻せませんでした。時間をおいて再度お試しください。");
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
   const { isSubmitting } = form.formState;
+  const isBusy = isSubmitting || isResetting;
 
   return (
     <Form {...form}>
@@ -176,8 +204,11 @@ export function SimulationForm({ defaultValues, settingsId }: SimulationFormProp
 
         {submitError ? <p className="text-xs text-destructive">{submitError}</p> : null}
 
-        <div className="flex items-center justify-end">
-          <Button type="submit" disabled={isSubmitting}>
+        <div className="flex items-center justify-end gap-2">
+          <Button type="button" variant="outline" onClick={handleReset} disabled={isBusy}>
+            初期値に戻す
+          </Button>
+          <Button type="submit" disabled={isBusy}>
             保存
           </Button>
         </div>

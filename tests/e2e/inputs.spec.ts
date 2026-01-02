@@ -315,28 +315,18 @@ test("asset section accepts input and updates summary", async ({ authenticatedPa
   ).toHaveText("0.03");
 });
 
-test("simulation settings section accepts input and updates summary", async ({
+test("inputs page hides simulation settings and keeps pension section", async ({
   authenticatedPage: page,
 }) => {
   await page.goto("/inputs");
 
+  const pensionSection = page.locator("details", {
+    has: page.getByText("年金", { exact: true }),
+  });
   const simulationSection = page.locator("details", {
     has: page.getByText("シミュレーション設定", { exact: true }),
   });
 
-  await simulationSection.locator("summary").click();
-
-  await simulationSection.getByLabel("開始オフセット（月）").fill("2");
-  await simulationSection.getByLabel("終了年齢").fill("90");
-  await simulationSection.getByLabel("諸経費率").fill("1.05");
-  await simulationSection.getByLabel("固定資産税率").fill("0.014");
-  await simulationSection.getByLabel("評価額掛目").fill("0.8");
-
-  await simulationSection.getByRole("button", { name: "保存" }).click();
-
-  await expectToast(page, "保存しました。");
-  await expect(
-    simulationSection.locator("dt", { hasText: "終了年齢" }).locator("..").locator("dd"),
-  ).toHaveText("90歳");
-  await expect(simulationSection.getByText("係数設定 登録済み")).toBeVisible();
+  await expect(pensionSection).toBeVisible();
+  await expect(simulationSection).toHaveCount(0);
 });

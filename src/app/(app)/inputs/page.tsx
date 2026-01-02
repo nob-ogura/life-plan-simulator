@@ -27,8 +27,6 @@ import { PensionForm } from "@/features/inputs/pension/ui/PensionForm";
 import { SupabaseListRentalsRepository } from "@/features/inputs/rentals/queries/list-rentals/repository";
 import { buildRetirementSectionDefaults } from "@/features/inputs/retirement/ui/mapper";
 import { RetirementBonusForm } from "@/features/inputs/retirement/ui/RetirementBonusForm";
-import { buildSimulationSectionDefaults } from "@/features/inputs/simulation/ui/mapper";
-import { SimulationForm } from "@/features/inputs/simulation/ui/SimulationForm";
 import { createServerAuthSession } from "@/shared/cross-cutting/auth/server-auth";
 import { createServerSupabaseClient } from "@/shared/cross-cutting/infrastructure/supabase.server";
 import type { Tables } from "@/types/supabase";
@@ -201,7 +199,6 @@ export default async function InputsPage() {
   const retirementSectionDefaults = buildRetirementSectionDefaults(retirementBonuses);
   const pensionSectionDefaults = buildPensionSectionDefaults(profile, data.simulationSettings);
   const assetSectionDefaults = buildAssetFormDefaults(data.assets);
-  const simulationSectionDefaults = buildSimulationSectionDefaults(data.simulationSettings);
   const assetId = data.assets[0]?.id ?? null;
   const simulationSettingsId = data.simulationSettings?.id ?? null;
 
@@ -371,26 +368,6 @@ export default async function InputsPage() {
       ],
       note: "投資設定は 1 件のみ保存され、保存すると上書きされます。",
       form: <AssetForm defaultValues={assetSectionDefaults} assetId={assetId} />,
-    },
-    {
-      id: "simulation",
-      title: "シミュレーション設定",
-      description: "係数や年齢上限などの共通設定を管理します。",
-      summary: data.simulationSettings ? "係数設定 登録済み" : "係数設定 未登録",
-      status: statusLabel(!!data.simulationSettings),
-      rows: [
-        {
-          label: "終了年齢",
-          value: formatNumber(data.simulationSettings?.end_age, "歳"),
-        },
-      ],
-      note: "係数設定を変更するとシミュレーション結果に反映されます。",
-      form: (
-        <SimulationForm
-          defaultValues={simulationSectionDefaults}
-          settingsId={simulationSettingsId}
-        />
-      ),
     },
   ];
 

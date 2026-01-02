@@ -322,7 +322,22 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      reset_simulation_settings_defaults: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          created_at: string;
+          end_age: number;
+          id: string;
+          mortgage_transaction_cost_rate: number;
+          pension_amount_single: number;
+          pension_amount_spouse: number;
+          real_estate_evaluation_rate: number;
+          real_estate_tax_rate: number;
+          start_offset_months: number;
+          updated_at: string;
+          user_id: string;
+        };
+      };
     };
     Enums: {
       [_ in never]: never;
