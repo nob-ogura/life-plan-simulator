@@ -201,7 +201,7 @@ test("life event section accepts input and updates summary", async ({
 
   await lifeEventSection.getByText("ライフイベント", { exact: true }).click();
 
-  await expect(lifeEventSection.getByText("登録済みのイベントはありません。")).toBeVisible();
+  await expect(lifeEventSection.getByText("登録済のイベントはありません。")).toBeVisible();
 
   await lifeEventSection.getByRole("button", { name: "イベント追加" }).click();
 
@@ -217,7 +217,7 @@ test("life event section accepts input and updates summary", async ({
   await modal.getByRole("button", { name: "保存" }).click();
 
   await expectToast(page, "保存しました。");
-  await expect(lifeEventSection.getByText("登録済みのイベントはありません。")).toBeHidden();
+  await expect(lifeEventSection.getByText("登録済のイベントはありません。")).toBeHidden();
 
   const eventList = lifeEventSection.locator("div.grid.gap-3");
 

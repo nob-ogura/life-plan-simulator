@@ -61,6 +61,7 @@ const formatYearMonth = (year?: number | null, month?: number | null) => {
 };
 
 const formatCount = (count: number, unit = "件") => (count > 0 ? `${count}${unit}` : "未登録");
+const formatRegistered = (count: number) => (count > 0 ? "登録済" : "未登録");
 
 const formatAmount = (value?: number | null) =>
   value == null ? "未入力" : `${new Intl.NumberFormat("ja-JP").format(value)}円`;
@@ -68,7 +69,7 @@ const formatAmount = (value?: number | null) =>
 const formatNumber = (value?: number | null, suffix = "") =>
   value == null ? "未入力" : `${value}${suffix}`;
 
-const statusLabel = (hasData: boolean, filled = "入力済み", empty = "未入力") =>
+const statusLabel = (hasData: boolean, filled = "入力済", empty = "未入力") =>
   hasData ? filled : empty;
 
 const loadInputsData = async (): Promise<InputsData> => {
@@ -297,10 +298,10 @@ export default async function InputsPage() {
       id: "retirement",
       title: "退職金",
       description: "退職金は単一レコードとして管理します。",
-      summary: `退職金 ${formatCount(retirementBonuses.length)}`,
+      summary: `退職金 ${formatRegistered(retirementBonuses.length)}`,
       status: statusLabel(retirementBonuses.length > 0),
       rows: [
-        { label: "退職金レコード", value: formatCount(retirementBonuses.length) },
+        { label: "退職金レコード", value: formatRegistered(retirementBonuses.length) },
         { label: "登録名", value: retirementBonuses[0]?.label ?? "未登録" },
       ],
       note: "退職金は 1 件のみ保存され、再保存すると上書きされます。",
@@ -326,7 +327,7 @@ export default async function InputsPage() {
           pensionAmountSingle != null ||
           pensionAmountSpouse != null ||
           pensionAmountTotal != null,
-        "設定済み",
+        "設定済",
         "未設定",
       ),
       rows: [
@@ -359,7 +360,7 @@ export default async function InputsPage() {
       id: "assets",
       title: "投資設定",
       description: "現金・運用残高と利回りを管理します。",
-      summary: data.assets.length > 0 ? "資産設定 登録済み" : "資産設定 未登録",
+      summary: `資産設定 ${formatRegistered(data.assets.length)}`,
       status: statusLabel(data.assets.length > 0),
       rows: [
         { label: "現金残高", value: formatAmount(data.assets[0]?.cash_balance) },

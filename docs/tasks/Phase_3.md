@@ -10,7 +10,7 @@
   - `life_events` に `auto_toggle_key`/`repeat_interval_years`/`stop_after_occurrences` を含める。
 - 受入基準（Gherkin）:
   - シナリオ: コアテーブルが設計通りに作成されている
-    - 前提: Supabase migration が適用済みである
+    - 前提: Supabase migration が適用済である
     - もし: 各テーブルのスキーマを確認する
     - ならば: `docs/Design.md` に定義された主要カラムとデフォルト値が存在する
 
@@ -35,7 +35,7 @@
   - `life_events(year_month)` にインデックスを付与する。
 - 受入基準（Gherkin）:
   - シナリオ: 必須インデックスが作成されている
-    - 前提: migration が適用済みである
+    - 前提: migration が適用済である
     - もし: インデックス一覧を確認する
     - ならば: すべてのテーブルに `user_id` インデックスが存在する
     - かつ: `life_events(year_month)` が存在する

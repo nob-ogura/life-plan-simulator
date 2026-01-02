@@ -31,13 +31,13 @@
   - 認証プロバイダは GitHub のみに限定し、メール/パスワードは提供しない。Supabase プロジェクト設定で `Enforce TLS` を有効化。
 - DOD:
   - 未ログイン時は `/login` へ誘導され、ログイン後にダッシュボードへ遷移する。
-  - Supabase migration が適用済みで、`profiles` と `simulation_settings` に RLS ポリシーが有効。
+  - Supabase migration が適用済で、`profiles` と `simulation_settings` に RLS ポリシーが有効。
   - 認証状態の取得とセッション更新がフロント全体で一貫して動作する。
 
 ## フェーズ3: データモデル & CRUD スライス
 - 目的: 入力データを永続化できる最小の API/ストアを揃え、以降の UI/計算の土台にする。
 - 実装内容:
-  - テーブル: `children`, `income_streams`, `expenses`, `rentals`, `assets`, `mortgages`, `life_events` のスキーマとインデックスを Supabase migration として作成（`profiles` / `simulation_settings` はフェーズ2で作成済み）。退職金は `life_events` の category `retirement_bonus` で扱い、年金額・諸係数（諸経費率・固定資産税率・評価額掛目など）は `simulation_settings` に保持する。
+  - テーブル: `children`, `income_streams`, `expenses`, `rentals`, `assets`, `mortgages`, `life_events` のスキーマとインデックスを Supabase migration として作成（`profiles` / `simulation_settings` はフェーズ2で作成済）。退職金は `life_events` の category `retirement_bonus` で扱い、年金額・諸係数（諸経費率・固定資産税率・評価額掛目など）は `simulation_settings` に保持する。
   - 制約/標準化: すべての日付は月初 (`YYYY-MM-01`) に正規化、金額は `amount >= 0`、`repeat_interval_years > 0`、`children` は `birth_year_month` または `due_year_month` のどちらか必須、`life_events(year_month)` にインデックスを付与。`profiles` には本人/配偶者いずれかの生年月入力が必須になるようチェックを検討。
   - パフォーマンス: 全テーブルの `user_id` に BTREE インデックスを付与し、RLS 下でもクエリ性能を維持する。
   - セキュリティ: 本フェーズで作成する全テーブルに対し migration で `enable row level security;` と `auth.uid() = user_id` ポリシーを付与する。
@@ -122,7 +122,7 @@
 - DOD:
   - `main` へのマージで自動的に Vercel へデプロイされる。
   - CI が lint/test/build を通過しない限りマージできない状態。
-  - Sentry が稼働し、意図的なエラー送信でイベントを確認済み。
+  - Sentry が稼働し、意図的なエラー送信でイベントを確認済。
 
 ## フェーズ9: 拡張ロードマップ（税精度向上・シナリオ比較）
 - 目的: 要件定義書5.3の「税精度向上・シナリオ比較」を継続拡張として位置付け、後続フェーズの指針を明確にする。

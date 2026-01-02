@@ -22,7 +22,7 @@
    - キャッシュフロー表: 月次収入・支出・差分・残高をテーブルで表示、仮想スクロール。
 3) 入力フォーム (`/inputs`)
    - セクション: 家族構成 / 収入 / ボーナス / 支出 / 住宅 / ライフイベント / 投資設定 / シミュレーション設定（start_offset_months, end_age, 年金・係数）。
-     - 家族構成: 子供を複数行で追加できるフォームを用意し、各行に「出生済み (birth_year_month)」または「誕生予定 (due_year_month)」のいずれかを必須入力。
+     - 家族構成: 子供を複数行で追加できるフォームを用意し、各行に「出生済 (birth_year_month)」または「誕生予定 (due_year_month)」のいずれかを必須入力。
    - フォームはステップ別アコーディオン + AutoSave（ローカル状態→保存ボタンでDBへ現在の設定をUpsert）。
    - ※履歴保存機能は持たない（常に最新の設定のみを保持）。
 4) イベント一覧: 繰り返しイベントを含む一覧と追加モーダル。
@@ -35,7 +35,7 @@
 
 ### 4.1 コア
 - `profiles`: user_id (PK), birth_year, birth_month (1-12), spouse_birth_year (nullable), spouse_birth_month (nullable), pension_start_age default 65, created_at, updated_at。
-- `children`: id, user_id, label, birth_year_month date nullable, due_year_month date nullable, note。出生済みは birth_year_month、誕生予定は due_year_month を設定し、両方 null を禁止する check constraint を付与。
+- `children`: id, user_id, label, birth_year_month date nullable, due_year_month date nullable, note。出生済は birth_year_month、誕生予定は due_year_month を設定し、両方 null を禁止する check constraint を付与。
 - `income_streams`: id, user_id, label, take_home_monthly, bonus_months int[] default '{}', bonus_amount, change_year_month date nullable, bonus_amount_after nullable, raise_rate decimal default 0.01, start_year_month date, end_year_month date nullable。
 - `expenses`: id, user_id, label, amount_monthly, inflation_rate decimal default 0.0, category, start_year_month date, end_year_month date nullable。
 - `rentals`: id, user_id, rent_monthly, start_year_month date, end_year_month date nullable。※一度に所有する賃貸は1件のみを前提。

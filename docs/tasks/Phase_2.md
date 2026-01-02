@@ -29,7 +29,7 @@
     - かつ: ログアウトを実行すると `/login` に戻る
 
 ## Task 3: 保護ルートガードの実装（未ログインは `/login` へ誘導）
-- 目的: 認証済みユーザーのみがアプリの主要画面にアクセスできるようにする。
+- 目的: 認証済ユーザーのみがアプリの主要画面にアクセスできるようにする。
 - 作業内容:
   - ルートガード（middleware または layout での保護）を実装する。
   - 未ログイン時は `/login` にリダイレクトする。
@@ -48,7 +48,7 @@
   - `simulation_settings` に `start_offset_months`, `end_age` と係数（年金額・諸経費率・固定資産税率・評価額掛目）を含める。
 - 受入基準（Gherkin）:
   - シナリオ: 必要な初期テーブルとカラムが作成されている
-    - 前提: Supabase migration が実行済みである
+    - 前提: Supabase migration が実行済である
     - もし: `profiles` と `simulation_settings` のスキーマを確認する
     - ならば: `profiles` に `user_id`, `birth_year`, `birth_month`, `spouse_birth_year`, `spouse_birth_month`, `pension_start_age` が存在する
     - かつ: `simulation_settings` に `start_offset_months`, `end_age`, `pension_amount_single`, `pension_amount_spouse`, `mortgage_transaction_cost_rate`, `real_estate_tax_rate`, `real_estate_evaluation_rate` が存在する

@@ -75,7 +75,7 @@
 
 ## 仕様上の注意点
 - `pension_start_age` は現状必須。年金月額は optional で保持。
-- 年金セクションの「設定済み」判定は、開始年齢のみか、月額どちらか入力で OK にするか検討。
+- 年金セクションの「設定済」判定は、開始年齢のみか、月額どちらか入力で OK にするか検討。
   - 例: `pensionStartAge != null || pensionAmountSingle != null || pensionAmountSpouse != null`
 - `Promise.all` で profile と settings を同時更新する場合、片方成功の可能性がある。
   - 一貫性を重視するなら RPC/トランザクション化を検討（今回は現行方針に合わせて並列更新）。
