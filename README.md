@@ -1,77 +1,84 @@
 # Life Plan Simulator
 
-## Setup
+人生設計をシミュレーションし、資産やイベントの変化を可視化するための Web アプリです。
 
-1) Install dependencies.
+## プロジェクト概要 / 主な機能
+
+- ライフイベントに応じたシミュレーションの実行。
+- 資産・収支の管理と推移の可視化。
+- Supabase を用いた認証とデータ永続化。
+- 仕様・設計ドキュメントは `docs/` に集約。
+
+## 技術スタック
+
+- Next.js (App Router) / TypeScript
+- Supabase (認証 / DB)
+- Tailwind CSS
+- Biome (フォーマット / リント)
+- Vitest (ユニット / 統合)
+- Playwright (E2E)
+
+## 前提 / セットアップ
+
+1) 依存関係をインストールします。
 
 ```bash
 pnpm install
 ```
 
-2) Create your local environment file.
+2) 環境変数ファイルを作成します。
 
 ```bash
 cp .env.example .env
 ```
 
-3) Update `.env` with the required values.
+3) `.env` を更新します。
 
-4) Start the development server.
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+- `SUPABASE_SECRET_KEY` (サーバー専用)
+- `SUPABASE_PROJECT_ID` (型生成用)
+- `SUPABASE_ACCESS_TOKEN` (Supabase CLI 未ログイン時のみ任意)
+
+4) 開発サーバーを起動します。
 
 ```bash
 pnpm dev
 ```
 
-Open http://localhost:3000 in your browser.
+ブラウザで http://localhost:3000 を開いてください。
 
-## Quality checks
+## 開発
 
-Run formatting:
+- 開発サーバー: `pnpm dev`
+- ビルド: `pnpm build`
+- 本番サーバー: `pnpm start`
+- フォーマット: `pnpm format`
+- リント: `pnpm lint`
+- 型チェック: `pnpm typecheck`
 
-```bash
-pnpm format
-```
+## テスト
 
-Run linting:
+- ユニット: `pnpm test:unit`
+- 統合: `pnpm test:integration`
+- E2E: `pnpm test:e2e`
 
-```bash
-pnpm lint
-```
-
-Run unit tests:
-
-```bash
-pnpm test:unit
-```
-
-Run integration tests:
-
-```bash
-pnpm test:integration
-```
-
-Run E2E tests:
-
-```bash
-pnpm test:e2e
-```
-
-Integration tests that exercise Supabase (e.g. auth trigger, RLS) require these env vars in `.env`:
+統合テストで Supabase を利用する場合、`.env` に以下が必要です。
 
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 - `SUPABASE_SECRET_KEY`
 
-## E2E auth shortcut
+### E2E 認証ショートカット
 
-Playwright can authenticate by calling the server-only endpoint below.
+Playwright は以下のサーバー専用エンドポイントで認証できます。
 
-- Route: `POST /__e2e/login`
-- Enabled only when `NODE_ENV === "test"` or `E2E_ENABLED === "true"`
-- Body: `{ "email": "optional@example.com" }` (defaults to `e2e@example.com`)
-- Implementation lives at `src/app/e2e/login/route.ts` via rewrite
+- ルート: `POST /__e2e/login`
+- 有効条件: `NODE_ENV === "test"` または `E2E_ENABLED === "true"`
+- ボディ: `{ "email": "optional@example.com" }` (省略時: `e2e@example.com`)
+- 実装: `src/app/e2e/login/route.ts` (rewrite 経由)
 
-Example:
+例:
 
 ```bash
 curl -X POST http://localhost:3000/__e2e/login \
@@ -79,32 +86,51 @@ curl -X POST http://localhost:3000/__e2e/login \
   -d '{"email":"e2e@example.com"}'
 ```
 
-## Supabase migrations
+## データベース / Supabase ワークフロー
 
-1) Log in to Supabase CLI.
+- マイグレーションは `supabase/migrations` に追加します。
+
+1) Supabase CLI にログインします。
 
 ```bash
 pnpm supabase login
 ```
 
-2) Link the project (use your project ref).
+2) プロジェクトを紐づけます（project ref を指定）。
 
 ```bash
 pnpm supabase link --project-ref <project-ref>
 ```
 
-3) Push migrations to the remote database.
+3) マイグレーションを反映します。
 
 ```bash
-pnpm supabase db push
+pnpm supabase:push
 ```
 
-4) Regenerate TypeScript types after schema changes.
+4) スキーマ変更後に型を再生成します。
 
 ```bash
 pnpm supabase:gen-types
 ```
 
-## Deployment (Vercel)
+## リポジトリ構成
 
-Vercel のプレビュー/本番デプロイ設定は `docs/Vercel.md` を参照してください。
+- `src/app`: App Router のページ/ルートハンドラ。
+- `src/features`: ドメイン単位の UI/ロジック。
+- `src/components`: 再利用 UI コンポーネント。
+- `src/shared`: 横断ユーティリティや共通 UI/ロジック。
+- `src/lib`: 補助ヘルパー群。
+- `src/types`: 共有型（Supabase 型は `src/types/supabase.ts` を自動生成）。
+- `tests/integration`: Vitest 統合テスト。
+- `tests/e2e`: Playwright E2E。
+- `supabase/migrations`: DB マイグレーション。
+- `docs`: 仕様/設計ドキュメント。
+
+## ドキュメント
+
+- 要件: `docs/Requirements.md`
+- 設計/方針: `docs/Plan.md`, `docs/Design.md`, `docs/Guideline.md`
+- 図解: `docs/Diagrams.md`
+- ドメイン定義: `docs/LifeEventCategories.md`, `docs/ExpenseCategories.md`
+- デプロイ: `docs/Vercel.md`
