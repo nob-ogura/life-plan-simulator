@@ -114,7 +114,7 @@ export function DashboardSimulationView({ months }: DashboardSimulationViewProps
             </p>
             <h2 className="mt-1 text-lg font-semibold">表示範囲切替</h2>
             <p className="mt-1 text-xs text-muted-foreground">
-              直近5年と全期間を切り替えて表示します。
+              直近5年と全期間を切り替えて表示します
             </p>
           </div>
           <div className="flex items-center gap-2">

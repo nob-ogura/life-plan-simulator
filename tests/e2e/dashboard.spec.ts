@@ -1,5 +1,5 @@
 import type { Page } from "@playwright/test";
-
+import { UI_TEXT } from "@/shared/constants/messages";
 import { expect, expectToast, test } from "./fixtures";
 
 const saveSimulationSettings = async (
@@ -21,8 +21,8 @@ const saveSimulationSettings = async (
   await page.getByLabel("固定資産税率").fill(values.taxRate);
   await page.getByLabel("評価額掛目").fill(values.evaluationRate);
 
-  await page.getByRole("button", { name: "保存" }).click();
-  await expectToast(page, "保存しました。");
+  await page.getByRole("button", { name: UI_TEXT.REGISTER }).click();
+  await expectToast(page, UI_TEXT.IS_REGISTERED);
 
   if (returnTo) {
     await page.goto(returnTo);
@@ -40,8 +40,8 @@ test("display range toggle updates graph and table", async ({ authenticatedPage:
   await familySection.getByLabel("配偶者（月）").fill("7");
   await familySection.getByLabel("配偶者（年）").fill("1988");
   await familySection.getByLabel("配偶者（月）").fill("7");
-  await familySection.getByRole("button", { name: "保存" }).click();
-  await expectToast(page, "保存しました。");
+  await familySection.getByRole("button", { name: UI_TEXT.REGISTER }).click();
+  await expectToast(page, UI_TEXT.IS_REGISTERED);
 
   const pensionSection = page.locator("details", {
     has: page.getByText("年金", { exact: true }),
@@ -50,8 +50,8 @@ test("display range toggle updates graph and table", async ({ authenticatedPage:
   await pensionSection.getByLabel("年金開始年齢").fill("65");
   await pensionSection.getByLabel("本人").fill("65000");
   await pensionSection.getByLabel("配偶者").fill("130000");
-  await pensionSection.getByRole("button", { name: "保存" }).click();
-  await expectToast(page, "保存しました。");
+  await pensionSection.getByRole("button", { name: UI_TEXT.REGISTER }).click();
+  await expectToast(page, UI_TEXT.IS_REGISTERED);
 
   await saveSimulationSettings(
     page,
@@ -74,8 +74,8 @@ test("display range toggle updates graph and table", async ({ authenticatedPage:
   await incomeSection.getByLabel("手取り月額").fill("300000");
   await incomeSection.getByLabel("昇給率").fill("0.02");
   await incomeSection.getByLabel("開始年月").fill("2020-04");
-  await incomeSection.getByRole("button", { name: "保存" }).click();
-  await expectToast(page, "保存しました。");
+  await incomeSection.getByRole("button", { name: UI_TEXT.REGISTER }).click();
+  await expectToast(page, UI_TEXT.IS_REGISTERED);
 
   await page.goto("/");
 
@@ -161,8 +161,8 @@ test("cashflow table uses virtual scroll and updates on range change", async ({
   await familySection.getByLabel("本人（月）").fill("4");
   await familySection.getByLabel("配偶者（年）").fill("1988");
   await familySection.getByLabel("配偶者（月）").fill("7");
-  await familySection.getByRole("button", { name: "保存" }).click();
-  await expectToast(page, "保存しました。");
+  await familySection.getByRole("button", { name: UI_TEXT.REGISTER }).click();
+  await expectToast(page, UI_TEXT.IS_REGISTERED);
 
   const pensionSection = page.locator("details", {
     has: page.getByText("年金", { exact: true }),
@@ -171,8 +171,8 @@ test("cashflow table uses virtual scroll and updates on range change", async ({
   await pensionSection.getByLabel("年金開始年齢").fill("65");
   await pensionSection.getByLabel("本人").fill("65000");
   await pensionSection.getByLabel("配偶者").fill("130000");
-  await pensionSection.getByRole("button", { name: "保存" }).click();
-  await expectToast(page, "保存しました。");
+  await pensionSection.getByRole("button", { name: UI_TEXT.REGISTER }).click();
+  await expectToast(page, UI_TEXT.IS_REGISTERED);
 
   await saveSimulationSettings(page, {
     startOffset: "0",
@@ -232,8 +232,8 @@ test("depletion month is highlighted on asset trend chart", async ({ authenticat
   await familySection.getByLabel("本人（月）").fill("1");
   await familySection.getByLabel("配偶者（年）").fill("1982");
   await familySection.getByLabel("配偶者（月）").fill("6");
-  await familySection.getByRole("button", { name: "保存" }).click();
-  await expectToast(page, "保存しました。");
+  await familySection.getByRole("button", { name: UI_TEXT.REGISTER }).click();
+  await expectToast(page, UI_TEXT.IS_REGISTERED);
 
   const pensionSection = page.locator("details", {
     has: page.getByText("年金", { exact: true }),
@@ -242,8 +242,8 @@ test("depletion month is highlighted on asset trend chart", async ({ authenticat
   await pensionSection.getByLabel("年金開始年齢").fill("65");
   await pensionSection.getByLabel("本人").fill("0");
   await pensionSection.getByLabel("配偶者").fill("0");
-  await pensionSection.getByRole("button", { name: "保存" }).click();
-  await expectToast(page, "保存しました。");
+  await pensionSection.getByRole("button", { name: UI_TEXT.REGISTER }).click();
+  await expectToast(page, UI_TEXT.IS_REGISTERED);
 
   await saveSimulationSettings(
     page,
@@ -264,8 +264,8 @@ test("depletion month is highlighted on asset trend chart", async ({ authenticat
   await assetSection.getByLabel("現金残高").fill("100000");
   await assetSection.getByLabel("運用残高").fill("0");
   await assetSection.getByLabel("運用利回り").fill("0");
-  await assetSection.getByRole("button", { name: "保存" }).click();
-  await expectToast(page, "保存しました。");
+  await assetSection.getByRole("button", { name: UI_TEXT.REGISTER }).click();
+  await expectToast(page, UI_TEXT.IS_REGISTERED);
 
   const expenseSection = page.locator("details", {
     has: page.getByText("支出", { exact: true }),
@@ -278,8 +278,8 @@ test("depletion month is highlighted on asset trend chart", async ({ authenticat
   await expenseSection.getByLabel("カテゴリ").selectOption({ label: "生活費" });
   await expenseSection.getByLabel("開始年月").fill("2020-01");
   await expenseSection.getByLabel("終了年月").fill("2040-12");
-  await expenseSection.getByRole("button", { name: "保存" }).click();
-  await expectToast(page, "保存しました。");
+  await expenseSection.getByRole("button", { name: UI_TEXT.REGISTER }).click();
+  await expectToast(page, UI_TEXT.IS_REGISTERED);
   await expect(expenseSection.getByText("支出 1件")).toBeVisible();
 
   await page.goto("/");

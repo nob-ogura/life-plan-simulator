@@ -9,6 +9,7 @@ import { createLifeEventAction } from "@/features/inputs/life-events/commands/cr
 import { deleteLifeEventAction } from "@/features/inputs/life-events/commands/delete-life-event/action";
 import { toMonthStartDate } from "@/features/inputs/shared/date";
 import { zodResolver } from "@/lib/zod-resolver";
+import { UI_TEXT } from "@/shared/constants/messages";
 import {
   isHousingPurchase as isHousingPurchaseCategory,
   isRetirementBonus,
@@ -215,14 +216,14 @@ export function useLifeEventActions(
 
       if (response.ok) {
         closeModal();
-        toast.success("保存しました。");
+        toast.success(UI_TEXT.IS_REGISTERED);
         router.refresh();
       } else {
-        setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+        setSubmitError(UI_TEXT.FAILED_TO_REGISTER);
       }
     } catch (error) {
       console.error(error);
-      setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+      setSubmitError(UI_TEXT.FAILED_TO_REGISTER);
     }
   });
 
@@ -234,14 +235,14 @@ export function useLifeEventActions(
     try {
       const response = await deleteLifeEventAction({ id: eventId });
       if (response.ok) {
-        toast.success("削除しました。");
+        toast.success("削除しました");
         router.refresh();
       } else {
-        setDeleteError("削除に失敗しました。時間をおいて再度お試しください。");
+        setDeleteError("削除に失敗しました 時間をおいて再度お試しください");
       }
     } catch (error) {
       console.error(error);
-      setDeleteError("削除に失敗しました。時間をおいて再度お試しください。");
+      setDeleteError("削除に失敗しました 時間をおいて再度お試しください");
     } finally {
       setDeletingId(null);
     }

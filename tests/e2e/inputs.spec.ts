@@ -1,3 +1,4 @@
+import { UI_TEXT } from "@/shared/constants/messages";
 import { expect, expectToast, test } from "./fixtures";
 
 test("unauthenticated users are redirected to login", async ({ page }) => {
@@ -14,7 +15,7 @@ test("family section accepts input and updates summary", async ({ authenticatedP
   const familySection = page.locator("details", { hasText: "家族構成" });
   await familySection.locator("summary").click();
 
-  await expect(familySection.getByText("子どもの登録はありません。")).toBeVisible();
+  await expect(familySection.getByText("子どもの登録はありません")).toBeVisible();
 
   await familySection.getByLabel("本人（年）").fill("1985");
   await familySection.getByLabel("本人（月）").fill("4");
@@ -25,10 +26,10 @@ test("family section accepts input and updates summary", async ({ authenticatedP
   await familySection.getByLabel("ラベル").fill("第一子");
   await familySection.getByLabel("出生年月").fill("2015-04");
 
-  await familySection.getByRole("button", { name: "保存" }).click();
+  await familySection.getByRole("button", { name: UI_TEXT.REGISTER }).click();
 
-  await expectToast(page, "保存しました。");
-  await expect(familySection.getByText("子どもの登録はありません。")).toBeHidden();
+  await expectToast(page, UI_TEXT.IS_REGISTERED);
+  await expect(familySection.getByText("子どもの登録はありません")).toBeHidden();
 
   await expect(
     familySection.locator("dt", { hasText: "本人" }).locator("..").locator("dd"),
@@ -50,7 +51,7 @@ test("income section accepts input and updates summary", async ({ authenticatedP
 
   await incomeSection.getByText("収入", { exact: true }).click();
 
-  await expect(incomeSection.getByText("定期収入の登録はありません。")).toBeVisible();
+  await expect(incomeSection.getByText("定期収入の登録はありません")).toBeVisible();
 
   await incomeSection.getByRole("button", { name: "追加" }).click();
   await incomeSection.getByLabel("ラベル").fill("給与");
@@ -58,10 +59,10 @@ test("income section accepts input and updates summary", async ({ authenticatedP
   await incomeSection.getByLabel("昇給率").fill("0.02");
   await incomeSection.getByLabel("開始年月").fill("2020-04");
 
-  await incomeSection.getByRole("button", { name: "保存" }).click();
+  await incomeSection.getByRole("button", { name: UI_TEXT.REGISTER }).click();
 
-  await expectToast(page, "保存しました。");
-  await expect(incomeSection.getByText("定期収入の登録はありません。")).toBeHidden();
+  await expectToast(page, UI_TEXT.IS_REGISTERED);
+  await expect(incomeSection.getByText("定期収入の登録はありません")).toBeHidden();
 
   await expect(
     incomeSection.locator("dt", { hasText: "定期収入" }).locator("..").locator("dd"),
@@ -85,9 +86,9 @@ test("bonus section accepts input and updates summary", async ({ authenticatedPa
   await incomeSection.getByLabel("昇給率").fill("0.02");
   await incomeSection.getByLabel("開始年月").fill("2020-04");
 
-  await incomeSection.getByRole("button", { name: "保存" }).click();
+  await incomeSection.getByRole("button", { name: UI_TEXT.REGISTER }).click();
 
-  await expectToast(page, "保存しました。");
+  await expectToast(page, UI_TEXT.IS_REGISTERED);
 
   const bonusSection = page.locator("details", {
     has: page.getByText("ボーナス", { exact: true }),
@@ -104,9 +105,9 @@ test("bonus section accepts input and updates summary", async ({ authenticatedPa
   await bonusSection.getByLabel("変化年月").fill("2030-04");
   await bonusSection.getByLabel("変化後ボーナス金額").fill("600000");
 
-  await bonusSection.getByRole("button", { name: "保存" }).click();
+  await bonusSection.getByRole("button", { name: UI_TEXT.REGISTER }).click();
 
-  await expectToast(page, "保存しました。");
+  await expectToast(page, UI_TEXT.IS_REGISTERED);
   await expect(
     bonusSection.locator("dt", { hasText: "ボーナス設定" }).locator("..").locator("dd"),
   ).toHaveText("1件");
@@ -124,7 +125,7 @@ test("expense section accepts input and updates summary", async ({ authenticated
 
   await expenseSection.getByText("支出", { exact: true }).click();
 
-  await expect(expenseSection.getByText("支出項目の登録はありません。")).toBeVisible();
+  await expect(expenseSection.getByText("支出項目の登録はありません")).toBeVisible();
 
   await expenseSection.getByRole("button", { name: "追加" }).click();
   await expenseSection.getByLabel("ラベル").fill("生活費");
@@ -134,10 +135,10 @@ test("expense section accepts input and updates summary", async ({ authenticated
   await expenseSection.getByLabel("開始年月").fill("2020-04");
   await expenseSection.getByLabel("終了年月").fill("2040-03");
 
-  await expenseSection.getByRole("button", { name: "保存" }).click();
+  await expenseSection.getByRole("button", { name: UI_TEXT.REGISTER }).click();
 
-  await expectToast(page, "保存しました。");
-  await expect(expenseSection.getByText("支出項目の登録はありません。")).toBeHidden();
+  await expectToast(page, UI_TEXT.IS_REGISTERED);
+  await expect(expenseSection.getByText("支出項目の登録はありません")).toBeHidden();
 
   await expect(
     expenseSection.locator("dt", { hasText: "支出項目" }).locator("..").locator("dd"),
@@ -156,8 +157,8 @@ test("housing section accepts input and updates summary", async ({ authenticated
 
   await housingSection.locator("summary").click();
 
-  await expect(housingSection.getByText("住宅購入の登録はありません。")).toBeVisible();
-  await expect(housingSection.getByText("賃貸の登録はありません。")).toBeVisible();
+  await expect(housingSection.getByText("住宅購入の登録はありません")).toBeVisible();
+  await expect(housingSection.getByText("賃貸の登録はありません")).toBeVisible();
 
   await housingSection.getByRole("button", { name: "追加" }).nth(1).click();
   await housingSection.getByLabel("建物価格").fill("25000000");
@@ -173,11 +174,11 @@ test("housing section accepts input and updates summary", async ({ authenticated
   await housingSection.getByLabel("開始年月", { exact: true }).fill("2025-04");
   await housingSection.getByLabel("終了年月").fill("2030-03");
 
-  await housingSection.getByRole("button", { name: "保存" }).click();
+  await housingSection.getByRole("button", { name: UI_TEXT.REGISTER }).click();
 
-  await expectToast(page, "保存しました。");
-  await expect(housingSection.getByText("住宅購入の登録はありません。")).toBeHidden();
-  await expect(housingSection.getByText("賃貸の登録はありません。")).toBeHidden();
+  await expectToast(page, UI_TEXT.IS_REGISTERED);
+  await expect(housingSection.getByText("住宅購入の登録はありません")).toBeHidden();
+  await expect(housingSection.getByText("賃貸の登録はありません")).toBeHidden();
 
   await expect(
     housingSection.locator("dt", { hasText: "住宅購入" }).locator("..").locator("dd"),
@@ -201,7 +202,7 @@ test("life event section accepts input and updates summary", async ({
 
   await lifeEventSection.getByText("ライフイベント", { exact: true }).click();
 
-  await expect(lifeEventSection.getByText("登録済のイベントはありません。")).toBeVisible();
+  await expect(lifeEventSection.getByText("登録済のイベントはありません")).toBeVisible();
 
   await lifeEventSection.getByRole("button", { name: "イベント追加" }).click();
 
@@ -214,10 +215,10 @@ test("life event section accepts input and updates summary", async ({
   await modal.getByLabel("繰り返し間隔（年）").fill("1");
   await modal.getByLabel("停止回数").fill("3");
 
-  await modal.getByRole("button", { name: "保存" }).click();
+  await modal.getByRole("button", { name: UI_TEXT.REGISTER }).click();
 
-  await expectToast(page, "保存しました。");
-  await expect(lifeEventSection.getByText("登録済のイベントはありません。")).toBeHidden();
+  await expectToast(page, UI_TEXT.IS_REGISTERED);
+  await expect(lifeEventSection.getByText("登録済のイベントはありません")).toBeHidden();
 
   const eventList = lifeEventSection.locator("div.grid.gap-3");
 
@@ -248,9 +249,9 @@ test("retirement bonus section accepts input and updates summary", async ({
   await retirementSection.getByLabel("金額").fill("1500000");
   await retirementSection.getByLabel("支給年月").fill("2045-03");
 
-  await retirementSection.getByRole("button", { name: "保存" }).click();
+  await retirementSection.getByRole("button", { name: UI_TEXT.REGISTER }).click();
 
-  await expectToast(page, "保存しました。");
+  await expectToast(page, UI_TEXT.IS_REGISTERED);
   await expect(
     retirementSection.locator("dt", { hasText: "退職金レコード" }).locator("..").locator("dd"),
   ).toHaveText("登録済");
@@ -271,9 +272,9 @@ test("pension section accepts input and updates summary", async ({ authenticated
   await pensionSection.getByLabel("本人").fill("70000");
   await pensionSection.getByLabel("配偶者").fill("140000");
 
-  await pensionSection.getByRole("button", { name: "保存" }).click();
+  await pensionSection.getByRole("button", { name: UI_TEXT.REGISTER }).click();
 
-  await expectToast(page, "保存しました。");
+  await expectToast(page, UI_TEXT.IS_REGISTERED);
   await expect(
     pensionSection.locator("dt", { hasText: "年金開始年齢" }).locator("..").locator("dd"),
   ).toHaveText("65歳");
@@ -301,9 +302,9 @@ test("asset section accepts input and updates summary", async ({ authenticatedPa
   await assetSection.getByLabel("運用残高").fill("5000000");
   await assetSection.getByLabel("運用利回り").fill("0.03");
 
-  await assetSection.getByRole("button", { name: "保存" }).click();
+  await assetSection.getByRole("button", { name: UI_TEXT.REGISTER }).click();
 
-  await expectToast(page, "保存しました。");
+  await expectToast(page, UI_TEXT.IS_REGISTERED);
   await expect(
     assetSection.locator("dt", { hasText: "現金残高" }).locator("..").locator("dd"),
   ).toHaveText("1,000,000円");

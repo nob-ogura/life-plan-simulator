@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
-
 import {
   Form,
   FormControl,
@@ -19,6 +18,7 @@ import { createExpenseAction } from "@/features/inputs/expenses/commands/create-
 import { deleteExpenseAction } from "@/features/inputs/expenses/commands/delete-expense/action";
 import { updateExpenseAction } from "@/features/inputs/expenses/commands/update-expense/action";
 import { zodResolver } from "@/lib/zod-resolver";
+import { UI_TEXT } from "@/shared/constants/messages";
 import { useAuth } from "@/shared/cross-cutting/auth";
 import { EXPENSE_CATEGORIES } from "@/shared/domain/expenses/categories";
 import { toExpensePayloads } from "./mapper";
@@ -65,7 +65,7 @@ export function ExpenseForm({ defaultValues }: ExpenseFormProps) {
   const onSubmit = form.handleSubmit(async (value) => {
     setSubmitError(null);
     if (!isReady || !session?.user?.id) {
-      setSubmitError("ログイン情報を取得できませんでした。");
+      setSubmitError("ログイン情報を取得できませんでした");
       return;
     }
 
@@ -87,7 +87,7 @@ export function ExpenseForm({ defaultValues }: ExpenseFormProps) {
       if (removedIds.length > 0) {
         const results = await Promise.all(removedIds.map((id) => deleteExpenseAction({ id })));
         if (results.some((result) => !result.ok)) {
-          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          setSubmitError(UI_TEXT.FAILED_TO_REGISTER);
           return;
         }
       }
@@ -97,7 +97,7 @@ export function ExpenseForm({ defaultValues }: ExpenseFormProps) {
           createPayloads.map((payload) => createExpenseAction(payload)),
         );
         if (results.some((result) => !result.ok)) {
-          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          setSubmitError(UI_TEXT.FAILED_TO_REGISTER);
           return;
         }
       }
@@ -107,17 +107,17 @@ export function ExpenseForm({ defaultValues }: ExpenseFormProps) {
           updatePayloads.map(({ id, payload }) => updateExpenseAction({ id, patch: payload })),
         );
         if (results.some((result) => !result.ok)) {
-          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          setSubmitError(UI_TEXT.FAILED_TO_REGISTER);
           return;
         }
       }
 
-      toast.success("保存しました。");
+      toast.success(UI_TEXT.IS_REGISTERED);
       shouldResetRef.current = true;
       router.refresh();
     } catch (error) {
       console.error(error);
-      setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+      setSubmitError(UI_TEXT.FAILED_TO_REGISTER);
     }
   });
 
@@ -130,7 +130,7 @@ export function ExpenseForm({ defaultValues }: ExpenseFormProps) {
           <div>
             <p className="text-sm font-semibold">支出項目</p>
             <p className="text-xs text-muted-foreground">
-              月額、インフレ率、期間、カテゴリを登録します。
+              月額、インフレ率、期間、カテゴリを登録します
             </p>
           </div>
           <Button
@@ -152,7 +152,7 @@ export function ExpenseForm({ defaultValues }: ExpenseFormProps) {
           </Button>
         </div>
         {fields.length === 0 ? (
-          <p className="text-xs text-muted-foreground">支出項目の登録はありません。</p>
+          <p className="text-xs text-muted-foreground">支出項目の登録はありません</p>
         ) : (
           <div className="space-y-4">
             {fields.map((field, index) => (
@@ -267,7 +267,7 @@ export function ExpenseForm({ defaultValues }: ExpenseFormProps) {
         {submitError ? <p className="text-xs text-destructive">{submitError}</p> : null}
         <div className="flex items-center justify-end">
           <Button type="submit" disabled={isSubmitting}>
-            保存
+            {UI_TEXT.REGISTER}
           </Button>
         </div>
       </form>

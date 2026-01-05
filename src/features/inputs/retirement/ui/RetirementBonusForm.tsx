@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-
 import {
   Form,
   FormControl,
@@ -17,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { upsertRetirementBonusAction } from "@/features/inputs/life-events/commands/upsert-retirement-bonus/action";
 import { zodResolver } from "@/lib/zod-resolver";
+import { UI_TEXT } from "@/shared/constants/messages";
 import { toRetirementPayload } from "./mapper";
 import {
   type RetirementSectionInput,
@@ -51,14 +51,14 @@ export function RetirementBonusForm({ defaultValues }: RetirementBonusFormProps)
     try {
       const response = await upsertRetirementBonusAction(payload);
       if (response.ok) {
-        toast.success("保存しました。");
+        toast.success(UI_TEXT.IS_REGISTERED);
         router.refresh();
       } else {
-        setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+        setSubmitError(UI_TEXT.FAILED_TO_REGISTER);
       }
     } catch (error) {
       console.error(error);
-      setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+      setSubmitError(UI_TEXT.FAILED_TO_REGISTER);
     }
   });
 
@@ -71,7 +71,7 @@ export function RetirementBonusForm({ defaultValues }: RetirementBonusFormProps)
         <div>
           <p className="text-sm font-semibold">退職金</p>
           <p className="text-xs text-muted-foreground">
-            退職金は 1 件のみ保存され、再保存すると上書きされます。
+            `退職金${UI_TEXT.ONLY_ONE_RECORD_CAN_BE_REGISTERED}`
           </p>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
@@ -107,7 +107,7 @@ export function RetirementBonusForm({ defaultValues }: RetirementBonusFormProps)
 
         <div className="flex items-center justify-end">
           <Button type="submit" disabled={isSubmitting}>
-            保存
+            {UI_TEXT.REGISTER}
           </Button>
         </div>
       </form>

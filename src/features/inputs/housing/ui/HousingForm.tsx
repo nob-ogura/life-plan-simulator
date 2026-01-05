@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
-
 import {
   Form,
   FormControl,
@@ -22,6 +21,7 @@ import { createRentalAction } from "@/features/inputs/rentals/commands/create-re
 import { deleteRentalAction } from "@/features/inputs/rentals/commands/delete-rental/action";
 import { updateRentalAction } from "@/features/inputs/rentals/commands/update-rental/action";
 import { zodResolver } from "@/lib/zod-resolver";
+import { UI_TEXT } from "@/shared/constants/messages";
 import { useAuth } from "@/shared/cross-cutting/auth";
 import { toHousingPayloads } from "./mapper";
 import {
@@ -82,7 +82,7 @@ export function HousingForm({ defaultValues }: HousingFormProps) {
   const onSubmit = form.handleSubmit(async (value) => {
     setSubmitError(null);
     if (!isReady || !session?.user?.id) {
-      setSubmitError("ログイン情報を取得できませんでした。");
+      setSubmitError("ログイン情報を取得できませんでした");
       return;
     }
 
@@ -119,7 +119,7 @@ export function HousingForm({ defaultValues }: HousingFormProps) {
           removedMortgageIds.map((id) => deleteMortgageAction({ id })),
         );
         if (results.some((result) => !result.ok)) {
-          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          setSubmitError(UI_TEXT.FAILED_TO_REGISTER);
           return;
         }
       }
@@ -127,7 +127,7 @@ export function HousingForm({ defaultValues }: HousingFormProps) {
       if (removedRentalIds.length > 0) {
         const results = await Promise.all(removedRentalIds.map((id) => deleteRentalAction({ id })));
         if (results.some((result) => !result.ok)) {
-          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          setSubmitError(UI_TEXT.FAILED_TO_REGISTER);
           return;
         }
       }
@@ -137,7 +137,7 @@ export function HousingForm({ defaultValues }: HousingFormProps) {
           createMortgagePayloads.map((payload) => createMortgageAction(payload)),
         );
         if (results.some((result) => !result.ok)) {
-          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          setSubmitError(UI_TEXT.FAILED_TO_REGISTER);
           return;
         }
       }
@@ -147,7 +147,7 @@ export function HousingForm({ defaultValues }: HousingFormProps) {
           createRentalPayloads.map((payload) => createRentalAction(payload)),
         );
         if (results.some((result) => !result.ok)) {
-          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          setSubmitError(UI_TEXT.FAILED_TO_REGISTER);
           return;
         }
       }
@@ -159,7 +159,7 @@ export function HousingForm({ defaultValues }: HousingFormProps) {
           ),
         );
         if (results.some((result) => !result.ok)) {
-          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          setSubmitError(UI_TEXT.FAILED_TO_REGISTER);
           return;
         }
       }
@@ -169,16 +169,16 @@ export function HousingForm({ defaultValues }: HousingFormProps) {
           updateRentalPayloads.map(({ id, payload }) => updateRentalAction({ id, patch: payload })),
         );
         if (results.some((result) => !result.ok)) {
-          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          setSubmitError(UI_TEXT.FAILED_TO_REGISTER);
           return;
         }
       }
 
-      toast.success("保存しました。");
+      toast.success(UI_TEXT.IS_REGISTERED);
       router.refresh();
     } catch (error) {
       console.error(error);
-      setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+      setSubmitError(UI_TEXT.FAILED_TO_REGISTER);
     }
   });
 
@@ -191,7 +191,7 @@ export function HousingForm({ defaultValues }: HousingFormProps) {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <p className="text-sm font-semibold">賃貸</p>
-              <p className="text-xs text-muted-foreground">家賃と期間を入力します。</p>
+              <p className="text-xs text-muted-foreground">家賃と期間を入力します</p>
             </div>
             <Button
               type="button"
@@ -209,7 +209,7 @@ export function HousingForm({ defaultValues }: HousingFormProps) {
             </Button>
           </div>
           {rentalFields.length === 0 ? (
-            <p className="text-xs text-muted-foreground">賃貸の登録はありません。</p>
+            <p className="text-xs text-muted-foreground">賃貸の登録はありません</p>
           ) : (
             <div className="space-y-4">
               {rentalFields.map((field, index) => (
@@ -280,7 +280,7 @@ export function HousingForm({ defaultValues }: HousingFormProps) {
             <div>
               <p className="text-sm font-semibold">住宅購入</p>
               <p className="text-xs text-muted-foreground">
-                建物価格・土地価格・頭金・返済年数・金利を入力します。
+                建物価格・土地価格・頭金・返済年数・金利を入力します
               </p>
             </div>
             <Button
@@ -303,7 +303,7 @@ export function HousingForm({ defaultValues }: HousingFormProps) {
             </Button>
           </div>
           {mortgageFields.length === 0 ? (
-            <p className="text-xs text-muted-foreground">住宅購入の登録はありません。</p>
+            <p className="text-xs text-muted-foreground">住宅購入の登録はありません</p>
           ) : (
             <div className="space-y-4">
               {mortgageFields.map((field, index) => (
@@ -424,7 +424,7 @@ export function HousingForm({ defaultValues }: HousingFormProps) {
         {submitError ? <p className="text-xs text-destructive">{submitError}</p> : null}
         <div className="flex items-center justify-end">
           <Button type="submit" disabled={isSubmitting}>
-            保存
+            {UI_TEXT.REGISTER}
           </Button>
         </div>
       </form>

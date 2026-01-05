@@ -33,7 +33,7 @@ export function LifeEventSection({ events }: LifeEventSectionProps) {
         <div>
           <p className="text-sm font-semibold">ライフイベント一覧</p>
           <p className="text-xs text-muted-foreground">
-            繰り返し設定を含め、将来イベントを登録できます。
+            繰り返し設定を含め、将来イベントを登録できます
           </p>
         </div>
         <Button type="button" variant="outline" size="sm" onClick={openModal}>
@@ -46,7 +46,7 @@ export function LifeEventSection({ events }: LifeEventSectionProps) {
       {deleteError ? <p className="text-xs text-destructive">{deleteError}</p> : null}
 
       <div className="rounded-lg border border-dashed border-border/70 bg-muted/40 p-3 text-xs text-muted-foreground">
-        退職金は専用フォームで登録します。カテゴリに `retirement_bonus` は指定できません。
+        退職金は専用フォームで登録します カテゴリに `retirement_bonus` は指定できません
       </div>
 
       <LifeEventAddModal

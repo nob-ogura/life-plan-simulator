@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { UI_TEXT } from "@/shared/constants/messages";
 import type { LifeEventCategory } from "@/shared/domain/life-events/categories";
 import type { Tables } from "@/types/supabase";
 import { LifeEventSection } from "./LifeEventSection";
@@ -63,7 +64,7 @@ describe("LifeEventSection", () => {
 
     expect(screen.queryByRole("option", { name: "退職金" })).toBeNull();
 
-    fireEvent.click(screen.getByRole("button", { name: "保存" }));
+    fireEvent.click(screen.getByRole("button", { name: UI_TEXT.REGISTER }));
     expect(createLifeEventAction).not.toHaveBeenCalled();
   });
 
@@ -89,7 +90,7 @@ describe("LifeEventSection", () => {
       target: { value: "60" },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "保存" }));
+    fireEvent.click(screen.getByRole("button", { name: UI_TEXT.REGISTER }));
 
     await waitFor(() => {
       expect(createLifeEventAction).toHaveBeenCalledWith({

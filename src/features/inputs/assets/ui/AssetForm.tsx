@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-
 import {
   Form,
   FormControl,
@@ -24,6 +23,7 @@ import {
   AssetFormSchema,
 } from "@/features/inputs/assets/ui/schema";
 import { zodResolver } from "@/lib/zod-resolver";
+import { UI_TEXT } from "@/shared/constants/messages";
 import { useAuth } from "@/shared/cross-cutting/auth";
 
 type AssetFormProps = {
@@ -48,7 +48,7 @@ export function AssetForm({ defaultValues, assetId }: AssetFormProps) {
   const onSubmit = form.handleSubmit(async (value) => {
     setSubmitError(null);
     if (!isReady || !session?.user?.id) {
-      setSubmitError("ログイン情報を取得できませんでした。");
+      setSubmitError("ログイン情報を取得できませんでした");
       return;
     }
 
@@ -59,22 +59,22 @@ export function AssetForm({ defaultValues, assetId }: AssetFormProps) {
       if (assetId) {
         const result = await updateAssetAction({ id: assetId, patch: payload });
         if (!result.ok) {
-          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          setSubmitError(UI_TEXT.FAILED_TO_REGISTER);
           return;
         }
       } else {
         const result = await createAssetAction(payload);
         if (!result.ok) {
-          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          setSubmitError(UI_TEXT.FAILED_TO_REGISTER);
           return;
         }
       }
 
-      toast.success("保存しました。");
+      toast.success(UI_TEXT.IS_REGISTERED);
       router.refresh();
     } catch (error) {
       console.error(error);
-      setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+      setSubmitError(UI_TEXT.FAILED_TO_REGISTER);
     }
   });
 
@@ -85,9 +85,7 @@ export function AssetForm({ defaultValues, assetId }: AssetFormProps) {
       <form className="space-y-4" onSubmit={onSubmit} noValidate>
         <div>
           <p className="text-sm font-semibold">投資設定</p>
-          <p className="text-xs text-muted-foreground">
-            現金・運用残高と利回りを入力してください。
-          </p>
+          <p className="text-xs text-muted-foreground">現金・運用残高と利回りを入力してください</p>
         </div>
         <div className="grid gap-4 md:grid-cols-3">
           <FormField
@@ -135,7 +133,7 @@ export function AssetForm({ defaultValues, assetId }: AssetFormProps) {
 
         <div className="flex items-center justify-end">
           <Button type="submit" disabled={isSubmitting}>
-            保存
+            {UI_TEXT.REGISTER}
           </Button>
         </div>
       </form>

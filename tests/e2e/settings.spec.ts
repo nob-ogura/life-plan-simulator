@@ -1,3 +1,4 @@
+import { UI_TEXT } from "@/shared/constants/messages";
 import { expect, expectToast, test } from "./fixtures";
 
 test("settings page reads saved simulation settings", async ({ authenticatedPage: page }) => {
@@ -15,8 +16,8 @@ test("settings page reads saved simulation settings", async ({ authenticatedPage
   await taxRate.fill("0.02");
   await evaluationRate.fill("0.8");
 
-  await page.getByRole("button", { name: "保存" }).click();
-  await expectToast(page, "保存しました。");
+  await page.getByRole("button", { name: UI_TEXT.REGISTER }).click();
+  await expectToast(page, UI_TEXT.IS_REGISTERED);
 
   await page.reload();
 
@@ -42,11 +43,11 @@ test("settings page resets values to defaults", async ({ authenticatedPage: page
   await taxRate.fill("0.03");
   await evaluationRate.fill("0.9");
 
-  await page.getByRole("button", { name: "保存" }).click();
-  await expectToast(page, "保存しました。");
+  await page.getByRole("button", { name: UI_TEXT.REGISTER }).click();
+  await expectToast(page, UI_TEXT.IS_REGISTERED);
 
   await page.getByRole("button", { name: "初期値に戻す" }).click();
-  await expectToast(page, "初期値に戻しました。");
+  await expectToast(page, "初期値に戻しました");
 
   await expect(startOffset).toHaveValue("0");
   await expect(endAge).toHaveValue("100");

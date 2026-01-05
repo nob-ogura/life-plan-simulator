@@ -17,7 +17,7 @@ type LifeEventListProps = {
 
 export function LifeEventList({ events, onDelete, deletingId }: LifeEventListProps) {
   if (events.length === 0) {
-    return <p className="text-xs text-muted-foreground">登録済のイベントはありません。</p>;
+    return <p className="text-xs text-muted-foreground">登録済のイベントはありません</p>;
   }
 
   return (

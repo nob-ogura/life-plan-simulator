@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
-
 import {
   Form,
   FormControl,
@@ -17,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { bulkSaveIncomeStreamsAction } from "@/features/inputs/income-streams/commands/bulk-save-income-streams/action";
 import { zodResolver } from "@/lib/zod-resolver";
+import { UI_TEXT } from "@/shared/constants/messages";
 
 import { type IncomeSectionInput, IncomeSectionSchema } from "./schema";
 
@@ -58,14 +58,14 @@ export function IncomeForm({ defaultValues }: IncomeFormProps) {
         streams: rawValues.streams ?? [],
       });
       if (res.ok) {
-        toast.success("保存しました。");
+        toast.success(UI_TEXT.IS_REGISTERED);
         router.refresh();
       } else {
-        setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+        setSubmitError(UI_TEXT.FAILED_TO_REGISTER);
       }
     } catch (error) {
       console.error(error);
-      setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+      setSubmitError(UI_TEXT.FAILED_TO_REGISTER);
     }
   });
 
@@ -78,7 +78,7 @@ export function IncomeForm({ defaultValues }: IncomeFormProps) {
           <div>
             <p className="text-sm font-semibold">定期収入</p>
             <p className="text-xs text-muted-foreground">
-              手取り月額、昇給率、期間を入力してください。
+              手取り月額、昇給率、期間を入力してください
             </p>
           </div>
           <Button
@@ -99,7 +99,7 @@ export function IncomeForm({ defaultValues }: IncomeFormProps) {
           </Button>
         </div>
         {fields.length === 0 ? (
-          <p className="text-xs text-muted-foreground">定期収入の登録はありません。</p>
+          <p className="text-xs text-muted-foreground">定期収入の登録はありません</p>
         ) : (
           <div className="space-y-4">
             {fields.map((field, index) => (
@@ -187,7 +187,7 @@ export function IncomeForm({ defaultValues }: IncomeFormProps) {
         {submitError ? <p className="text-xs text-destructive">{submitError}</p> : null}
         <div className="flex items-center justify-end">
           <Button type="submit" disabled={isSubmitting}>
-            保存
+            {UI_TEXT.REGISTER}
           </Button>
         </div>
       </form>

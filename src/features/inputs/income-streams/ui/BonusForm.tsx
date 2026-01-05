@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
-
 import {
   Form,
   FormControl,
@@ -18,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { updateIncomeStreamAction } from "@/features/inputs/income-streams/commands/update-income-stream/action";
 import { toOptionalMonthStartDate } from "@/features/inputs/shared/date";
 import { zodResolver } from "@/lib/zod-resolver";
+import { UI_TEXT } from "@/shared/constants/messages";
 import { useAuth } from "@/shared/cross-cutting/auth";
 
 import {
@@ -53,7 +53,7 @@ export function BonusForm({ defaultValues }: BonusFormProps) {
   const onSubmit = form.handleSubmit(async (value) => {
     setSubmitError(null);
     if (!isReady || !session?.user?.id) {
-      setSubmitError("ログイン情報を取得できませんでした。");
+      setSubmitError("ログイン情報を取得できませんでした");
       return;
     }
 
@@ -83,16 +83,16 @@ export function BonusForm({ defaultValues }: BonusFormProps) {
         );
         const hasError = results.some((result) => !result.ok);
         if (hasError) {
-          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          setSubmitError(UI_TEXT.FAILED_TO_REGISTER);
           return;
         }
       }
 
-      toast.success("保存しました。");
+      toast.success(UI_TEXT.IS_REGISTERED);
       router.refresh();
     } catch (error) {
       console.error(error);
-      setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+      setSubmitError(UI_TEXT.FAILED_TO_REGISTER);
     }
   });
 
@@ -104,12 +104,12 @@ export function BonusForm({ defaultValues }: BonusFormProps) {
         <div>
           <p className="text-sm font-semibold">ボーナス設定</p>
           <p className="text-xs text-muted-foreground">
-            定期収入ごとのボーナス月・金額・変化点を設定します。
+            定期収入ごとのボーナス月・金額・変化点を設定します
           </p>
         </div>
         {fields.length === 0 ? (
           <p className="text-xs text-muted-foreground">
-            定期収入がありません。先に収入フォームで登録してください。
+            定期収入がありません 先に収入フォームで登録してください
           </p>
         ) : (
           <div className="space-y-4">
@@ -214,7 +214,7 @@ export function BonusForm({ defaultValues }: BonusFormProps) {
         {submitError ? <p className="text-xs text-destructive">{submitError}</p> : null}
         <div className="flex items-center justify-end">
           <Button type="submit" disabled={isSubmitting || fields.length === 0}>
-            保存
+            {UI_TEXT.REGISTER}
           </Button>
         </div>
       </form>

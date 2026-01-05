@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-
 import {
   Form,
   FormControl,
@@ -19,6 +18,7 @@ import { createSimulationSettingsAction } from "@/features/inputs/simulation-set
 import { resetSimulationSettingsAction } from "@/features/inputs/simulation-settings/commands/reset-simulation-settings/action";
 import { updateSimulationSettingsAction } from "@/features/inputs/simulation-settings/commands/update-simulation-settings/action";
 import { zodResolver } from "@/lib/zod-resolver";
+import { UI_TEXT } from "@/shared/constants/messages";
 import { useAuth } from "@/shared/cross-cutting/auth";
 import { buildSimulationSectionDefaults } from "./mapper";
 import {
@@ -53,7 +53,7 @@ export function SimulationForm({ defaultValues, settingsId }: SimulationFormProp
   const onSubmit = form.handleSubmit(async (value) => {
     setSubmitError(null);
     if (!isReady || !session?.user?.id) {
-      setSubmitError("ログイン情報を取得できませんでした。");
+      setSubmitError("ログイン情報を取得できませんでした");
       return;
     }
 
@@ -71,29 +71,29 @@ export function SimulationForm({ defaultValues, settingsId }: SimulationFormProp
       if (settingsId) {
         const result = await updateSimulationSettingsAction({ id: settingsId, patch: payload });
         if (!result.ok) {
-          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          setSubmitError(UI_TEXT.FAILED_TO_REGISTER);
           return;
         }
       } else {
         const result = await createSimulationSettingsAction(payload);
         if (!result.ok) {
-          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          setSubmitError(UI_TEXT.FAILED_TO_REGISTER);
           return;
         }
       }
 
-      toast.success("保存しました。");
+      toast.success(UI_TEXT.IS_REGISTERED);
       router.refresh();
     } catch (error) {
       console.error(error);
-      setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+      setSubmitError(UI_TEXT.FAILED_TO_REGISTER);
     }
   });
 
   const handleReset = async () => {
     setSubmitError(null);
     if (!isReady || !session?.user?.id) {
-      setSubmitError("ログイン情報を取得できませんでした。");
+      setSubmitError("ログイン情報を取得できませんでした");
       return;
     }
 
@@ -101,15 +101,15 @@ export function SimulationForm({ defaultValues, settingsId }: SimulationFormProp
     try {
       const result = await resetSimulationSettingsAction({});
       if (!result.ok) {
-        setSubmitError("初期値に戻せませんでした。時間をおいて再度お試しください。");
+        setSubmitError("初期値に戻せませんでした 時間をおいて再度お試しください");
         return;
       }
       form.reset(buildSimulationSectionDefaults(result.data));
-      toast.success("初期値に戻しました。");
+      toast.success("初期値に戻しました");
       router.refresh();
     } catch (error) {
       console.error(error);
-      setSubmitError("初期値に戻せませんでした。時間をおいて再度お試しください。");
+      setSubmitError("初期値に戻せませんでした 時間をおいて再度お試しください");
     } finally {
       setIsResetting(false);
     }
@@ -124,7 +124,7 @@ export function SimulationForm({ defaultValues, settingsId }: SimulationFormProp
         <div>
           <p className="text-sm font-semibold">シミュレーション設定</p>
           <p className="text-xs text-muted-foreground">
-            シミュレーション期間と住宅係数を設定します。
+            シミュレーション期間と住宅係数を設定します
           </p>
         </div>
 
@@ -209,7 +209,7 @@ export function SimulationForm({ defaultValues, settingsId }: SimulationFormProp
             初期値に戻す
           </Button>
           <Button type="submit" disabled={isBusy}>
-            保存
+            {UI_TEXT.REGISTER}
           </Button>
         </div>
       </form>

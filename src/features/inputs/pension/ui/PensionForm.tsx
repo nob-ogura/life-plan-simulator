@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-
 import {
   Form,
   FormControl,
@@ -19,8 +18,8 @@ import { upsertProfileAction } from "@/features/inputs/profiles/commands/upsert-
 import { createSimulationSettingsAction } from "@/features/inputs/simulation-settings/commands/create-simulation-settings/action";
 import { updateSimulationSettingsAction } from "@/features/inputs/simulation-settings/commands/update-simulation-settings/action";
 import { zodResolver } from "@/lib/zod-resolver";
+import { UI_TEXT } from "@/shared/constants/messages";
 import { useAuth } from "@/shared/cross-cutting/auth";
-
 import {
   type PensionSectionInput,
   type PensionSectionPayload,
@@ -52,7 +51,7 @@ export function PensionForm({ defaultValues, simulationSettingsId }: PensionForm
   const onSubmit = form.handleSubmit(async (value) => {
     setSubmitError(null);
     if (!isReady || !session?.user?.id) {
-      setSubmitError("ログイン情報を取得できませんでした。");
+      setSubmitError("ログイン情報を取得できませんでした");
       return;
     }
 
@@ -72,15 +71,15 @@ export function PensionForm({ defaultValues, simulationSettingsId }: PensionForm
           : createSimulationSettingsAction({ end_age: 100, ...simulationPayload }),
       ]);
       if (!profileResult.ok || !settingsResult.ok) {
-        setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+        setSubmitError(UI_TEXT.FAILED_TO_REGISTER);
         return;
       }
 
-      toast.success("保存しました。");
+      toast.success(UI_TEXT.IS_REGISTERED);
       router.refresh();
     } catch (error) {
       console.error(error);
-      setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+      setSubmitError(UI_TEXT.FAILED_TO_REGISTER);
     }
   });
 
@@ -92,7 +91,7 @@ export function PensionForm({ defaultValues, simulationSettingsId }: PensionForm
         <div>
           <p className="text-sm font-semibold">年金開始年齢</p>
           <p className="text-xs text-muted-foreground">
-            年金収入の開始年齢と月額を入力してください。
+            年金収入の開始年齢と月額を入力してください
           </p>
         </div>
         <FormField
@@ -145,7 +144,7 @@ export function PensionForm({ defaultValues, simulationSettingsId }: PensionForm
 
         <div className="flex items-center justify-end">
           <Button type="submit" disabled={isSubmitting}>
-            保存
+            {UI_TEXT.REGISTER}
           </Button>
         </div>
       </form>

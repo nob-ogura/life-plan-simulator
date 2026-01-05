@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-
+import { UI_TEXT } from "@/shared/constants/messages";
 import type { AuthContextValue } from "@/shared/cross-cutting/auth";
 import { useAuth } from "@/shared/cross-cutting/auth";
 import { createMockSession, createMockUser } from "@/test/factories/auth";
@@ -81,7 +81,7 @@ describe("SimulationForm", () => {
       target: { value: "1.05" },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "保存" }));
+    fireEvent.click(screen.getByRole("button", { name: UI_TEXT.REGISTER }));
 
     await waitFor(() => {
       expect(createSimulationSettingsAction).toHaveBeenCalledWith({

@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
-
 import {
   Form,
   FormControl,
@@ -20,6 +19,7 @@ import { deleteChildAction } from "@/features/inputs/children/commands/delete-ch
 import { updateChildAction } from "@/features/inputs/children/commands/update-child/action";
 import { upsertProfileAction } from "@/features/inputs/profiles/commands/upsert-profile/action";
 import { zodResolver } from "@/lib/zod-resolver";
+import { UI_TEXT } from "@/shared/constants/messages";
 import { useAuth } from "@/shared/cross-cutting/auth";
 import { toFamilyPayload } from "./mapper";
 import { type FamilySectionInput, type FamilySectionPayload, FamilySectionSchema } from "./schema";
@@ -86,7 +86,7 @@ export function FamilyForm({ defaultValues, onSave }: FamilyFormProps) {
   const onSubmit = form.handleSubmit(async (value) => {
     setSubmitError(null);
     if (!isReady || !session?.user?.id) {
-      setSubmitError("ログイン情報を取得できませんでした。");
+      setSubmitError("ログイン情報を取得できませんでした");
       return;
     }
 
@@ -107,14 +107,14 @@ export function FamilyForm({ defaultValues, onSave }: FamilyFormProps) {
     try {
       const profileResult = await upsertProfileAction({ patch: payload.profile });
       if (!profileResult.ok) {
-        setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+        setSubmitError(UI_TEXT.FAILED_TO_REGISTER);
         return;
       }
 
       if (removedIds.length > 0) {
         const results = await Promise.all(removedIds.map((id) => deleteChildAction({ id })));
         if (results.some((result) => !result.ok)) {
-          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          setSubmitError(UI_TEXT.FAILED_TO_REGISTER);
           return;
         }
       }
@@ -122,7 +122,7 @@ export function FamilyForm({ defaultValues, onSave }: FamilyFormProps) {
       if (createPayloads.length > 0) {
         const results = await Promise.all(createPayloads.map((child) => createChildAction(child)));
         if (results.some((result) => !result.ok)) {
-          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          setSubmitError(UI_TEXT.FAILED_TO_REGISTER);
           return;
         }
       }
@@ -134,17 +134,17 @@ export function FamilyForm({ defaultValues, onSave }: FamilyFormProps) {
           ),
         );
         if (results.some((result) => !result.ok)) {
-          setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+          setSubmitError(UI_TEXT.FAILED_TO_REGISTER);
           return;
         }
       }
 
-      toast.success("保存しました。");
+      toast.success(UI_TEXT.IS_REGISTERED);
       onSave?.(payload);
       router.refresh();
     } catch (error) {
       console.error(error);
-      setSubmitError("保存に失敗しました。時間をおいて再度お試しください。");
+      setSubmitError(UI_TEXT.FAILED_TO_REGISTER);
     }
   });
 
@@ -212,7 +212,7 @@ export function FamilyForm({ defaultValues, onSave }: FamilyFormProps) {
             <div>
               <p className="text-sm font-semibold">子ども</p>
               <p className="text-xs text-muted-foreground">
-                出生年月か誕生予定年月のいずれかは必須です。
+                出生年月か誕生予定年月のいずれかは必須です
               </p>
             </div>
             <Button
@@ -227,7 +227,7 @@ export function FamilyForm({ defaultValues, onSave }: FamilyFormProps) {
             </Button>
           </div>
           {fields.length === 0 ? (
-            <p className="text-xs text-muted-foreground">子どもの登録はありません。</p>
+            <p className="text-xs text-muted-foreground">子どもの登録はありません</p>
           ) : (
             <div className="space-y-4">
               {fields.map((field, index) => (
@@ -303,7 +303,7 @@ export function FamilyForm({ defaultValues, onSave }: FamilyFormProps) {
         {submitError ? <p className="text-xs text-destructive">{submitError}</p> : null}
         <div className="flex items-center justify-end">
           <Button type="submit" disabled={isSubmitting}>
-            保存
+            {UI_TEXT.REGISTER}
           </Button>
         </div>
       </form>

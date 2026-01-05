@@ -60,7 +60,7 @@ export default async function SettingsPage() {
         </p>
         <h1 className="text-3xl font-semibold tracking-tight">シミュレーション設定</h1>
         <p className="max-w-2xl text-sm text-muted-foreground">
-          シミュレーション期間や住宅係数など、計算の前提条件を管理します。
+          シミュレーション期間や住宅係数など、計算の前提条件を管理します
         </p>
       </header>
 
@@ -68,7 +68,7 @@ export default async function SettingsPage() {
         <div className="border-b border-border/70 px-6 py-5">
           <h2 className="text-base font-semibold">共通設定</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            設定変更はシミュレーション結果に反映されます。
+            設定変更はシミュレーション結果に反映されます
           </p>
         </div>
         <div className="px-6 py-5">

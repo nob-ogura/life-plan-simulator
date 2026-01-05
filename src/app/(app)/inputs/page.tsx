@@ -81,8 +81,8 @@ const formatNumber = (value?: number | null, suffix = "") =>
 
 const statusLabel = (
   hasData: boolean,
-  filled: string = UI_TEXT.ENTERED,
-  empty: string = UI_TEXT.NOT_ENTERED,
+  filled: string = UI_TEXT.REGISTERED,
+  empty: string = UI_TEXT.NOT_REGISTERED,
 ) => (hasData ? filled : empty);
 
 const loadInputsData = async (): Promise<InputsData> => {
@@ -220,7 +220,7 @@ export default async function InputsPage() {
     {
       id: "family",
       title: "家族構成",
-      description: "本人・配偶者・子どもの生年月や予定月をまとめて管理します。",
+      description: "本人・配偶者・子どもの生年月や予定月をまとめて管理します",
       summary: `子ども ${formatCount(data.children.length, UI_TEXT.UNIT_PEOPLE)}`,
       status: statusLabel(hasFamilyData),
       rows: [
@@ -231,13 +231,13 @@ export default async function InputsPage() {
         },
         { label: "子ども", value: formatCount(data.children.length, UI_TEXT.UNIT_PEOPLE) },
       ],
-      note: "本人・配偶者の生年月は必須項目です。未入力の場合は保存できません。",
+      note: "本人・配偶者の生年月は必須項目です 未入力の場合は登録できません",
       form: <FamilyForm defaultValues={familySectionDefaults} />,
     },
     {
       id: "income",
       title: "収入",
-      description: "月次の収入、昇給率、期間を管理します。",
+      description: "月次の収入、昇給率、期間を管理します",
       summary: `定期収入 ${formatCount(data.incomeStreams.length)}`,
       status: statusLabel(data.incomeStreams.length > 0),
       rows: [
@@ -247,13 +247,13 @@ export default async function InputsPage() {
           value: data.incomeStreams[0]?.label ?? UI_TEXT.NOT_REGISTERED,
         },
       ],
-      note: "手取り月額、昇給率、期間を登録します。",
+      note: "手取り月額、昇給率、期間を登録します",
       form: <IncomeForm defaultValues={incomeSectionDefaults} />,
     },
     {
       id: "bonus",
       title: "ボーナス",
-      description: "定期収入に紐づくボーナス設定を管理します。",
+      description: "定期収入に紐づくボーナス設定を管理します",
       summary: `ボーナス設定 ${formatCount(bonusStreams.length)}`,
       status: statusLabel(bonusStreams.length > 0),
       rows: [
@@ -263,26 +263,26 @@ export default async function InputsPage() {
           value: bonusStreams[0]?.label ?? UI_TEXT.NOT_REGISTERED,
         },
       ],
-      note: "定期収入ごとのボーナス月・金額・変化点を登録します。",
+      note: "定期収入ごとのボーナス月・金額・変化点を登録します",
       form: <BonusForm defaultValues={bonusSectionDefaults} />,
     },
     {
       id: "expenses",
       title: "支出",
-      description: "月次支出、インフレ率、期間を管理します。",
+      description: "月次支出、インフレ率、期間を管理します",
       summary: `支出 ${formatCount(data.expenses.length)}`,
       status: statusLabel(data.expenses.length > 0),
       rows: [
         { label: "支出項目", value: formatCount(data.expenses.length) },
         { label: "主な支出ラベル", value: data.expenses[0]?.label ?? UI_TEXT.NOT_REGISTERED },
       ],
-      note: "支出の月額・インフレ率・期間・カテゴリを登録します。",
+      note: "支出の月額・インフレ率・期間・カテゴリを登録します",
       form: <ExpenseForm defaultValues={expenseSectionDefaults} />,
     },
     {
       id: "housing",
       title: "住宅",
-      description: "賃貸・住宅購入情報をまとめて管理します。",
+      description: "賃貸・住宅購入情報をまとめて管理します",
       summary: `賃貸 ${formatCount(data.rentals.length)} / 住宅購入 ${formatCount(
         data.mortgages.length,
       )}`,
@@ -291,39 +291,39 @@ export default async function InputsPage() {
         { label: "賃貸", value: formatCount(data.rentals.length) },
         { label: "住宅購入", value: formatCount(data.mortgages.length) },
       ],
-      note: "賃貸・住宅購入の情報を登録します。",
+      note: "賃貸・住宅購入の情報を登録します",
       form: <HousingForm defaultValues={housingSectionDefaults} />,
     },
     {
       id: "events",
       title: "ライフイベント",
-      description: "教育費や介護費など、将来イベントを管理します。",
+      description: "教育費や介護費など、将来イベントを管理します",
       summary: `イベント ${formatCount(generalEvents.length)}`,
       status: statusLabel(generalEvents.length > 0),
       rows: [
         { label: "イベント数", value: formatCount(generalEvents.length) },
         { label: "主なイベント", value: generalEvents[0]?.label ?? UI_TEXT.NOT_REGISTERED },
       ],
-      note: "繰り返し設定やカテゴリを含めてイベントを登録します。",
+      note: "繰り返し設定やカテゴリを含めてイベントを登録します",
       form: <LifeEventSection events={generalEvents} />,
     },
     {
       id: "retirement",
       title: "退職金",
-      description: "退職金は単一レコードとして管理します。",
+      description: "退職金は単一レコードとして管理します",
       summary: `退職金 ${formatRegistered(retirementBonuses.length)}`,
       status: statusLabel(retirementBonuses.length > 0),
       rows: [
         { label: "退職金レコード", value: formatRegistered(retirementBonuses.length) },
         { label: "登録名", value: retirementBonuses[0]?.label ?? UI_TEXT.NOT_REGISTERED },
       ],
-      note: "退職金は 1 件のみ保存され、再保存すると上書きされます。",
+      note: `退職金${UI_TEXT.ONLY_ONE_RECORD_CAN_BE_REGISTERED}`,
       form: <RetirementBonusForm defaultValues={retirementSectionDefaults} />,
     },
     {
       id: "pension",
       title: "年金",
-      description: "年金収入の開始年齢と月額を設定します。",
+      description: "年金収入の開始年齢と月額を設定します",
       summary:
         pensionStartAge != null ||
         pensionAmountSingle != null ||
@@ -334,14 +334,14 @@ export default async function InputsPage() {
             )} / 配偶者 ${formatAmount(pensionAmountSpouse)} / 合計 ${formatAmount(
               pensionAmountTotal,
             )}`
-          : UI_TEXT.NOT_ENTERED,
+          : UI_TEXT.NOT_REGISTERED,
       status: statusLabel(
         pensionStartAge != null ||
           pensionAmountSingle != null ||
           pensionAmountSpouse != null ||
           pensionAmountTotal != null,
-        UI_TEXT.ENTERED,
-        UI_TEXT.NOT_ENTERED,
+        UI_TEXT.REGISTERED,
+        UI_TEXT.NOT_REGISTERED,
       ),
       rows: [
         {
@@ -361,7 +361,7 @@ export default async function InputsPage() {
           value: formatAmount(pensionAmountTotal),
         },
       ],
-      note: "年金開始年齢と月額は将来の年金収入の計算に反映されます。",
+      note: "年金開始年齢と月額は将来の年金収入の計算に反映されます",
       form: (
         <PensionForm
           defaultValues={pensionSectionDefaults}
@@ -372,7 +372,7 @@ export default async function InputsPage() {
     {
       id: "assets",
       title: "投資設定",
-      description: "現金・運用残高と利回りを管理します。",
+      description: "現金・運用残高と利回りを管理します",
       summary: `資産設定 ${formatRegistered(data.assets.length)}`,
       status: statusLabel(data.assets.length > 0),
       rows: [
@@ -380,7 +380,7 @@ export default async function InputsPage() {
         { label: "運用残高", value: formatAmount(data.assets[0]?.investment_balance) },
         { label: "運用利回り", value: formatNumber(data.assets[0]?.return_rate) },
       ],
-      note: "投資設定は 1 件のみ保存され、保存すると上書きされます。",
+      note: `投資設定${UI_TEXT.ONLY_ONE_RECORD_CAN_BE_REGISTERED}`,
       form: <AssetForm defaultValues={assetSectionDefaults} assetId={assetId} />,
     },
   ];
@@ -393,9 +393,9 @@ export default async function InputsPage() {
         </p>
         <h1 className="text-3xl font-semibold tracking-tight">入力データの登録</h1>
         <p className="max-w-2xl text-sm text-muted-foreground">
-          収入・支出・家族構成など、ライフプランに必要なデータを 段階的に入力します。
-          各セクションはアコーディオン形式で整理され、
-          既存データがある場合はサマリーに反映されます。
+          収入・支出・家族構成など、ライフプランに必要なデータを 段階的に入力します
+          <br />
+          各セクションはアコーディオン形式で整理され、既存データがある場合はサマリーに反映されます
         </p>
       </header>
 

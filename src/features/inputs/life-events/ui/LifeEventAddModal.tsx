@@ -16,6 +16,7 @@ import type {
   LifeEventFormSubmitHandler,
 } from "@/features/inputs/life-events/ui/useLifeEventActions";
 import { cn } from "@/lib/utils";
+import { UI_TEXT } from "@/shared/constants/messages";
 import { GENERAL_LIFE_EVENT_CATEGORIES } from "@/shared/domain/life-events/categories";
 
 type LifeEventAddModalProps = {
@@ -51,9 +52,7 @@ export function LifeEventAddModal({
         <div className="flex items-start justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold">ライフイベント追加</h2>
-            <p className="text-xs text-muted-foreground">
-              退職金は専用フォームで登録してください。
-            </p>
+            <p className="text-xs text-muted-foreground">退職金は専用フォームで登録してください</p>
           </div>
           <Button type="button" variant="ghost" size="sm" onClick={onClose}>
             閉じる
@@ -128,7 +127,7 @@ export function LifeEventAddModal({
                     <FormMessage />
                     {isRetirementCategory ? (
                       <p className="text-xs text-amber-600">
-                        退職金は専用フォームで登録してください。
+                        退職金は専用フォームで登録してください
                       </p>
                     ) : null}
                   </FormItem>
@@ -178,15 +177,15 @@ export function LifeEventAddModal({
               />
             </div>
             <p className="text-xs text-muted-foreground">
-              停止回数・停止年齢が未入力の場合は無制限になります。
+              停止回数・停止年齢が未入力の場合は無制限になります
               <br />
-              両方指定した場合は、より早く到達する条件で停止します。
+              両方指定した場合は、より早く到達する条件で停止します
             </p>
 
             {isHousingPurchase ? (
               <div className="rounded-md border border-border/70 bg-muted/40 p-4">
                 <p className="text-xs font-semibold text-muted-foreground">
-                  住宅購入カテゴリは価格情報が必須です。
+                  住宅購入カテゴリは価格情報が必須です
                 </p>
                 <div className="mt-3 grid gap-4 md:grid-cols-3">
                   <FormField
@@ -243,7 +242,7 @@ export function LifeEventAddModal({
                 disabled={isSubmitting || isRetirementCategory}
                 className={cn(isRetirementCategory && "cursor-not-allowed")}
               >
-                保存
+                {UI_TEXT.REGISTER}
               </Button>
             </div>
           </form>
