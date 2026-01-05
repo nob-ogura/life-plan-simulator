@@ -12,18 +12,18 @@ export function AppHeader() {
           </div>
           <div className="flex flex-col leading-none">
             <span className="text-sm font-semibold">Life Plan Simulator</span>
-            <span className="text-xs text-muted-foreground">MVP workspace</span>
+            <span className="text-xs text-muted-foreground">生活設計診断</span>
           </div>
         </div>
         <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
           <Link className="transition-colors hover:text-foreground" href="/">
-            Dashboard
+            ダッシュボード
           </Link>
           <Link className="transition-colors hover:text-foreground" href="/inputs">
-            Inputs
+            情報登録
           </Link>
           <Link className="transition-colors hover:text-foreground" href="/settings">
-            Settings
+            設定
           </Link>
         </nav>
         <div className="flex items-center gap-2">

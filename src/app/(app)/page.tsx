@@ -15,9 +15,9 @@ export default async function Home() {
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           Dashboard
         </p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight">ライフプランの見える化</h1>
+        <h1 className="mt-3 text-3xl font-semibold tracking-tight">生活設計ダッシュボード</h1>
         <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-          シミュレーション結果の要約と推移をまとめて確認できるダッシュボードです
+          シミュレーション結果の要約と推移をまとめて確認します
         </p>
       </section>
 

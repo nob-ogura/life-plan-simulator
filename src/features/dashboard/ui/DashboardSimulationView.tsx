@@ -90,7 +90,6 @@ export function DashboardSimulationView({ months }: DashboardSimulationViewProps
               </p>
               <h2 className="mt-1 text-lg font-semibold">サマリカード</h2>
             </div>
-            <span className="text-xs text-muted-foreground">スクロール時も固定表示</span>
           </div>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
             {summaryCards.map((card) => (
@@ -144,11 +143,11 @@ export function DashboardSimulationView({ months }: DashboardSimulationViewProps
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
               <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              cash
+              現預金
             </span>
             <span className="flex items-center gap-1">
               <span className="h-2 w-2 rounded-full bg-sky-500" />
-              investment
+              投資
             </span>
           </div>
         </div>

@@ -391,11 +391,9 @@ export default async function InputsPage() {
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           Inputs
         </p>
-        <h1 className="text-3xl font-semibold tracking-tight">入力データの登録</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">基本情報の登録</h1>
         <p className="max-w-2xl text-sm text-muted-foreground">
-          収入・支出・家族構成など、ライフプランに必要なデータを 段階的に入力します
-          <br />
-          各セクションはアコーディオン形式で整理され、既存データがある場合はサマリーに反映されます
+          収入・支出・家族構成など、生活設計に必要な情報をセクションごとに登録します
         </p>
       </header>
 
