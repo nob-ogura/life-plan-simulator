@@ -46,7 +46,16 @@ const getMonth = (input: SimulationInput, yearMonth: string) => {
   if (!month) {
     throw new Error(`Missing month ${yearMonth}`);
   }
-  return month;
+  return {
+    ...month,
+    totalIncome: month.totalIncome.toNumber(),
+    totalExpense: month.totalExpense.toNumber(),
+    eventAmount: month.eventAmount.toNumber(),
+    netCashflow: month.netCashflow.toNumber(),
+    cashBalance: month.cashBalance.toNumber(),
+    investmentBalance: month.investmentBalance.toNumber(),
+    totalBalance: month.totalBalance.toNumber(),
+  };
 };
 
 describe("life events", () => {
@@ -123,7 +132,7 @@ describe("life events", () => {
         landPrice: 10000000,
         downPayment: 5000000,
         transactionCostRate: 1.05,
-      }),
+      }).toNumber(),
     ).toBeCloseTo(26500000);
 
     expect(
@@ -132,7 +141,7 @@ describe("life events", () => {
         landPrice: 10000000,
         evaluationRate: 0.7,
         taxRate: 0.014,
-      }),
+      }).toNumber(),
     ).toBeCloseTo(24500);
   });
 
@@ -161,8 +170,8 @@ describe("life events", () => {
 
     const metrics = deriveHousingPurchaseMetrics(event, settings);
 
-    expect(metrics.principal).toBeCloseTo(27400000);
-    expect(metrics.realEstateTaxMonthly).toBeCloseTo(25000);
+    expect(metrics.principal.toNumber()).toBeCloseTo(27400000);
+    expect(metrics.realEstateTaxMonthly.toNumber()).toBeCloseTo(25000);
   });
 
   it("updates housing purchase metrics when settings change", () => {
@@ -197,12 +206,14 @@ describe("life events", () => {
     const baseMetrics = deriveHousingPurchaseMetrics(event, baseSettings);
     const updatedMetrics = deriveHousingPurchaseMetrics(event, updatedSettings);
 
-    expect(baseMetrics.principal).toBeCloseTo(25600000);
-    expect(baseMetrics.realEstateTaxMonthly).toBeCloseTo(15000);
-    expect(updatedMetrics.principal).toBeCloseTo(27400000);
-    expect(updatedMetrics.realEstateTaxMonthly).toBeCloseTo(25000);
-    expect(updatedMetrics.principal).not.toBe(baseMetrics.principal);
-    expect(updatedMetrics.realEstateTaxMonthly).not.toBe(baseMetrics.realEstateTaxMonthly);
+    expect(baseMetrics.principal.toNumber()).toBeCloseTo(25600000);
+    expect(baseMetrics.realEstateTaxMonthly.toNumber()).toBeCloseTo(15000);
+    expect(updatedMetrics.principal.toNumber()).toBeCloseTo(27400000);
+    expect(updatedMetrics.realEstateTaxMonthly.toNumber()).toBeCloseTo(25000);
+    expect(updatedMetrics.principal.toNumber()).not.toBe(baseMetrics.principal.toNumber());
+    expect(updatedMetrics.realEstateTaxMonthly.toNumber()).not.toBe(
+      baseMetrics.realEstateTaxMonthly.toNumber(),
+    );
   });
 
   it("adds real estate tax from the housing purchase month", () => {

@@ -16,7 +16,6 @@ const roundValue = (value: number, mode: MoneyRoundingMode): number => {
       return Math.ceil(value);
     case "trunc":
       return Math.trunc(value);
-    case "round":
     default:
       return Math.round(value);
   }

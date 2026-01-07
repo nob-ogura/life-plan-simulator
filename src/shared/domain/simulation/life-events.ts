@@ -1,5 +1,6 @@
+import { BirthDate } from "@/shared/domain/value-objects/BirthDate";
+import { Money } from "@/shared/domain/value-objects/Money";
 import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
-import { calculateAgeAtYearMonth } from "./timeline";
 import type {
   SimulationLifeEvent,
   SimulationProfile,
@@ -9,8 +10,8 @@ import type {
 
 export type HousingPurchaseMetrics = {
   event: SimulationLifeEvent;
-  principal: number;
-  realEstateTaxMonthly: number;
+  principal: Money;
+  realEstateTaxMonthly: Money;
 };
 
 const toNumber = (value: number | null | undefined, fallback: number): number => value ?? fallback;
@@ -25,7 +26,7 @@ export const calculateMortgagePrincipal = ({
   landPrice: number;
   downPayment: number;
   transactionCostRate: number | null | undefined;
-}): number => (buildingPrice + landPrice) * toNumber(transactionCostRate, 1) - downPayment;
+}): Money => Money.of((buildingPrice + landPrice) * toNumber(transactionCostRate, 1) - downPayment);
 
 export const calculateRealEstateTaxMonthly = ({
   buildingPrice,
@@ -37,8 +38,8 @@ export const calculateRealEstateTaxMonthly = ({
   landPrice: number;
   evaluationRate: number | null | undefined;
   taxRate: number | null | undefined;
-}): number =>
-  ((buildingPrice + landPrice) * toNumber(evaluationRate, 0) * toNumber(taxRate, 0)) / 12;
+}): Money =>
+  Money.of(((buildingPrice + landPrice) * toNumber(evaluationRate, 0) * toNumber(taxRate, 0)) / 12);
 
 const requireHousingPurchaseFields = (event: SimulationLifeEvent) => {
   if (event.building_price == null || event.land_price == null || event.down_payment == null) {
@@ -89,8 +90,10 @@ export const expandLifeEvents = ({
   const startIndex = YearMonth.create(startYearMonth).toElapsedMonths();
   const endIndex = YearMonth.create(endYearMonth).toElapsedMonths();
   const expanded: SimulationLifeEvent[] = [];
-  const birthYear = profile.birth_year;
-  const birthMonth = profile.birth_month;
+  const birthDate =
+    profile.birth_year != null && profile.birth_month != null
+      ? BirthDate.fromYearMonth(profile.birth_year, profile.birth_month)
+      : null;
 
   for (const event of lifeEvents) {
     const intervalYears = event.repeat_interval_years;
@@ -106,11 +109,11 @@ export const expandLifeEvents = ({
         break;
       }
       if (stopAfterAge != null) {
-        if (birthYear == null || birthMonth == null) {
+        if (!birthDate) {
           throw new Error("Profile birth year/month is required to apply stop_after_age.");
         }
-        const age = calculateAgeAtYearMonth(currentYearMonth.toString(), birthYear, birthMonth);
-        if (age != null && age > stopAfterAge) {
+        const age = birthDate.ageAt(currentYearMonth);
+        if (age > stopAfterAge) {
           break;
         }
       }

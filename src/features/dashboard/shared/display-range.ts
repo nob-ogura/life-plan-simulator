@@ -1,4 +1,4 @@
-import type { SimulationMonthlyResult } from "@/shared/domain/simulation";
+import type { DashboardSimulationMonthlyResult } from "@/features/dashboard/queries/get-dashboard-simulation/response";
 
 export type DashboardDisplayRange = "recent-5-years" | "all";
 
@@ -15,7 +15,7 @@ export const displayRangeOptions = [
 const RECENT_YEARS_MONTHS = 60;
 
 export const filterSimulationMonthsByRange = (
-  months: SimulationMonthlyResult[],
+  months: DashboardSimulationMonthlyResult[],
   range: DashboardDisplayRange,
 ) => {
   if (range === "recent-5-years") {

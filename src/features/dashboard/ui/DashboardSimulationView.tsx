@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import type { DashboardSimulationMonthlyResult } from "@/features/dashboard/queries/get-dashboard-simulation/response";
 import {
   type DashboardDisplayRange,
   DEFAULT_DISPLAY_RANGE,
@@ -14,11 +15,10 @@ import {
   findDepletionYearMonth,
 } from "@/features/dashboard/shared/summary";
 import { AssetTrendChart } from "@/features/dashboard/ui/AssetTrendChart";
-import type { SimulationMonthlyResult } from "@/shared/domain/simulation";
 import { Money } from "@/shared/domain/value-objects/Money";
 
 type DashboardSimulationViewProps = {
-  months: SimulationMonthlyResult[];
+  months: DashboardSimulationMonthlyResult[];
 };
 
 const summaryCardDefinitions = [
@@ -205,7 +205,7 @@ export function DashboardSimulationView({ months }: DashboardSimulationViewProps
 }
 
 type CashflowTableProps = {
-  months: SimulationMonthlyResult[];
+  months: DashboardSimulationMonthlyResult[];
   onScrollbarWidthChange?: (width: number) => void;
 };
 
@@ -282,13 +282,12 @@ function CashflowTable({ months, onScrollbarWidthChange }: CashflowTableProps) {
       >
         {hasData
           ? visibleMonths.map((month) => {
-              const net = month.totalIncome - month.totalExpense + month.eventAmount;
               return (
                 <div key={month.yearMonth} className="grid h-11 grid-cols-5 items-center text-xs">
                   <div className="px-3 text-muted-foreground">{month.yearMonth}</div>
                   <div className="px-3">{formatAmount(month.totalIncome)}</div>
                   <div className="px-3">{formatAmount(month.totalExpense)}</div>
-                  <div className="px-3">{formatAmount(net)}</div>
+                  <div className="px-3">{formatAmount(month.netCashflow)}</div>
                   <div className="px-3">{formatAmount(month.totalBalance)}</div>
                 </div>
               );

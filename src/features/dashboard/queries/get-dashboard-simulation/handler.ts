@@ -13,7 +13,11 @@ import {
   toSimulationRental,
   toSimulationSettings,
 } from "./mapper";
-import type { GetDashboardSimulationResponse } from "./response";
+import type {
+  DashboardSimulationMonthlyResult,
+  DashboardSimulationResult,
+  GetDashboardSimulationResponse,
+} from "./response";
 
 export type GetDashboardSimulationQuery = { userId: string };
 
@@ -70,6 +74,24 @@ export class GetDashboardSimulationQueryHandler {
     }
 
     const result = simulateLifePlan(input);
-    return { result };
+    return { result: toDashboardSimulationResult(result) };
   }
 }
+
+const toDashboardSimulationResult = (
+  result: ReturnType<typeof simulateLifePlan>,
+): DashboardSimulationResult => ({
+  depletionYearMonth: result.depletionYearMonth,
+  months: result.months.map<DashboardSimulationMonthlyResult>((month) => ({
+    yearMonth: month.yearMonth,
+    age: month.age,
+    spouseAge: month.spouseAge,
+    totalIncome: month.totalIncome.toNumber(),
+    totalExpense: month.totalExpense.toNumber(),
+    eventAmount: month.eventAmount.toNumber(),
+    netCashflow: month.netCashflow.toNumber(),
+    cashBalance: month.cashBalance.toNumber(),
+    investmentBalance: month.investmentBalance.toNumber(),
+    totalBalance: month.totalBalance.toNumber(),
+  })),
+});

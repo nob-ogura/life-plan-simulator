@@ -182,28 +182,35 @@ const calculateRetirementBonus = (
 };
 
 const aggregateAssets = (assets: SimulationAsset[]) => {
-  const totalCash = assets.reduce((sum, asset) => sum + (asset.cash_balance ?? 0), 0);
-  const totalInvestment = assets.reduce((sum, asset) => sum + (asset.investment_balance ?? 0), 0);
+  const totalCash = assets.reduce(
+    (sum, asset) => sum.add(Money.of(asset.cash_balance ?? 0)),
+    Money.of(0),
+  );
+  const totalInvestment = assets.reduce(
+    (sum, asset) => sum.add(Money.of(asset.investment_balance ?? 0)),
+    Money.of(0),
+  );
   if (assets.length === 0) {
     return { cashBalance: Money.of(0), investmentBalance: Money.of(0), returnRate: 0 };
   }
-  if (totalInvestment === 0) {
+  if (totalInvestment.toNumber() === 0) {
     const averageReturn =
       assets.reduce((sum, asset) => sum + (asset.return_rate ?? 0), 0) / assets.length;
     return {
-      cashBalance: Money.of(totalCash),
-      investmentBalance: Money.of(totalInvestment),
+      cashBalance: totalCash,
+      investmentBalance: totalInvestment,
       returnRate: averageReturn,
     };
   }
-  const weightedReturn =
-    assets.reduce(
-      (sum, asset) => sum + (asset.investment_balance ?? 0) * (asset.return_rate ?? 0),
-      0,
-    ) / totalInvestment;
+  const weightedNumerator = assets.reduce(
+    (sum, asset) =>
+      sum.add(Money.of(asset.investment_balance ?? 0).multiply(asset.return_rate ?? 0)),
+    Money.of(0),
+  );
+  const weightedReturn = weightedNumerator.toNumber() / totalInvestment.toNumber();
   return {
-    cashBalance: Money.of(totalCash),
-    investmentBalance: Money.of(totalInvestment),
+    cashBalance: totalCash,
+    investmentBalance: totalInvestment,
     returnRate: weightedReturn,
   };
 };
@@ -247,7 +254,7 @@ const calculateMonthlyCashFlow = (
     if (monthValue.isBefore(YearMonth.create(purchase.event.year_month))) {
       return total;
     }
-    return total.add(Money.of(purchase.realEstateTaxMonthly));
+    return total.add(purchase.realEstateTaxMonthly);
   }, Money.of(0));
   const eventAmount = expandedLifeEvents.reduce((total, event) => {
     if (isRetirementBonus(event.category as LifeEventCategory)) {
@@ -277,8 +284,8 @@ const applyBalances = (
 ): { nextState: BalanceState; monthWithBalances: SimulationResult["months"][number] } => {
   let { cashBalance, investmentBalance, depletionYearMonth } = state;
 
-  const cashFlow = monthly.totalIncome.minus(monthly.totalExpense).add(monthly.eventAmount);
-  cashBalance = cashBalance.add(cashFlow);
+  const netCashflow = monthly.totalIncome.minus(monthly.totalExpense).add(monthly.eventAmount);
+  cashBalance = cashBalance.add(netCashflow);
   if (cashBalance.isNegative()) {
     const deficit = cashBalance.abs();
     investmentBalance = investmentBalance.minus(deficit);
@@ -300,12 +307,13 @@ const applyBalances = (
       yearMonth: monthly.yearMonth,
       age: monthly.age,
       spouseAge: monthly.spouseAge,
-      totalIncome: monthly.totalIncome.toNumber(),
-      totalExpense: monthly.totalExpense.toNumber(),
-      eventAmount: monthly.eventAmount.toNumber(),
-      cashBalance: cashBalance.toNumber(),
-      investmentBalance: investmentBalance.toNumber(),
-      totalBalance: totalBalance.toNumber(),
+      totalIncome: monthly.totalIncome,
+      totalExpense: monthly.totalExpense,
+      eventAmount: monthly.eventAmount,
+      netCashflow,
+      cashBalance,
+      investmentBalance,
+      totalBalance,
     },
   };
 };

@@ -37,7 +37,16 @@ const getMonth = (input: SimulationInput, yearMonth: string) => {
   if (!month) {
     throw new Error(`Missing month ${yearMonth}`);
   }
-  return month;
+  return {
+    ...month,
+    totalIncome: month.totalIncome.toNumber(),
+    totalExpense: month.totalExpense.toNumber(),
+    eventAmount: month.eventAmount.toNumber(),
+    netCashflow: month.netCashflow.toNumber(),
+    cashBalance: month.cashBalance.toNumber(),
+    investmentBalance: month.investmentBalance.toNumber(),
+    totalBalance: month.totalBalance.toNumber(),
+  };
 };
 
 describe("income calculation", () => {

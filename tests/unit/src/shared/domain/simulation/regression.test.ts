@@ -122,7 +122,22 @@ describe("simulation regression", () => {
   it("keeps results stable for multi-year scenarios with multiple events and fractional rates", () => {
     const result = simulateLifePlan(createRegressionInput());
 
-    expect(result).toMatchInlineSnapshot(`
+    const serialized = {
+      depletionYearMonth: result.depletionYearMonth,
+      months: result.months.map((month) => ({
+        yearMonth: month.yearMonth,
+        age: month.age,
+        spouseAge: month.spouseAge,
+        totalIncome: month.totalIncome.toNumber(),
+        totalExpense: month.totalExpense.toNumber(),
+        eventAmount: month.eventAmount.toNumber(),
+        cashBalance: month.cashBalance.toNumber(),
+        investmentBalance: month.investmentBalance.toNumber(),
+        totalBalance: month.totalBalance.toNumber(),
+      })),
+    };
+
+    expect(serialized).toMatchInlineSnapshot(`
       {
         "depletionYearMonth": null,
         "months": [

@@ -1,11 +1,11 @@
 "use client";
 
 import { useId, useMemo } from "react";
-
-import type { SimulationMonthlyResult, YearMonthString } from "@/shared/domain/simulation";
+import type { DashboardSimulationMonthlyResult } from "@/features/dashboard/queries/get-dashboard-simulation/response";
+import type { YearMonthString } from "@/shared/domain/simulation";
 
 type AssetTrendChartProps = {
-  months: SimulationMonthlyResult[];
+  months: DashboardSimulationMonthlyResult[];
   depletionYearMonth?: YearMonthString | null;
 };
 

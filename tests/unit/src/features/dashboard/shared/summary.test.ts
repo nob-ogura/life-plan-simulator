@@ -1,19 +1,21 @@
 import { describe, expect, it } from "vitest";
+import type { DashboardSimulationMonthlyResult } from "@/features/dashboard/queries/get-dashboard-simulation/response";
 import {
   calculateSummaryMetrics,
   findDepletionYearMonth,
 } from "@/features/dashboard/shared/summary";
-import type { SimulationMonthlyResult } from "@/shared/domain/simulation";
 
 const createMonth = (
-  overrides: Partial<SimulationMonthlyResult> & Pick<SimulationMonthlyResult, "yearMonth">,
-): SimulationMonthlyResult => ({
+  overrides: Partial<DashboardSimulationMonthlyResult> &
+    Pick<DashboardSimulationMonthlyResult, "yearMonth">,
+): DashboardSimulationMonthlyResult => ({
   yearMonth: overrides.yearMonth,
   age: overrides.age ?? 0,
   spouseAge: overrides.spouseAge ?? null,
   totalIncome: overrides.totalIncome ?? 0,
   totalExpense: overrides.totalExpense ?? 0,
   eventAmount: overrides.eventAmount ?? 0,
+  netCashflow: overrides.netCashflow ?? 0,
   cashBalance: overrides.cashBalance ?? 0,
   investmentBalance: overrides.investmentBalance ?? 0,
   totalBalance: overrides.totalBalance ?? 0,
@@ -27,6 +29,7 @@ describe("dashboard summary metrics", () => {
         totalIncome: 100,
         totalExpense: 70,
         eventAmount: 10,
+        netCashflow: 40,
         totalBalance: 1000,
       }),
       createMonth({
@@ -34,6 +37,7 @@ describe("dashboard summary metrics", () => {
         totalIncome: 80,
         totalExpense: 90,
         eventAmount: 0,
+        netCashflow: -10,
         totalBalance: 900,
       }),
       createMonth({
@@ -41,6 +45,7 @@ describe("dashboard summary metrics", () => {
         totalIncome: 120,
         totalExpense: 110,
         eventAmount: -20,
+        netCashflow: -10,
         totalBalance: 850,
       }),
     ];

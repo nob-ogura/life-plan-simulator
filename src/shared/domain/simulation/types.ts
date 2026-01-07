@@ -1,3 +1,4 @@
+import type { Money } from "@/shared/domain/value-objects/Money";
 import type { Tables } from "@/types/supabase";
 
 export type YearMonthString = string;
@@ -89,12 +90,13 @@ export type SimulationMonthlyResult = {
   yearMonth: YearMonthString;
   age: number;
   spouseAge: number | null;
-  totalIncome: number;
-  totalExpense: number;
-  eventAmount: number;
-  cashBalance: number;
-  investmentBalance: number;
-  totalBalance: number;
+  totalIncome: Money;
+  totalExpense: Money;
+  eventAmount: Money;
+  netCashflow: Money;
+  cashBalance: Money;
+  investmentBalance: Money;
+  totalBalance: Money;
 };
 
 export type SimulationResult = {

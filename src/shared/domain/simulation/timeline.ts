@@ -1,3 +1,4 @@
+import { BirthDate } from "@/shared/domain/value-objects/BirthDate";
 import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
 import type { SimulationProfile, YearMonthString } from "./types";
 
@@ -15,22 +16,6 @@ export const elapsedMonthsToYearMonth = (elapsedMonths: number): YearMonthString
 
 export const addMonths = (yearMonth: YearMonthString, deltaMonths: number): YearMonthString =>
   YearMonth.create(yearMonth).addMonths(deltaMonths).toString();
-
-export const calculateAgeAtYearMonth = (
-  yearMonth: YearMonthString,
-  birthYear: number | null,
-  birthMonth: number | null,
-): number | null => {
-  if (birthYear == null || birthMonth == null) {
-    return null;
-  }
-
-  const target = YearMonth.create(yearMonth);
-  const year = target.getYear();
-  const month = target.getMonth();
-  const hasBirthdayPassed = month >= birthMonth;
-  return year - birthYear - (hasBirthdayPassed ? 0 : 1);
-};
 
 export const generateMonthlyTimeline = ({
   currentYearMonth,
@@ -50,6 +35,12 @@ export const generateMonthlyTimeline = ({
     throw new Error("Profile birth month must be between 1 and 12.");
   }
 
+  const birthDate = BirthDate.fromYearMonth(profile.birth_year, profile.birth_month);
+  const spouseBirthDate =
+    profile.spouse_birth_year != null && profile.spouse_birth_month != null
+      ? BirthDate.fromYearMonth(profile.spouse_birth_year, profile.spouse_birth_month)
+      : null;
+
   const startYearMonth = YearMonth.create(currentYearMonth).addMonths(startOffsetMonths);
   const startIndex = startYearMonth.toElapsedMonths();
   const endIndex = YearMonth.fromParts(
@@ -66,15 +57,8 @@ export const generateMonthlyTimeline = ({
   for (let index = startIndex; index <= endIndex; index += 1) {
     const yearMonth = YearMonth.fromElapsedMonths(index);
     const yearMonthValue = yearMonth.toString();
-    const age = calculateAgeAtYearMonth(yearMonthValue, profile.birth_year, profile.birth_month);
-    if (age == null) {
-      continue;
-    }
-    const spouseAge = calculateAgeAtYearMonth(
-      yearMonthValue,
-      profile.spouse_birth_year,
-      profile.spouse_birth_month,
-    );
+    const age = birthDate.ageAt(yearMonth);
+    const spouseAge = spouseBirthDate ? spouseBirthDate.ageAt(yearMonth) : null;
 
     timeline.push({ yearMonth: yearMonthValue, age, spouseAge });
   }

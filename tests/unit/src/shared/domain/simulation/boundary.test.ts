@@ -43,7 +43,16 @@ const getMonth = (input: SimulationInput, yearMonth: string) => {
   if (!month) {
     throw new Error(`Missing month ${yearMonth}`);
   }
-  return month;
+  return {
+    ...month,
+    totalIncome: month.totalIncome.toNumber(),
+    totalExpense: month.totalExpense.toNumber(),
+    eventAmount: month.eventAmount.toNumber(),
+    netCashflow: month.netCashflow.toNumber(),
+    cashBalance: month.cashBalance.toNumber(),
+    investmentBalance: month.investmentBalance.toNumber(),
+    totalBalance: month.totalBalance.toNumber(),
+  };
 };
 
 describe("simulation boundary cases", () => {
@@ -160,15 +169,30 @@ describe("simulation boundary cases", () => {
     input.simulationSettings = { ...input.simulationSettings, end_age: 100 };
 
     const result = simulateLifePlan(input);
-    const last = result.months[result.months.length - 1];
+    const last = result.months.at(-1);
+    if (!last) {
+      throw new Error("Expected simulation to return at least one month.");
+    }
 
-    expect(last).toEqual({
+    expect({
+      yearMonth: last.yearMonth,
+      age: last.age,
+      spouseAge: last.spouseAge,
+      totalIncome: last.totalIncome.toNumber(),
+      totalExpense: last.totalExpense.toNumber(),
+      eventAmount: last.eventAmount.toNumber(),
+      netCashflow: last.netCashflow.toNumber(),
+      cashBalance: last.cashBalance.toNumber(),
+      investmentBalance: last.investmentBalance.toNumber(),
+      totalBalance: last.totalBalance.toNumber(),
+    }).toEqual({
       yearMonth: "2070-01",
       age: 100,
       spouseAge: null,
       totalIncome: 0,
       totalExpense: 0,
       eventAmount: 0,
+      netCashflow: 0,
       cashBalance: 0,
       investmentBalance: 0,
       totalBalance: 0,
@@ -234,7 +258,7 @@ describe("simulation boundary cases", () => {
 
     const metrics = deriveHousingPurchaseMetrics(event, settings);
 
-    expect(metrics.principal).toBeCloseTo(13200000);
-    expect(metrics.realEstateTaxMonthly).toBeCloseTo(12500);
+    expect(metrics.principal.toNumber()).toBeCloseTo(13200000);
+    expect(metrics.realEstateTaxMonthly.toNumber()).toBeCloseTo(12500);
   });
 });
