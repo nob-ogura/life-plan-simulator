@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const YEAR_MONTH_REGEX = /^\d{4}-(0[1-9]|1[0-2])$/;
+import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
 
 export const requiredNumericString = z
   .string()
@@ -24,7 +24,7 @@ export const requiredYearMonth = z
   .string()
   .trim()
   .min(1, { message: "必須項目です" })
-  .refine((value) => YEAR_MONTH_REGEX.test(value), {
+  .refine((value) => YearMonth.validate(value), {
     message: "YYYY-MM 形式で入力してください",
   });
 
@@ -32,7 +32,7 @@ export const optionalYearMonth = z
   .string()
   .optional()
   .transform((value) => (value ?? "").trim())
-  .refine((value) => value === "" || YEAR_MONTH_REGEX.test(value), {
+  .refine((value) => value === "" || YearMonth.validate(value), {
     message: "YYYY-MM 形式で入力してください",
   })
   .transform((value) => (value === "" ? undefined : value));

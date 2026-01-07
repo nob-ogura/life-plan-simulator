@@ -60,6 +60,15 @@ export class YearMonth {
     return new YearMonth(parseYearMonth(value));
   }
 
+  static validate(value: string): boolean {
+    try {
+      parseYearMonth(value);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   toString(): string {
     return this.value;
   }
