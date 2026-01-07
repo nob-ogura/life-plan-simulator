@@ -60,6 +60,19 @@ export class YearMonth {
     return new YearMonth(parseYearMonth(value));
   }
 
+  static fromParts(year: number, month: number): YearMonth {
+    if (!Number.isFinite(year) || !Number.isInteger(year)) {
+      throw new Error(`Year must be an integer: ${year}`);
+    }
+    if (!Number.isFinite(month) || !Number.isInteger(month)) {
+      throw new Error(`Month must be an integer: ${month}`);
+    }
+
+    const yearText = String(year).padStart(4, "0");
+    const monthText = String(month).padStart(2, "0");
+    return new YearMonth(parseYearMonth(`${yearText}-${monthText}`));
+  }
+
   static fromElapsedMonths(elapsedMonths: number): YearMonth {
     return new YearMonth(fromElapsedMonths(elapsedMonths));
   }

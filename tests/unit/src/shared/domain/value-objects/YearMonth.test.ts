@@ -8,6 +8,11 @@ describe("YearMonth", () => {
     expect(value.toString()).toBe("2025-01");
   });
 
+  it("creates from year and month parts", () => {
+    const value = YearMonth.fromParts(2025, 2);
+    expect(value.toString()).toBe("2025-02");
+  });
+
   it("throws for an invalid month", () => {
     expect(() => YearMonth.create("2025-13")).toThrow();
   });

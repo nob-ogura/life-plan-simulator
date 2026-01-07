@@ -52,9 +52,10 @@ export const generateMonthlyTimeline = ({
 
   const startYearMonth = YearMonth.create(currentYearMonth).addMonths(startOffsetMonths);
   const startIndex = startYearMonth.toElapsedMonths();
-  const endYearText = String(profile.birth_year + endAge).padStart(4, "0");
-  const endMonthText = String(profile.birth_month).padStart(2, "0");
-  const endIndex = YearMonth.create(`${endYearText}-${endMonthText}`).toElapsedMonths();
+  const endIndex = YearMonth.fromParts(
+    profile.birth_year + endAge,
+    profile.birth_month,
+  ).toElapsedMonths();
 
   if (startIndex > endIndex) {
     return [];
