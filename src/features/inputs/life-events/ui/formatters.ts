@@ -2,6 +2,7 @@ import {
   LIFE_EVENT_CATEGORY_LABELS,
   LIFE_EVENT_CATEGORIES as SHARED_LIFE_EVENT_CATEGORIES,
 } from "@/shared/domain/life-events/categories";
+import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
 import { formatValueOrFallback } from "@/shared/utils/formatters";
 import type { Tables } from "@/types/supabase";
 
@@ -13,8 +14,11 @@ export const formatYearMonth = (value?: string | null) =>
     value,
     (safeValue) => {
       const trimmed = safeValue.slice(0, 7);
-      const [year, month] = trimmed.split("-");
-      return `${year}年${month}月`;
+      if (!YearMonth.validate(trimmed)) {
+        const [year, month] = trimmed.split("-");
+        return `${year}年${month}月`;
+      }
+      return YearMonth.create(trimmed).toJapanese();
     },
     undefined,
     (safeValue) => safeValue.trim().length === 0,

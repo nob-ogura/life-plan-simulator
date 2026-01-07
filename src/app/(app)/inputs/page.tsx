@@ -30,6 +30,7 @@ import { RetirementBonusForm } from "@/features/inputs/retirement/ui/RetirementB
 import { UI_TEXT } from "@/shared/constants/messages";
 import { createServerAuthSession } from "@/shared/cross-cutting/auth/server-auth";
 import { createServerSupabaseClient } from "@/shared/cross-cutting/infrastructure/supabase.server";
+import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
 import { formatValueOrFallback } from "@/shared/utils/formatters";
 import type { Tables } from "@/types/supabase";
 
@@ -60,8 +61,14 @@ const emptyData: InputsData = {
 const formatYearMonth = (year?: number | null, month?: number | null) =>
   formatValueOrFallback(
     year == null || month == null ? null : { year, month },
-    ({ year: safeYear, month: safeMonth }) =>
-      `${safeYear}年${String(safeMonth).padStart(2, "0")}月`,
+    ({ year: safeYear, month: safeMonth }) => {
+      const monthText = String(safeMonth).padStart(2, "0");
+      const value = `${safeYear}-${monthText}`;
+      if (!YearMonth.validate(value)) {
+        return `${safeYear}年${monthText}月`;
+      }
+      return YearMonth.create(value).toJapanese();
+    },
   );
 
 const formatCount = (count: number, unit: string = UI_TEXT.UNIT_COUNT) =>
