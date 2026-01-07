@@ -60,6 +60,14 @@ export class YearMonth {
     return new YearMonth(parseYearMonth(value));
   }
 
+  static tryCreate(value: string): YearMonth | null {
+    try {
+      return new YearMonth(parseYearMonth(value));
+    } catch {
+      return null;
+    }
+  }
+
   static fromParts(year: number, month: number): YearMonth {
     if (!Number.isFinite(year) || !Number.isInteger(year)) {
       throw new Error(`Year must be an integer: ${year}`);
@@ -84,6 +92,15 @@ export class YearMonth {
     } catch {
       return false;
     }
+  }
+
+  static toMonthStartDateFromInput(value: string): string {
+    if (value.length !== 7) {
+      return value;
+    }
+    const normalized = value.slice(0, 7);
+    const yearMonth = YearMonth.tryCreate(normalized);
+    return yearMonth ? yearMonth.toMonthStartDate() : `${value}-01`;
   }
 
   toString(): string {

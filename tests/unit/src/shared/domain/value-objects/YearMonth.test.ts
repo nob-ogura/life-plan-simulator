@@ -17,9 +17,20 @@ describe("YearMonth", () => {
     expect(() => YearMonth.create("2025-13")).toThrow();
   });
 
+  it("returns null for invalid input with tryCreate", () => {
+    expect(YearMonth.tryCreate("2025-13")).toBeNull();
+    expect(YearMonth.tryCreate("2025-01")?.toString()).toBe("2025-01");
+  });
+
   it("formats month start date", () => {
     const value = YearMonth.create("2024-12");
     expect(value.toMonthStartDate()).toBe("2024-12-01");
+  });
+
+  it("formats month start date from input", () => {
+    expect(YearMonth.toMonthStartDateFromInput("2025-01")).toBe("2025-01-01");
+    expect(YearMonth.toMonthStartDateFromInput("2025-13")).toBe("2025-13-01");
+    expect(YearMonth.toMonthStartDateFromInput("2025-01-15")).toBe("2025-01-15");
   });
 
   it("formats Japanese display", () => {
