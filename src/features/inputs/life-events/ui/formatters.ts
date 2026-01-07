@@ -2,6 +2,7 @@ import {
   LIFE_EVENT_CATEGORY_LABELS,
   LIFE_EVENT_CATEGORIES as SHARED_LIFE_EVENT_CATEGORIES,
 } from "@/shared/domain/life-events/categories";
+import { Money } from "@/shared/domain/value-objects/Money";
 import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
 import { formatValueOrFallback } from "@/shared/utils/formatters";
 import type { Tables } from "@/types/supabase";
@@ -24,8 +25,7 @@ export const formatYearMonth = (value?: string | null) =>
     (safeValue) => safeValue.trim().length === 0,
   );
 
-export const formatAmount = (amount: number) =>
-  `${new Intl.NumberFormat("ja-JP").format(amount)}円`;
+export const formatAmount = (amount: number) => `${Money.of(amount).format()}円`;
 
 export const formatRepeat = (event: Tables<"life_events">) => {
   const interval = event.repeat_interval_years ?? null;

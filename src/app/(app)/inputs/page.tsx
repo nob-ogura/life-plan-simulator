@@ -30,6 +30,7 @@ import { RetirementBonusForm } from "@/features/inputs/retirement/ui/RetirementB
 import { UI_TEXT } from "@/shared/constants/messages";
 import { createServerAuthSession } from "@/shared/cross-cutting/auth/server-auth";
 import { createServerSupabaseClient } from "@/shared/cross-cutting/infrastructure/supabase.server";
+import { Money } from "@/shared/domain/value-objects/Money";
 import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
 import { formatValueOrFallback } from "@/shared/utils/formatters";
 import type { Tables } from "@/types/supabase";
@@ -79,8 +80,7 @@ const formatRegistered = (count: number) =>
 
 const formatAmount = (value?: number | null) =>
   formatValueOrFallback(value, (safeValue) => {
-    const formatted = new Intl.NumberFormat("ja-JP").format(safeValue);
-    return `${formatted}円`;
+    return `${Money.of(safeValue).format()}円`;
   });
 
 const formatNumber = (value?: number | null, suffix = "") =>

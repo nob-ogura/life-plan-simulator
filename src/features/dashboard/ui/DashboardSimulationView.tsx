@@ -15,6 +15,7 @@ import {
 } from "@/features/dashboard/shared/summary";
 import { AssetTrendChart } from "@/features/dashboard/ui/AssetTrendChart";
 import type { SimulationMonthlyResult } from "@/shared/domain/simulation";
+import { Money } from "@/shared/domain/value-objects/Money";
 
 type DashboardSimulationViewProps = {
   months: SimulationMonthlyResult[];
@@ -43,8 +44,7 @@ const CASHFLOW_ROW_HEIGHT = 44;
 const CASHFLOW_VIEWPORT_HEIGHT = 320;
 const CASHFLOW_OVERSCAN = 6;
 
-const formatAmount = (value: number) =>
-  `${new Intl.NumberFormat("ja-JP").format(Math.round(value))}円`;
+const formatAmount = (value: number) => `${Money.of(Math.round(value)).format()}円`;
 
 export function DashboardSimulationView({ months }: DashboardSimulationViewProps) {
   const [displayRange, setDisplayRange] = useState<DashboardDisplayRange>(DEFAULT_DISPLAY_RANGE);
