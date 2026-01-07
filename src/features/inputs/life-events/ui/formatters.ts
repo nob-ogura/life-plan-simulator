@@ -14,12 +14,12 @@ export const formatYearMonth = (value?: string | null) =>
   formatValueOrFallback(
     value,
     (safeValue) => {
-      const trimmed = safeValue.slice(0, 7);
-      if (!YearMonth.validate(trimmed)) {
-        const [year, month] = trimmed.split("-");
+      const normalized = YearMonth.toYearMonthStringFromInput(safeValue);
+      if (!YearMonth.validate(normalized)) {
+        const [year, month] = normalized.split("-");
         return `${year}年${month}月`;
       }
-      return YearMonth.create(trimmed).toJapanese();
+      return YearMonth.create(normalized).toJapanese();
     },
     undefined,
     (safeValue) => safeValue.trim().length === 0,

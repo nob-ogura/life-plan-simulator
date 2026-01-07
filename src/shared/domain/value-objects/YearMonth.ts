@@ -1,4 +1,5 @@
 const YEAR_MONTH_REGEX = /^\d{4}-(0[1-9]|1[0-2])$/;
+const ISO_DATE_REGEX = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
 
 type ParsedYearMonth = {
   year: number;
@@ -24,6 +25,16 @@ const parseYearMonth = (value: string): ParsedYearMonth => {
   }
 
   return { year, month, value };
+};
+
+const parseYearMonthInput = (value: string): ParsedYearMonth => {
+  if (YEAR_MONTH_REGEX.test(value)) {
+    return parseYearMonth(value);
+  }
+  if (ISO_DATE_REGEX.test(value)) {
+    return parseYearMonth(value.slice(0, 7));
+  }
+  throw new Error(`Invalid year-month format: ${value}`);
 };
 
 const toElapsedMonths = (year: number, month: number): number => year * 12 + (month - 1);
@@ -68,6 +79,29 @@ export class YearMonth {
     }
   }
 
+  static fromISOString(value: string): YearMonth {
+    return new YearMonth(parseYearMonthInput(value));
+  }
+
+  static tryFromISOString(value: string): YearMonth | null {
+    try {
+      return new YearMonth(parseYearMonthInput(value));
+    } catch {
+      return null;
+    }
+  }
+
+  static fromDate(date: Date): YearMonth {
+    if (!(date instanceof Date) || !Number.isFinite(date.getTime())) {
+      throw new Error("Invalid Date instance");
+    }
+    return YearMonth.fromParts(date.getFullYear(), date.getMonth() + 1);
+  }
+
+  static now(): YearMonth {
+    return YearMonth.fromDate(new Date());
+  }
+
   static fromParts(year: number, month: number): YearMonth {
     if (!Number.isFinite(year) || !Number.isInteger(year)) {
       throw new Error(`Year must be an integer: ${year}`);
@@ -94,13 +128,19 @@ export class YearMonth {
     }
   }
 
+  static toYearMonthStringFromInput(value: string): string {
+    const yearMonth = YearMonth.tryFromISOString(value);
+    return yearMonth ? yearMonth.toString() : value.slice(0, 7);
+  }
+
   static toMonthStartDateFromInput(value: string): string {
     if (value.length !== 7) {
       return value;
     }
-    const normalized = value.slice(0, 7);
-    const yearMonth = YearMonth.tryCreate(normalized);
-    return yearMonth ? yearMonth.toMonthStartDate() : `${value}-01`;
+    if (YEAR_MONTH_REGEX.test(value)) {
+      return YearMonth.create(value).toMonthStartDate();
+    }
+    return `${value}-01`;
   }
 
   toString(): string {
