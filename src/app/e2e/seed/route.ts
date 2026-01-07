@@ -6,10 +6,10 @@ import {
   canRetryWithoutStopAfterAge,
   omitStopAfterAge,
 } from "@/features/inputs/life-events/infrastructure/stop-after-age-compat";
-import { getCurrentYearMonth, toMonthStartDate } from "@/lib/year-month";
 import { createServerSupabaseClient } from "@/shared/cross-cutting/infrastructure/supabase.server";
 import type { LifeEventCategory } from "@/shared/domain/life-events/categories";
 import { addMonths } from "@/shared/domain/simulation";
+import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
 import type { Database } from "@/types/supabase";
 
 type LifeEventInsert = Database["public"]["Tables"]["life_events"]["Insert"];
@@ -140,7 +140,7 @@ export const POST = async (request: Request) => {
     if (!userId) {
       return NextResponse.json({ ok: false, message: "Unauthorized." }, { status: 401 });
     }
-    const currentYearMonth = getCurrentYearMonth();
+    const currentYearMonth = YearMonth.now().toString();
 
     await clearUserData(userId, client);
 
@@ -191,7 +191,7 @@ export const POST = async (request: Request) => {
       const { error: rentalError } = await client.from("rentals").insert({
         user_id: userId,
         rent_monthly: seed.rentMonthly,
-        start_year_month: toMonthStartDate(seed.startYearMonth),
+        start_year_month: YearMonth.toMonthStartDateFromInput(seed.startYearMonth),
         end_year_month: null,
       });
       if (rentalError) {
@@ -205,7 +205,7 @@ export const POST = async (request: Request) => {
         user_id: userId,
         label: "Housing Purchase",
         amount: 0,
-        year_month: toMonthStartDate(seed.purchaseYearMonth),
+        year_month: YearMonth.toMonthStartDateFromInput(seed.purchaseYearMonth),
         repeat_interval_years: null,
         stop_after_age: null,
         stop_after_occurrences: null,
@@ -231,7 +231,7 @@ export const POST = async (request: Request) => {
       user_id: userId,
       label: "Recurring Travel",
       amount: seed.eventAmount,
-      year_month: toMonthStartDate(seed.startYearMonth),
+      year_month: YearMonth.toMonthStartDateFromInput(seed.startYearMonth),
       repeat_interval_years: seed.repeatIntervalYears,
       stop_after_age: null,
       stop_after_occurrences: seed.stopAfterOccurrences,

@@ -4,7 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { GetDashboardSimulationEndpoint } from "@/features/dashboard/queries/get-dashboard-simulation/endpoint";
 import { GetDashboardSimulationQueryHandler } from "@/features/dashboard/queries/get-dashboard-simulation/handler";
 import { SupabaseGetDashboardSimulationRepository } from "@/features/dashboard/queries/get-dashboard-simulation/repository";
-import { getCurrentYearMonth, toMonthStartDate } from "@/lib/year-month";
+import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
 import type { Database } from "@/types/supabase";
 
 import {
@@ -57,13 +57,11 @@ describe("Dashboard Simulation Flow", () => {
         throw new Error("Supabase clients are not initialized.");
       }
 
-      const currentYearMonth = getCurrentYearMonth();
-      const [yearText, monthText] = currentYearMonth.split("-");
-      const currentYear = Number(yearText);
-      const currentMonth = Number(monthText);
-      const birthYear = currentYear - 30;
-      const birthMonth = currentMonth;
-      const startYearMonth = toMonthStartDate(currentYearMonth);
+      const current = YearMonth.now();
+      const currentYearMonth = current.toString();
+      const birthYear = current.getYear() - 30;
+      const birthMonth = current.getMonth();
+      const startYearMonth = current.toMonthStartDate();
 
       const { error: profileError } = await admin.from("profiles").upsert(
         {

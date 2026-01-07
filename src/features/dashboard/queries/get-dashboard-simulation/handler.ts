@@ -1,5 +1,5 @@
-import { getCurrentYearMonth } from "@/lib/year-month";
 import { type SimulationInput, simulateLifePlan } from "@/shared/domain/simulation";
+import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
 import type { Tables } from "@/types/supabase";
 
 import {
@@ -63,7 +63,7 @@ export class GetDashboardSimulationQueryHandler {
 
   async execute(query: GetDashboardSimulationQuery): Promise<GetDashboardSimulationResponse> {
     const data = await this.repository.fetch(query);
-    const currentYearMonth = getCurrentYearMonth();
+    const currentYearMonth = YearMonth.now().toString();
     const input = buildSimulationInput(data, currentYearMonth);
     if (!input) {
       return { result: null };

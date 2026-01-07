@@ -15,10 +15,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { updateIncomeStreamAction } from "@/features/inputs/income-streams/commands/update-income-stream/action";
-import { toOptionalMonthStartDate } from "@/features/inputs/shared/date";
 import { zodResolver } from "@/lib/zod-resolver";
 import { UI_TEXT } from "@/shared/constants/messages";
 import { useAuth } from "@/shared/cross-cutting/auth";
+import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
 
 import {
   type BonusSectionInput,
@@ -69,7 +69,9 @@ export function BonusForm({ defaultValues }: BonusFormProps) {
                   label: stream.label,
                   bonus_months: stream.bonus_months ?? [],
                   bonus_amount: stream.bonus_amount,
-                  change_year_month: toOptionalMonthStartDate(stream.change_year_month),
+                  change_year_month: stream.change_year_month
+                    ? YearMonth.toMonthStartDateFromInput(stream.change_year_month)
+                    : null,
                   bonus_amount_after: stream.bonus_amount_after ?? null,
                 },
               },

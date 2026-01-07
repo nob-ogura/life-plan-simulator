@@ -1,5 +1,5 @@
 import type { CreateChildRequest } from "@/features/inputs/children/commands/create-child/request";
-import { toOptionalMonthStartDate, toYearMonthInput } from "@/features/inputs/shared/date";
+import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
 import type { Tables } from "@/types/supabase";
 
 import type { FamilySectionInput, FamilySectionPayload } from "./schema";
@@ -19,8 +19,12 @@ export const buildFamilySectionDefaults = (
   children: children.map((child) => ({
     id: child.id,
     label: child.label,
-    birth_year_month: toYearMonthInput(child.birth_year_month),
-    due_year_month: toYearMonthInput(child.due_year_month),
+    birth_year_month: child.birth_year_month
+      ? YearMonth.toYearMonthStringFromInput(child.birth_year_month)
+      : "",
+    due_year_month: child.due_year_month
+      ? YearMonth.toYearMonthStringFromInput(child.due_year_month)
+      : "",
     note: child.note ?? "",
   })),
 });
@@ -44,8 +48,12 @@ export const toFamilyPayload = (
   },
   children: value.children.map((child) => ({
     label: child.label,
-    birth_year_month: toOptionalMonthStartDate(child.birth_year_month),
-    due_year_month: toOptionalMonthStartDate(child.due_year_month),
+    birth_year_month: child.birth_year_month
+      ? YearMonth.toMonthStartDateFromInput(child.birth_year_month)
+      : null,
+    due_year_month: child.due_year_month
+      ? YearMonth.toMonthStartDateFromInput(child.due_year_month)
+      : null,
     note: child.note ?? null,
   })),
 });

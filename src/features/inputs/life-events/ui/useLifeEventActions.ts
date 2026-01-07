@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { createLifeEventAction } from "@/features/inputs/life-events/commands/create-life-event/action";
 import { deleteLifeEventAction } from "@/features/inputs/life-events/commands/delete-life-event/action";
-import { toMonthStartDate } from "@/features/inputs/shared/date";
 import {
   optionalNumericString,
   requiredNumericString,
@@ -21,6 +20,7 @@ import {
   LIFE_EVENT_CATEGORY_VALUES,
   type LifeEventCategory,
 } from "@/shared/domain/life-events/categories";
+import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
 import type { Tables } from "@/types/supabase";
 
 const requiredString = z.string().trim().min(1, { message: "必須項目です" });
@@ -180,7 +180,7 @@ export function useLifeEventActions(
       const response = await createLifeEventAction({
         label: parsed.label,
         amount: parsed.amount,
-        year_month: toMonthStartDate(parsed.year_month),
+        year_month: YearMonth.toMonthStartDateFromInput(parsed.year_month),
         repeat_interval_years: parsed.repeat_interval_years ?? null,
         stop_after_occurrences: parsed.stop_after_occurrences ?? null,
         stop_after_age: parsed.stop_after_age ?? null,

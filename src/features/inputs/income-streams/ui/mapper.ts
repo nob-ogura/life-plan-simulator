@@ -1,9 +1,5 @@
 import type { CreateIncomeStreamRequest } from "@/features/inputs/income-streams/commands/create-income-stream/request";
-import {
-  toMonthStartDate,
-  toOptionalMonthStartDate,
-  toYearMonthInput,
-} from "@/features/inputs/shared/date";
+import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
 import type { Tables } from "@/types/supabase";
 
 import type { BonusSectionInput } from "./bonus-schema";
@@ -19,8 +15,12 @@ export const buildIncomeSectionDefaults = (
     label: stream.label,
     take_home_monthly: toNumberInput(stream.take_home_monthly),
     raise_rate: toNumberInput(stream.raise_rate),
-    start_year_month: toYearMonthInput(stream.start_year_month),
-    end_year_month: toYearMonthInput(stream.end_year_month),
+    start_year_month: stream.start_year_month
+      ? YearMonth.toYearMonthStringFromInput(stream.start_year_month)
+      : "",
+    end_year_month: stream.end_year_month
+      ? YearMonth.toYearMonthStringFromInput(stream.end_year_month)
+      : "",
   })),
 });
 
@@ -32,7 +32,9 @@ export const buildBonusSectionDefaults = (
     label: stream.label,
     bonus_months: stream.bonus_months ?? [],
     bonus_amount: toNumberInput(stream.bonus_amount),
-    change_year_month: toYearMonthInput(stream.change_year_month),
+    change_year_month: stream.change_year_month
+      ? YearMonth.toYearMonthStringFromInput(stream.change_year_month)
+      : "",
     bonus_amount_after: toNumberInput(stream.bonus_amount_after),
   })),
 });
@@ -53,8 +55,10 @@ export const toIncomeStreamCreatePayloads = (
     change_year_month: null,
     bonus_amount_after: null,
     raise_rate: stream.raise_rate,
-    start_year_month: toMonthStartDate(stream.start_year_month),
-    end_year_month: toOptionalMonthStartDate(stream.end_year_month),
+    start_year_month: YearMonth.toMonthStartDateFromInput(stream.start_year_month),
+    end_year_month: stream.end_year_month
+      ? YearMonth.toMonthStartDateFromInput(stream.end_year_month)
+      : null,
   }));
 
 export const toIncomeStreamUpdatePayloads = (
@@ -64,6 +68,8 @@ export const toIncomeStreamUpdatePayloads = (
     label: stream.label,
     take_home_monthly: stream.take_home_monthly,
     raise_rate: stream.raise_rate,
-    start_year_month: toMonthStartDate(stream.start_year_month),
-    end_year_month: toOptionalMonthStartDate(stream.end_year_month),
+    start_year_month: YearMonth.toMonthStartDateFromInput(stream.start_year_month),
+    end_year_month: stream.end_year_month
+      ? YearMonth.toMonthStartDateFromInput(stream.end_year_month)
+      : null,
   }));

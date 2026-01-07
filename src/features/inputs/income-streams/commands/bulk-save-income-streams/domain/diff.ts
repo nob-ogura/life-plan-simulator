@@ -1,4 +1,4 @@
-import { toMonthStartDate, toOptionalMonthStartDate } from "@/features/inputs/shared/date";
+import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
 
 import type { BulkSaveIncomeStreamsRequest } from "../request";
 
@@ -43,16 +43,20 @@ const toCreatePayload = (stream: NormalizedIncomeStream): IncomeStreamInsertPayl
   change_year_month: null,
   bonus_amount_after: null,
   raise_rate: stream.raise_rate,
-  start_year_month: toMonthStartDate(stream.start_year_month),
-  end_year_month: toOptionalMonthStartDate(stream.end_year_month),
+  start_year_month: YearMonth.toMonthStartDateFromInput(stream.start_year_month),
+  end_year_month: stream.end_year_month
+    ? YearMonth.toMonthStartDateFromInput(stream.end_year_month)
+    : null,
 });
 
 const toUpdatePayload = (stream: NormalizedIncomeStream): IncomeStreamUpdatePayload => ({
   label: stream.label,
   take_home_monthly: stream.take_home_monthly,
   raise_rate: stream.raise_rate,
-  start_year_month: toMonthStartDate(stream.start_year_month),
-  end_year_month: toOptionalMonthStartDate(stream.end_year_month),
+  start_year_month: YearMonth.toMonthStartDateFromInput(stream.start_year_month),
+  end_year_month: stream.end_year_month
+    ? YearMonth.toMonthStartDateFromInput(stream.end_year_month)
+    : null,
 });
 
 export const diffIncomeStreams = (params: {
