@@ -1,3 +1,5 @@
+import { toMonthStartDate, toOptionalMonthStartDate } from "@/features/inputs/shared/date";
+
 import type { BulkSaveIncomeStreamsRequest } from "../request";
 
 type NormalizedIncomeStream = BulkSaveIncomeStreamsRequest["streams"][number];
@@ -32,11 +34,6 @@ export type IncomeStreamDiff = {
   createPayloadsForInsert: IncomeStreamInsertPayload[];
   updatePayloadsForUpdate: IncomeStreamUpdateItem[];
 };
-
-const toMonthStartDate = (value: string) => (value.length === 7 ? `${value}-01` : value);
-
-const toOptionalMonthStartDate = (value?: string | null) =>
-  value ? toMonthStartDate(value) : null;
 
 const toCreatePayload = (stream: NormalizedIncomeStream): IncomeStreamInsertPayload => ({
   label: stream.label,
