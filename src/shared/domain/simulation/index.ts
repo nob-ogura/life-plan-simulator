@@ -26,5 +26,5 @@ export type {
   SimulationRental,
   SimulationResult,
   SimulationSettings,
-  YearMonth,
+  YearMonthString,
 } from "./types";

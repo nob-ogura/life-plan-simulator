@@ -1,5 +1,5 @@
 import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
-import type { SimulationProfile, YearMonth as YearMonthString } from "./types";
+import type { SimulationProfile, YearMonthString } from "./types";
 
 export type TimelineMonth = {
   yearMonth: YearMonthString;

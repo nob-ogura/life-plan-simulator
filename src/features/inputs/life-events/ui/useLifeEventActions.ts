@@ -8,6 +8,11 @@ import { z } from "zod";
 import { createLifeEventAction } from "@/features/inputs/life-events/commands/create-life-event/action";
 import { deleteLifeEventAction } from "@/features/inputs/life-events/commands/delete-life-event/action";
 import { toMonthStartDate } from "@/features/inputs/shared/date";
+import {
+  optionalNumericString,
+  requiredNumericString,
+  requiredYearMonth,
+} from "@/features/inputs/shared/form-utils";
 import { zodResolver } from "@/lib/zod-resolver";
 import { UI_TEXT } from "@/shared/constants/messages";
 import {
@@ -18,27 +23,7 @@ import {
 } from "@/shared/domain/life-events/categories";
 import type { Tables } from "@/types/supabase";
 
-const YEAR_MONTH_REGEX = /^\d{4}-(0[1-9]|1[0-2])$/;
-
 const requiredString = z.string().trim().min(1, { message: "必須項目です" });
-
-const requiredNumericString = z
-  .string()
-  .trim()
-  .min(1, { message: "必須項目です" })
-  .refine((value) => !Number.isNaN(Number(value)), {
-    message: "数値で入力してください",
-  })
-  .transform((value) => Number(value));
-
-const optionalNumericString = z
-  .string()
-  .optional()
-  .transform((value) => (value ?? "").trim())
-  .refine((value) => value === "" || !Number.isNaN(Number(value)), {
-    message: "数値で入力してください",
-  })
-  .transform((value) => (value === "" ? undefined : Number(value)));
 
 const optionalIntegerString = z
   .string()
@@ -62,14 +47,6 @@ const optionalAgeInteger = optionalIntegerString.refine(
     message: "0〜120の整数で入力してください",
   },
 );
-
-const requiredYearMonth = z
-  .string()
-  .trim()
-  .min(1, { message: "必須項目です" })
-  .refine((value) => YEAR_MONTH_REGEX.test(value), {
-    message: "YYYY-MM 形式で入力してください",
-  });
 
 const lifeEventCategorySchema = z.enum(LIFE_EVENT_CATEGORY_VALUES);
 

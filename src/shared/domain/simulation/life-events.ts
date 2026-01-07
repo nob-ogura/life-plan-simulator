@@ -4,7 +4,7 @@ import type {
   SimulationLifeEvent,
   SimulationProfile,
   SimulationSettings,
-  YearMonth as YearMonthString,
+  YearMonthString,
 } from "./types";
 
 export type HousingPurchaseMetrics = {

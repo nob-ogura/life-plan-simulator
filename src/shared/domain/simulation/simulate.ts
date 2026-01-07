@@ -15,7 +15,7 @@ import type {
   SimulationLifeEvent,
   SimulationRental,
   SimulationResult,
-  YearMonth as YearMonthString,
+  YearMonthString,
 } from "./types";
 
 type TimelineMonth = ReturnType<typeof generateMonthlyTimeline>[number];

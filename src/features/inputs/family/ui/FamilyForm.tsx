@@ -21,6 +21,7 @@ import { upsertProfileAction } from "@/features/inputs/profiles/commands/upsert-
 import { zodResolver } from "@/lib/zod-resolver";
 import { UI_TEXT } from "@/shared/constants/messages";
 import { useAuth } from "@/shared/cross-cutting/auth";
+import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
 import { toFamilyPayload } from "./mapper";
 import { type FamilySectionInput, type FamilySectionPayload, FamilySectionSchema } from "./schema";
 
@@ -33,9 +34,10 @@ const toYearMonthSortKey = (value?: string | null) => {
   if (!value) {
     return Number.POSITIVE_INFINITY;
   }
-  const normalized = value.replace("-", "");
-  const numeric = Number(normalized);
-  return Number.isNaN(numeric) ? Number.POSITIVE_INFINITY : numeric;
+  if (!YearMonth.validate(value)) {
+    return Number.POSITIVE_INFINITY;
+  }
+  return YearMonth.create(value).toElapsedMonths();
 };
 
 const sortChildrenByBirthYearMonth = (children: NonNullable<FamilySectionInput["children"]> = []) =>

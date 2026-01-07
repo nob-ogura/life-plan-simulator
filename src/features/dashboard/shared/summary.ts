@@ -1,4 +1,4 @@
-import type { SimulationMonthlyResult, YearMonth } from "@/shared/domain/simulation";
+import type { SimulationMonthlyResult, YearMonthString } from "@/shared/domain/simulation";
 
 type DashboardSummaryMetrics = {
   cumulativeCashflow: number;
@@ -22,5 +22,5 @@ export const calculateSummaryMetrics = (
   return { cumulativeCashflow, averageMonthlyBalance };
 };
 
-export const findDepletionYearMonth = (months: SimulationMonthlyResult[]): YearMonth | null =>
+export const findDepletionYearMonth = (months: SimulationMonthlyResult[]): YearMonthString | null =>
   months.find((month) => month.totalBalance < 0)?.yearMonth ?? null;

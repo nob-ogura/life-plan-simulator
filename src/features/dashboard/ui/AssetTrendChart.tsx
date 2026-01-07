@@ -2,11 +2,11 @@
 
 import { useId, useMemo } from "react";
 
-import type { SimulationMonthlyResult, YearMonth } from "@/shared/domain/simulation";
+import type { SimulationMonthlyResult, YearMonthString } from "@/shared/domain/simulation";
 
 type AssetTrendChartProps = {
   months: SimulationMonthlyResult[];
-  depletionYearMonth?: YearMonth | null;
+  depletionYearMonth?: YearMonthString | null;
 };
 
 type ChartPoint = {

@@ -1,6 +1,6 @@
 import type { Tables } from "@/types/supabase";
 
-export type YearMonth = string;
+export type YearMonthString = string;
 
 export type SimulationProfile = Pick<
   Tables<"profiles">,
@@ -73,7 +73,7 @@ export type SimulationLifeEvent = Pick<
 >;
 
 export type SimulationInput = {
-  currentYearMonth: YearMonth;
+  currentYearMonth: YearMonthString;
   profiles: SimulationProfile;
   simulationSettings: SimulationSettings;
   children: SimulationChild[];
@@ -86,7 +86,7 @@ export type SimulationInput = {
 };
 
 export type SimulationMonthlyResult = {
-  yearMonth: YearMonth;
+  yearMonth: YearMonthString;
   age: number;
   spouseAge: number | null;
   totalIncome: number;
@@ -99,5 +99,5 @@ export type SimulationMonthlyResult = {
 
 export type SimulationResult = {
   months: SimulationMonthlyResult[];
-  depletionYearMonth: YearMonth | null;
+  depletionYearMonth: YearMonthString | null;
 };
