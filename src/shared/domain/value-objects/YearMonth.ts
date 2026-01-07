@@ -115,6 +115,14 @@ export class YearMonth {
     return new YearMonth(parseYearMonth(`${yearText}-${monthText}`));
   }
 
+  static tryFromParts(year: number, month: number): YearMonth | null {
+    try {
+      return YearMonth.fromParts(year, month);
+    } catch {
+      return null;
+    }
+  }
+
   static fromElapsedMonths(elapsedMonths: number): YearMonth {
     return new YearMonth(fromElapsedMonths(elapsedMonths));
   }
@@ -131,6 +139,28 @@ export class YearMonth {
   static toYearMonthStringFromInput(value: string): string {
     const yearMonth = YearMonth.tryFromISOString(value);
     return yearMonth ? yearMonth.toString() : value.slice(0, 7);
+  }
+
+  static formatJapaneseFromInput(value: string): string {
+    const normalized = YearMonth.toYearMonthStringFromInput(value);
+    if (YearMonth.validate(normalized)) {
+      return YearMonth.create(normalized).toJapanese();
+    }
+    const [year, month] = normalized.split("-");
+    if (!year || !month) {
+      return value;
+    }
+    return `${year}\u5e74${month}\u6708`;
+  }
+
+  static formatJapaneseFromParts(year: number, month: number): string {
+    const yearMonth = YearMonth.tryFromParts(year, month);
+    if (yearMonth) {
+      return yearMonth.toJapanese();
+    }
+    const yearText = String(year).padStart(4, "0");
+    const monthText = String(month).padStart(2, "0");
+    return `${yearText}\u5e74${monthText}\u6708`;
   }
 
   static toMonthStartDateFromInput(value: string): string {

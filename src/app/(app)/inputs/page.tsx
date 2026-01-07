@@ -62,14 +62,8 @@ const emptyData: InputsData = {
 const formatYearMonth = (year?: number | null, month?: number | null) =>
   formatValueOrFallback(
     year == null || month == null ? null : { year, month },
-    ({ year: safeYear, month: safeMonth }) => {
-      const monthText = String(safeMonth).padStart(2, "0");
-      const value = `${safeYear}-${monthText}`;
-      if (!YearMonth.validate(value)) {
-        return `${safeYear}年${monthText}月`;
-      }
-      return YearMonth.create(value).toJapanese();
-    },
+    ({ year: safeYear, month: safeMonth }) =>
+      YearMonth.formatJapaneseFromParts(safeYear, safeMonth),
   );
 
 const formatCount = (count: number, unit: string = UI_TEXT.UNIT_COUNT) =>
@@ -80,7 +74,7 @@ const formatRegistered = (count: number) =>
 
 const formatAmount = (value?: number | null) =>
   formatValueOrFallback(value, (safeValue) => {
-    return `${Money.of(safeValue).format()}円`;
+    return Money.of(safeValue).formatYen();
   });
 
 const formatNumber = (value?: number | null, suffix = "") =>

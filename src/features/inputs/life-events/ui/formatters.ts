@@ -13,19 +13,12 @@ export const categoryLabels = new Map<string, string>(LIFE_EVENT_CATEGORY_LABELS
 export const formatYearMonth = (value?: string | null) =>
   formatValueOrFallback(
     value,
-    (safeValue) => {
-      const normalized = YearMonth.toYearMonthStringFromInput(safeValue);
-      if (!YearMonth.validate(normalized)) {
-        const [year, month] = normalized.split("-");
-        return `${year}年${month}月`;
-      }
-      return YearMonth.create(normalized).toJapanese();
-    },
+    (safeValue) => YearMonth.formatJapaneseFromInput(safeValue),
     undefined,
     (safeValue) => safeValue.trim().length === 0,
   );
 
-export const formatAmount = (amount: number) => `${Money.of(amount).format()}円`;
+export const formatAmount = (amount: number) => Money.of(amount).formatYen();
 
 export const formatRepeat = (event: Tables<"life_events">) => {
   const interval = event.repeat_interval_years ?? null;

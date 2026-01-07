@@ -44,7 +44,7 @@ const CASHFLOW_ROW_HEIGHT = 44;
 const CASHFLOW_VIEWPORT_HEIGHT = 320;
 const CASHFLOW_OVERSCAN = 6;
 
-const formatAmount = (value: number) => `${Money.of(Math.round(value)).format()}円`;
+const formatAmount = (value: number) => Money.of(value).formatYen();
 
 export function DashboardSimulationView({ months }: DashboardSimulationViewProps) {
   const [displayRange, setDisplayRange] = useState<DashboardDisplayRange>(DEFAULT_DISPLAY_RANGE);
