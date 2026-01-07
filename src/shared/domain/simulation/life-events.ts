@@ -1,9 +1,10 @@
-import { addMonths, calculateAgeAtYearMonth, yearMonthToElapsedMonths } from "./timeline";
+import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
+import { calculateAgeAtYearMonth } from "./timeline";
 import type {
   SimulationLifeEvent,
   SimulationProfile,
   SimulationSettings,
-  YearMonth,
+  YearMonth as YearMonthString,
 } from "./types";
 
 export type HousingPurchaseMetrics = {
@@ -81,12 +82,12 @@ export const expandLifeEvents = ({
   profile,
 }: {
   lifeEvents: SimulationLifeEvent[];
-  startYearMonth: YearMonth;
-  endYearMonth: YearMonth;
+  startYearMonth: YearMonthString;
+  endYearMonth: YearMonthString;
   profile: SimulationProfile;
 }): SimulationLifeEvent[] => {
-  const startIndex = yearMonthToElapsedMonths(startYearMonth);
-  const endIndex = yearMonthToElapsedMonths(endYearMonth);
+  const startIndex = YearMonth.create(startYearMonth).toElapsedMonths();
+  const endIndex = YearMonth.create(endYearMonth).toElapsedMonths();
   const expanded: SimulationLifeEvent[] = [];
   const birthYear = profile.birth_year;
   const birthMonth = profile.birth_month;
@@ -97,10 +98,10 @@ export const expandLifeEvents = ({
     const stopAfter = event.stop_after_occurrences;
     const stopAfterAge = event.stop_after_age;
     let occurrences = 0;
-    let currentYearMonth = event.year_month;
+    let currentYearMonth = YearMonth.create(event.year_month);
 
     while (true) {
-      const currentIndex = yearMonthToElapsedMonths(currentYearMonth);
+      const currentIndex = currentYearMonth.toElapsedMonths();
       if (currentIndex > endIndex) {
         break;
       }
@@ -108,14 +109,14 @@ export const expandLifeEvents = ({
         if (birthYear == null || birthMonth == null) {
           throw new Error("Profile birth year/month is required to apply stop_after_age.");
         }
-        const age = calculateAgeAtYearMonth(currentYearMonth, birthYear, birthMonth);
+        const age = calculateAgeAtYearMonth(currentYearMonth.toString(), birthYear, birthMonth);
         if (age != null && age > stopAfterAge) {
           break;
         }
       }
       occurrences += 1;
       if (currentIndex >= startIndex) {
-        expanded.push({ ...event, year_month: currentYearMonth });
+        expanded.push({ ...event, year_month: currentYearMonth.toString() });
       }
       if (intervalMonths == null || intervalMonths <= 0) {
         break;
@@ -123,12 +124,13 @@ export const expandLifeEvents = ({
       if (stopAfter != null && occurrences >= stopAfter) {
         break;
       }
-      currentYearMonth = addMonths(currentYearMonth, intervalMonths);
+      currentYearMonth = currentYearMonth.addMonths(intervalMonths);
     }
   }
 
   return expanded.sort(
     (left, right) =>
-      yearMonthToElapsedMonths(left.year_month) - yearMonthToElapsedMonths(right.year_month),
+      YearMonth.create(left.year_month).toElapsedMonths() -
+      YearMonth.create(right.year_month).toElapsedMonths(),
   );
 };

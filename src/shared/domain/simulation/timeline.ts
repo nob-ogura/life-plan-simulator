@@ -1,48 +1,23 @@
-import type { SimulationProfile, YearMonth } from "./types";
+import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
+import type { SimulationProfile, YearMonth as YearMonthString } from "./types";
 
 export type TimelineMonth = {
-  yearMonth: YearMonth;
+  yearMonth: YearMonthString;
   age: number;
   spouseAge: number | null;
 };
 
-const parseYearMonth = (yearMonth: YearMonth): { year: number; month: number } => {
-  const match = /^(\d{4})-(\d{2})$/.exec(yearMonth);
-  if (!match) {
-    throw new Error(`Invalid year-month format: ${yearMonth}`);
-  }
-  const yearText = match[1];
-  const monthText = match[2];
-  if (!yearText || !monthText) {
-    throw new Error(`Invalid year-month format: ${yearMonth}`);
-  }
-  const year = Number.parseInt(yearText, 10);
-  const month = Number.parseInt(monthText, 10);
-  if (month < 1 || month > 12) {
-    throw new Error(`Invalid month in year-month: ${yearMonth}`);
-  }
-  return { year, month };
-};
+export const yearMonthToElapsedMonths = (yearMonth: YearMonthString): number =>
+  YearMonth.create(yearMonth).toElapsedMonths();
 
-export const yearMonthToElapsedMonths = (yearMonth: YearMonth): number => {
-  const { year, month } = parseYearMonth(yearMonth);
-  return year * 12 + (month - 1);
-};
+export const elapsedMonthsToYearMonth = (elapsedMonths: number): YearMonthString =>
+  YearMonth.fromElapsedMonths(elapsedMonths).toString();
 
-export const elapsedMonthsToYearMonth = (elapsedMonths: number): YearMonth => {
-  const year = Math.floor(elapsedMonths / 12);
-  const monthIndex = elapsedMonths - year * 12;
-  const month = monthIndex + 1;
-  const yearText = String(year).padStart(4, "0");
-  const monthText = String(month).padStart(2, "0");
-  return `${yearText}-${monthText}`;
-};
-
-export const addMonths = (yearMonth: YearMonth, deltaMonths: number): YearMonth =>
-  elapsedMonthsToYearMonth(yearMonthToElapsedMonths(yearMonth) + deltaMonths);
+export const addMonths = (yearMonth: YearMonthString, deltaMonths: number): YearMonthString =>
+  YearMonth.create(yearMonth).addMonths(deltaMonths).toString();
 
 export const calculateAgeAtYearMonth = (
-  yearMonth: YearMonth,
+  yearMonth: YearMonthString,
   birthYear: number | null,
   birthMonth: number | null,
 ): number | null => {
@@ -50,7 +25,9 @@ export const calculateAgeAtYearMonth = (
     return null;
   }
 
-  const { year, month } = parseYearMonth(yearMonth);
+  const target = YearMonth.create(yearMonth);
+  const year = target.getYear();
+  const month = target.getMonth();
   const hasBirthdayPassed = month >= birthMonth;
   return year - birthYear - (hasBirthdayPassed ? 0 : 1);
 };
@@ -61,7 +38,7 @@ export const generateMonthlyTimeline = ({
   endAge = 100,
   profile,
 }: {
-  currentYearMonth: YearMonth;
+  currentYearMonth: YearMonthString;
   startOffsetMonths: number;
   endAge?: number;
   profile: SimulationProfile;
@@ -73,9 +50,11 @@ export const generateMonthlyTimeline = ({
     throw new Error("Profile birth month must be between 1 and 12.");
   }
 
-  const startYearMonth = addMonths(currentYearMonth, startOffsetMonths);
-  const startIndex = yearMonthToElapsedMonths(startYearMonth);
-  const endIndex = (profile.birth_year + endAge) * 12 + (profile.birth_month - 1);
+  const startYearMonth = YearMonth.create(currentYearMonth).addMonths(startOffsetMonths);
+  const startIndex = startYearMonth.toElapsedMonths();
+  const endYearText = String(profile.birth_year + endAge).padStart(4, "0");
+  const endMonthText = String(profile.birth_month).padStart(2, "0");
+  const endIndex = YearMonth.create(`${endYearText}-${endMonthText}`).toElapsedMonths();
 
   if (startIndex > endIndex) {
     return [];
@@ -84,18 +63,19 @@ export const generateMonthlyTimeline = ({
   const timeline: TimelineMonth[] = [];
 
   for (let index = startIndex; index <= endIndex; index += 1) {
-    const yearMonth = elapsedMonthsToYearMonth(index);
-    const age = calculateAgeAtYearMonth(yearMonth, profile.birth_year, profile.birth_month);
+    const yearMonth = YearMonth.fromElapsedMonths(index);
+    const yearMonthValue = yearMonth.toString();
+    const age = calculateAgeAtYearMonth(yearMonthValue, profile.birth_year, profile.birth_month);
     if (age == null) {
       continue;
     }
     const spouseAge = calculateAgeAtYearMonth(
-      yearMonth,
+      yearMonthValue,
       profile.spouse_birth_year,
       profile.spouse_birth_month,
     );
 
-    timeline.push({ yearMonth, age, spouseAge });
+    timeline.push({ yearMonth: yearMonthValue, age, spouseAge });
   }
 
   return timeline;

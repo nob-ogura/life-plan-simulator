@@ -26,11 +26,24 @@ export class Money {
     return formatter.format(this.value);
   }
 
+  isNegative(): boolean {
+    return this.value < 0;
+  }
+
+  abs(): Money {
+    return new Money(Math.abs(this.value));
+  }
+
   add(other: Money): Money {
     return new Money(this.value + other.value);
   }
 
   minus(other: Money): Money {
     return new Money(this.value - other.value);
+  }
+
+  multiply(factor: number): Money {
+    assertFiniteNumber(factor);
+    return new Money(this.value * factor);
   }
 }

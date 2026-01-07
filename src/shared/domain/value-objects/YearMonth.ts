@@ -60,6 +60,10 @@ export class YearMonth {
     return new YearMonth(parseYearMonth(value));
   }
 
+  static fromElapsedMonths(elapsedMonths: number): YearMonth {
+    return new YearMonth(fromElapsedMonths(elapsedMonths));
+  }
+
   static validate(value: string): boolean {
     try {
       parseYearMonth(value);
@@ -75,6 +79,18 @@ export class YearMonth {
 
   toJSON(): string {
     return this.value;
+  }
+
+  getYear(): number {
+    return this.year;
+  }
+
+  getMonth(): number {
+    return this.month;
+  }
+
+  toElapsedMonths(): number {
+    return this.elapsedMonths;
   }
 
   toJapanese(): string {
