@@ -1,11 +1,9 @@
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-
+import { AuthProvider } from "@/shared/cross-cutting/auth/AuthProvider";
+import { useAuth } from "@/shared/cross-cutting/auth/useAuth";
 import { createMockSession, createMockUser } from "@/test/factories/auth";
-
-import { AuthProvider } from "./AuthProvider";
-import { useAuth } from "./useAuth";
 
 const { getSession, signInWithOAuth, signOut, onAuthStateChange, emitAuthChange, resetAuthMocks } =
   vi.hoisted(() => {

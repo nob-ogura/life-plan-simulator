@@ -11,8 +11,10 @@ import {
 
 import { cn } from "@/lib/utils";
 
+// Root
 const Form = FormProvider;
 
+// Field Context
 type FormFieldContextValue<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
@@ -34,6 +36,7 @@ const FormField = <
   </FormFieldContext.Provider>
 );
 
+// Item Context
 type FormItemContextValue = {
   id: string;
 };
@@ -53,6 +56,7 @@ const FormItem = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivEl
 
 FormItem.displayName = "FormItem";
 
+// Hook
 const useFormField = () => {
   const fieldContext = React.useContext(FormFieldContext);
   const itemContext = React.useContext(FormItemContext);
@@ -75,6 +79,7 @@ const useFormField = () => {
   };
 };
 
+// UI
 const FormLabel = React.forwardRef<HTMLLabelElement, React.LabelHTMLAttributes<HTMLLabelElement>>(
   ({ className, children, ...props }, ref) => {
     const { formItemId } = useFormField();
@@ -137,4 +142,5 @@ const FormMessage = React.forwardRef<
 
 FormMessage.displayName = "FormMessage";
 
+// Exports
 export { Form, FormControl, FormField, FormItem, FormLabel, FormMessage };

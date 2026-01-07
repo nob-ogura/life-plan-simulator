@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
-
+import {
+  calculateSummaryMetrics,
+  findDepletionYearMonth,
+} from "@/features/dashboard/shared/summary";
 import type { SimulationMonthlyResult } from "@/shared/domain/simulation";
-
-import { calculateSummaryMetrics, findDepletionYearMonth } from "./summary";
 
 const createMonth = (
   overrides: Partial<SimulationMonthlyResult> & Pick<SimulationMonthlyResult, "yearMonth">,

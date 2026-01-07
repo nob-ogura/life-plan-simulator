@@ -1,9 +1,9 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { AuthContextValue } from "@/shared/cross-cutting/auth";
+import { RequireAuth } from "@/shared/cross-cutting/auth/RequireAuth";
+import { useAuth } from "@/shared/cross-cutting/auth/useAuth";
 import { createMockSession, createMockUser } from "@/test/factories/auth";
-import { RequireAuth } from "./RequireAuth";
-import { useAuth } from "./useAuth";
 
 const { replace, getPathname, getSearchParams, setPathname, setSearchParams } = vi.hoisted(() => {
   let pathname = "/inputs";
@@ -28,7 +28,7 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => getSearchParams(),
 }));
 
-vi.mock("./useAuth", () => ({
+vi.mock("@/shared/cross-cutting/auth/useAuth", () => ({
   useAuth: vi.fn(),
 }));
 

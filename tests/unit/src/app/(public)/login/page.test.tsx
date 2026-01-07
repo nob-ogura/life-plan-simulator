@@ -1,9 +1,9 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import LoginPage from "@/app/(public)/login/page";
 import type { AuthContextValue } from "@/shared/cross-cutting/auth";
 import { useAuth } from "@/shared/cross-cutting/auth";
 import { createMockSession, createMockUser } from "@/test/factories/auth";
-import LoginPage from "./page";
 
 const { replace, login, getSearchParams, setSearchParams } = vi.hoisted(() => {
   let searchParams = "";

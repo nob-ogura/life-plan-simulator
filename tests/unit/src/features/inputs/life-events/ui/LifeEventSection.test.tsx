@@ -1,9 +1,9 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { LifeEventSection } from "@/features/inputs/life-events/ui/LifeEventSection";
 import { UI_TEXT } from "@/shared/constants/messages";
 import type { LifeEventCategory } from "@/shared/domain/life-events/categories";
 import type { Tables } from "@/types/supabase";
-import { LifeEventSection } from "./LifeEventSection";
 
 const { refresh } = vi.hoisted(() => ({
   refresh: vi.fn(),

@@ -1,12 +1,11 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { SimulationForm } from "@/features/inputs/simulation/ui/SimulationForm";
 import { UI_TEXT } from "@/shared/constants/messages";
 import type { AuthContextValue } from "@/shared/cross-cutting/auth";
 import { useAuth } from "@/shared/cross-cutting/auth";
 import { createMockSession, createMockUser } from "@/test/factories/auth";
 import type { Tables } from "@/types/supabase";
-
-import { SimulationForm } from "./SimulationForm";
 
 const { refresh } = vi.hoisted(() => ({
   refresh: vi.fn(),

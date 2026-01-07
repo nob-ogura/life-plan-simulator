@@ -116,6 +116,9 @@ pnpm supabase:gen-types
 
 ## リポジトリ構成
 
+本プロジェクトでは **Vertical Slice Architecture (VSA)** を採用しています。
+機能ごとに UI・ロジック・データアクセスを凝集させることで、変更の影響範囲を最小化し、AI 支援開発におけるコンテキスト制御（レビュー/生成時のスコープ分離）を容易にしています。
+
 - `src/app`: App Router のページ/ルートハンドラ。
 - `src/features`: ドメイン単位の UI/ロジック。
 - `src/components`: 再利用 UI コンポーネント。
