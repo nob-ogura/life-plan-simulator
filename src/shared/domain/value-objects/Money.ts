@@ -71,6 +71,13 @@ export class Money {
     return new Money(this.value - other.value);
   }
 
+  ratio(other: Money): number {
+    if (other.value === 0) {
+      throw new Error("Money divisor must not be zero.");
+    }
+    return this.value / other.value;
+  }
+
   multiply(factor: number): Money {
     assertFiniteNumber(factor);
     return new Money(this.value * factor);

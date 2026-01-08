@@ -6,7 +6,7 @@ import {
 import { Money } from "@/shared/domain/value-objects/Money";
 import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
 import { deriveHousingPurchaseMetrics, expandLifeEvents } from "./life-events";
-import { addMonths, generateMonthlyTimeline } from "./timeline";
+import { generateMonthlyTimeline } from "./timeline";
 import type {
   SimulationAsset,
   SimulationExpense,
@@ -59,19 +59,6 @@ const isYearMonthWithinRange = (
   return !target.isAfter(YearMonth.create(end));
 };
 
-const elapsedYearsSince = (yearMonth: YearMonthString, start: YearMonthString): number => {
-  const target = YearMonth.create(yearMonth);
-  const startValue = YearMonth.create(start);
-  const elapsedMonths = Math.max(0, target.toElapsedMonths() - startValue.toElapsedMonths());
-  return Math.floor(elapsedMonths / 12);
-};
-
-const minYearMonth = (left: YearMonthString, right: YearMonthString): YearMonthString => {
-  const leftValue = YearMonth.create(left);
-  const rightValue = YearMonth.create(right);
-  return leftValue.isAfter(rightValue) ? right : left;
-};
-
 const isBonusMonth = (yearMonth: YearMonthString, bonusMonths: number[]): boolean =>
   bonusMonths.includes(YearMonth.create(yearMonth).getMonth());
 
@@ -101,7 +88,9 @@ const calculateIncomeForStream = (
   if (!isYearMonthWithinRange(yearMonth, stream.start_year_month, stream.end_year_month)) {
     return Money.of(0);
   }
-  const elapsedYears = elapsedYearsSince(yearMonth, stream.start_year_month);
+  const elapsedYears = YearMonth.create(yearMonth).elapsedYearsSince(
+    YearMonth.create(stream.start_year_month),
+  );
   const baseIncome = Money.of(stream.take_home_monthly).multiply(
     (1 + stream.raise_rate) ** elapsedYears,
   );
@@ -112,7 +101,9 @@ const calculateExpenseForItem = (expense: SimulationExpense, yearMonth: YearMont
   if (!isYearMonthWithinRange(yearMonth, expense.start_year_month, expense.end_year_month)) {
     return Money.of(0);
   }
-  const elapsedYears = elapsedYearsSince(yearMonth, expense.start_year_month);
+  const elapsedYears = YearMonth.create(yearMonth).elapsedYearsSince(
+    YearMonth.create(expense.start_year_month),
+  );
   const inflationRate = expense.inflation_rate ?? 0;
   return Money.of(expense.amount_monthly).multiply((1 + inflationRate) ** elapsedYears);
 };
@@ -120,24 +111,19 @@ const calculateExpenseForItem = (expense: SimulationExpense, yearMonth: YearMont
 const STOP_RENT_AUTO_TOGGLE_KEY = "HOUSING_PURCHASE_STOP_RENT";
 
 const getRentalStopMonth = (lifeEvents: SimulationLifeEvent[]): YearMonthString | null => {
-  let earliestEventMonth: YearMonthString | null = null;
-  for (const event of lifeEvents) {
-    if (event.auto_toggle_key !== STOP_RENT_AUTO_TOGGLE_KEY) {
-      continue;
-    }
-    if (!isHousingPurchase(event.category as LifeEventCategory)) {
-      continue;
-    }
-    if (earliestEventMonth == null) {
-      earliestEventMonth = event.year_month;
-    } else if (YearMonth.create(event.year_month).isBefore(YearMonth.create(earliestEventMonth))) {
-      earliestEventMonth = event.year_month;
-    }
-  }
-  if (earliestEventMonth == null) {
+  const stopEventMonths = lifeEvents
+    .filter(
+      (event) =>
+        event.auto_toggle_key === STOP_RENT_AUTO_TOGGLE_KEY &&
+        isHousingPurchase(event.category as LifeEventCategory),
+    )
+    .map((event) => YearMonth.create(event.year_month));
+  if (stopEventMonths.length === 0) {
     return null;
   }
-  return addMonths(earliestEventMonth, -1);
+  return YearMonth.min(...stopEventMonths)
+    .addMonths(-1)
+    .toString();
 };
 
 const applyAutoToggleToRentals = (
@@ -150,7 +136,12 @@ const applyAutoToggleToRentals = (
   }
   return rentals.map((rental) => {
     const effectiveEnd =
-      rental.end_year_month == null ? stopMonth : minYearMonth(stopMonth, rental.end_year_month);
+      rental.end_year_month == null
+        ? stopMonth
+        : YearMonth.min(
+            YearMonth.create(stopMonth),
+            YearMonth.create(rental.end_year_month),
+          ).toString();
     if (effectiveEnd === rental.end_year_month) {
       return rental;
     }
@@ -207,7 +198,7 @@ const aggregateAssets = (assets: SimulationAsset[]) => {
       sum.add(Money.of(asset.investment_balance ?? 0).multiply(asset.return_rate ?? 0)),
     Money.of(0),
   );
-  const weightedReturn = weightedNumerator.toNumber() / totalInvestment.toNumber();
+  const weightedReturn = weightedNumerator.ratio(totalInvestment);
   return {
     cashBalance: totalCash,
     investmentBalance: totalInvestment,

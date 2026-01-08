@@ -1,7 +1,7 @@
+import { Money } from "@/shared/domain/value-objects/Money";
 import { expect, test } from "./fixtures";
 
-const formatAmount = (value: number) =>
-  `${new Intl.NumberFormat("ja-JP").format(Math.round(value))}円`;
+const formatAmount = (value: number) => Money.of(value).formatYen();
 
 test("housing purchase stops rent in the month before purchase", async ({
   authenticatedPage: page,

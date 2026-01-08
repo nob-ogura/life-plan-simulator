@@ -127,6 +127,17 @@ export class YearMonth {
     return new YearMonth(fromElapsedMonths(elapsedMonths));
   }
 
+  static min(...values: YearMonth[]): YearMonth {
+    const [first, ...rest] = values;
+    if (!first) {
+      throw new Error("YearMonth.min requires at least one value.");
+    }
+    return rest.reduce(
+      (currentMin, value) => (value.isBefore(currentMin) ? value : currentMin),
+      first,
+    );
+  }
+
   static validate(value: string): boolean {
     try {
       parseYearMonth(value);
@@ -204,6 +215,18 @@ export class YearMonth {
 
   equals(other: YearMonth): boolean {
     return this.value === other.value;
+  }
+
+  diffYears(other: YearMonth): number {
+    return Math.trunc((this.elapsedMonths - other.elapsedMonths) / 12);
+  }
+
+  elapsedYearsSince(other: YearMonth): number {
+    const diffMonths = this.elapsedMonths - other.elapsedMonths;
+    if (diffMonths <= 0) {
+      return 0;
+    }
+    return Math.floor(diffMonths / 12);
   }
 
   isBefore(other: YearMonth): boolean {
