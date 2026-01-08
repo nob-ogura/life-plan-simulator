@@ -6,12 +6,7 @@ export {
 } from "./life-events";
 export { simulateLifePlan } from "./simulate";
 export type { TimelineMonth } from "./timeline";
-export {
-  addMonths,
-  elapsedMonthsToYearMonth,
-  generateMonthlyTimeline,
-  yearMonthToElapsedMonths,
-} from "./timeline";
+export { generateMonthlyTimeline } from "./timeline";
 export type {
   SimulationAsset,
   SimulationChild,
@@ -20,12 +15,10 @@ export type {
   SimulationExpenseDomain,
   SimulationIncomeStream,
   SimulationIncomeStreamDomain,
-  SimulationInput,
   SimulationInputDomain,
   SimulationInputDto,
   SimulationLifeEvent,
   SimulationLifeEventDomain,
-  SimulationMonthlyResult,
   SimulationMonthlyResultDomain,
   SimulationMonthlyResultDto,
   SimulationMortgage,
@@ -33,7 +26,6 @@ export type {
   SimulationProfile,
   SimulationRental,
   SimulationRentalDomain,
-  SimulationResult,
   SimulationResultDomain,
   SimulationResultDto,
   SimulationSettings,

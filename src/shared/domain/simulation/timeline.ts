@@ -8,15 +8,6 @@ export type TimelineMonth = {
   spouseAge: number | null;
 };
 
-export const yearMonthToElapsedMonths = (yearMonth: YearMonth): number =>
-  yearMonth.toElapsedMonths();
-
-export const elapsedMonthsToYearMonth = (elapsedMonths: number): YearMonth =>
-  YearMonth.fromElapsedMonths(elapsedMonths);
-
-export const addMonths = (yearMonth: YearMonth, deltaMonths: number): YearMonth =>
-  yearMonth.addMonths(deltaMonths);
-
 export const generateMonthlyTimeline = ({
   currentYearMonth,
   startOffsetMonths,

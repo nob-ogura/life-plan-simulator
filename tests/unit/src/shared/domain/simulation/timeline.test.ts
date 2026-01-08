@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  addMonths,
-  elapsedMonthsToYearMonth,
-  generateMonthlyTimeline,
-  yearMonthToElapsedMonths,
-} from "@/shared/domain/simulation";
+import { generateMonthlyTimeline } from "@/shared/domain/simulation";
 import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
 
 describe("year-month utilities", () => {
@@ -13,15 +8,15 @@ describe("year-month utilities", () => {
 
     for (const sample of samples) {
       const yearMonth = YearMonth.create(sample);
-      expect(elapsedMonthsToYearMonth(yearMonthToElapsedMonths(yearMonth)).toString()).toBe(sample);
+      expect(YearMonth.fromElapsedMonths(yearMonth.toElapsedMonths()).toString()).toBe(sample);
     }
   });
 
   it("adds months without relying on Date", () => {
     const base = YearMonth.create("2025-01");
-    expect(addMonths(base, 1).toString()).toBe("2025-02");
-    expect(addMonths(base, 12).toString()).toBe("2026-01");
-    expect(addMonths(base, -1).toString()).toBe("2024-12");
+    expect(base.addMonths(1).toString()).toBe("2025-02");
+    expect(base.addMonths(12).toString()).toBe("2026-01");
+    expect(base.addMonths(-1).toString()).toBe("2024-12");
   });
 });
 

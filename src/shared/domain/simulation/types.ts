@@ -105,10 +105,6 @@ export type SimulationResultDto = {
   depletionYearMonth: YearMonthString | null;
 };
 
-export type SimulationInput = SimulationInputDto;
-export type SimulationMonthlyResult = SimulationMonthlyResultDto;
-export type SimulationResult = SimulationResultDto;
-
 export type SimulationChildDomain = {
   birth_year_month: YearMonth | null;
   due_year_month: YearMonth | null;

@@ -8,7 +8,6 @@ import {
 } from "@/features/inputs/life-events/infrastructure/stop-after-age-compat";
 import { createServerSupabaseClient } from "@/shared/cross-cutting/infrastructure/supabase.server";
 import type { LifeEventCategory } from "@/shared/domain/life-events/categories";
-import { addMonths } from "@/shared/domain/simulation";
 import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
 import type { Database } from "@/types/supabase";
 
@@ -60,8 +59,8 @@ const clearUserData = async (
 
 const buildHousingPurchaseSeed = (currentYearMonth: string) => {
   const startYearMonth = YearMonth.create(currentYearMonth);
-  const purchaseYearMonth = addMonths(startYearMonth, 3);
-  const stopYearMonth = addMonths(purchaseYearMonth, -1);
+  const purchaseYearMonth = startYearMonth.addMonths(3);
+  const stopYearMonth = purchaseYearMonth.addMonths(-1);
   const rentMonthly = 100000;
 
   return {
@@ -78,8 +77,8 @@ const buildRepeatStopSeed = (currentYearMonth: string) => {
   const stopAfterOccurrences = 2;
   const eventAmount = 50000;
   const intervalMonths = repeatIntervalYears * 12;
-  const eventYearMonth = addMonths(startYearMonth, intervalMonths * (stopAfterOccurrences - 1));
-  const afterStopYearMonth = addMonths(startYearMonth, intervalMonths * stopAfterOccurrences);
+  const eventYearMonth = startYearMonth.addMonths(intervalMonths * (stopAfterOccurrences - 1));
+  const afterStopYearMonth = startYearMonth.addMonths(intervalMonths * stopAfterOccurrences);
 
   return {
     startYearMonth: startYearMonth.toString(),
