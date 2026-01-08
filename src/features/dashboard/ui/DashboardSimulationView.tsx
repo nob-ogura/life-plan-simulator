@@ -4,16 +4,38 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import type { DashboardSimulationMonthlyResult } from "@/features/dashboard/queries/get-dashboard-simulation/response";
-import {
-  type DashboardDisplayRange,
-  DEFAULT_DISPLAY_RANGE,
-  displayRangeOptions,
-  filterSimulationMonthsByRange,
-} from "@/features/dashboard/shared/display-range";
 import { AssetTrendChart } from "@/features/dashboard/ui/AssetTrendChart";
 import type { YearMonthString } from "@/shared/domain/simulation";
 import { calculateSummaryMetrics, findDepletionYearMonth } from "@/shared/domain/simulation";
 import { Money } from "@/shared/domain/value-objects/Money";
+
+type DashboardDisplayRange = "recent-5-years" | "all";
+
+const DEFAULT_DISPLAY_RANGE: DashboardDisplayRange = "recent-5-years";
+
+const displayRangeOptions = [
+  { value: "recent-5-years", label: "直近5年" },
+  { value: "all", label: "全期間" },
+] as const satisfies ReadonlyArray<{
+  value: DashboardDisplayRange;
+  label: string;
+}>;
+
+const RECENT_YEARS_MONTHS = 60;
+
+const filterSimulationMonthsByRange = (
+  months: DashboardSimulationMonthlyResult[],
+  range: DashboardDisplayRange,
+) => {
+  if (range === "recent-5-years") {
+    if (months.length <= RECENT_YEARS_MONTHS) {
+      return months;
+    }
+    return months.slice(0, RECENT_YEARS_MONTHS);
+  }
+
+  return months;
+};
 
 type DashboardSimulationViewProps = {
   months: DashboardSimulationMonthlyResult[];
