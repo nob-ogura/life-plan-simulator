@@ -1,4 +1,5 @@
 import type { CreateIncomeStreamRequest } from "@/features/inputs/income-streams/commands/create-income-stream/request";
+import { createIncomeStream } from "@/shared/domain/income-streams/factory";
 import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
 import type { Tables } from "@/types/supabase";
 
@@ -47,19 +48,17 @@ export type UpdateIncomeStreamRequest = Pick<
 export const toIncomeStreamCreatePayloads = (
   value: IncomeSectionPayload,
 ): CreateIncomeStreamRequest[] =>
-  value.streams.map((stream) => ({
-    label: stream.label,
-    take_home_monthly: stream.take_home_monthly,
-    bonus_months: [],
-    bonus_amount: 0,
-    change_year_month: null,
-    bonus_amount_after: null,
-    raise_rate: stream.raise_rate,
-    start_year_month: YearMonth.toMonthStartDateFromInput(stream.start_year_month),
-    end_year_month: stream.end_year_month
-      ? YearMonth.toMonthStartDateFromInput(stream.end_year_month)
-      : null,
-  }));
+  value.streams.map((stream) =>
+    createIncomeStream({
+      label: stream.label,
+      take_home_monthly: stream.take_home_monthly,
+      raise_rate: stream.raise_rate,
+      start_year_month: YearMonth.toMonthStartDateFromInput(stream.start_year_month),
+      end_year_month: stream.end_year_month
+        ? YearMonth.toMonthStartDateFromInput(stream.end_year_month)
+        : null,
+    }),
+  );
 
 export const toIncomeStreamUpdatePayloads = (
   value: IncomeSectionPayload,

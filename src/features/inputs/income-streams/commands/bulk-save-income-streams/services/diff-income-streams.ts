@@ -1,3 +1,4 @@
+import { createIncomeStream } from "@/shared/domain/income-streams/factory";
 import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
 
 import type { BulkSaveIncomeStreamsRequest } from "../request";
@@ -35,19 +36,16 @@ export type IncomeStreamDiff = {
   updatePayloadsForUpdate: IncomeStreamUpdateItem[];
 };
 
-const toCreatePayload = (stream: NormalizedIncomeStream): IncomeStreamInsertPayload => ({
-  label: stream.label,
-  take_home_monthly: stream.take_home_monthly,
-  bonus_months: [],
-  bonus_amount: 0,
-  change_year_month: null,
-  bonus_amount_after: null,
-  raise_rate: stream.raise_rate,
-  start_year_month: YearMonth.toMonthStartDateFromInput(stream.start_year_month),
-  end_year_month: stream.end_year_month
-    ? YearMonth.toMonthStartDateFromInput(stream.end_year_month)
-    : null,
-});
+const toCreatePayload = (stream: NormalizedIncomeStream): IncomeStreamInsertPayload =>
+  createIncomeStream({
+    label: stream.label,
+    take_home_monthly: stream.take_home_monthly,
+    raise_rate: stream.raise_rate,
+    start_year_month: YearMonth.toMonthStartDateFromInput(stream.start_year_month),
+    end_year_month: stream.end_year_month
+      ? YearMonth.toMonthStartDateFromInput(stream.end_year_month)
+      : null,
+  });
 
 const toUpdatePayload = (stream: NormalizedIncomeStream): IncomeStreamUpdatePayload => ({
   label: stream.label,

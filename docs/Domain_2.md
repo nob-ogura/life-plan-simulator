@@ -84,7 +84,7 @@
 - `simulateLifePlan` 側でも guard を適用（例外→明示的エラー）するかを決定。
 
 ### Step 3: IncomeStream 初期値の Factory 化
-- `src/shared/domain/income-streams/factory.ts`（仮）を追加。
+- `src/shared/domain/income-streams/factory.ts`を追加。
 - `toCreatePayload` は Factory の結果を利用し、初期値はドメイン側に移譲。
 - DB default を追加する場合は migration で `bonus_amount default 0` などを設定。
 
