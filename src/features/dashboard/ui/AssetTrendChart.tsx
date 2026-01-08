@@ -2,7 +2,7 @@
 
 import { useId, useMemo } from "react";
 import type { DashboardSimulationMonthlyResult } from "@/features/dashboard/queries/get-dashboard-simulation/response";
-import type { YearMonthString } from "@/shared/domain/simulation";
+import { findDepletionYearMonth, type YearMonthString } from "@/shared/domain/simulation";
 
 type AssetTrendChartProps = {
   months: DashboardSimulationMonthlyResult[];
@@ -89,10 +89,11 @@ export function AssetTrendChart({ months, depletionYearMonth }: AssetTrendChartP
     const totalLinePath = buildLinePath(points, (point) => scaleY(point.total));
     const zeroY = scaleY(0);
 
+    const resolvedDepletionYearMonth = depletionYearMonth ?? findDepletionYearMonth(months);
     const depletionIndex =
-      depletionYearMonth != null
-        ? months.findIndex((month) => month.yearMonth === depletionYearMonth)
-        : months.findIndex((month) => month.totalBalance < 0);
+      resolvedDepletionYearMonth != null
+        ? months.findIndex((month) => month.yearMonth === resolvedDepletionYearMonth)
+        : -1;
     const depletionPoint = depletionIndex >= 0 ? points[depletionIndex] : null;
     const depletionY = depletionPoint ? scaleY(depletionPoint.total) : null;
 
