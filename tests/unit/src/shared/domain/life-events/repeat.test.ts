@@ -45,7 +45,7 @@ describe("life event repeat", () => {
     ).toBe("2年ごと（停止: 3回 / 65歳）");
   });
 
-  it("normalizes invalid values as null", () => {
+  it("normalizes invalid values as null except stop occurrences", () => {
     expect(
       normalizeLifeEventRepeat({
         repeat_interval_years: 0,
@@ -54,7 +54,7 @@ describe("life event repeat", () => {
       }),
     ).toEqual({
       intervalYears: null,
-      stopAfterOccurrences: null,
+      stopAfterOccurrences: 0,
       stopAfterAge: null,
     });
   });

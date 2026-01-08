@@ -14,7 +14,7 @@ const normalizeIntervalYears = (value?: number | null) =>
   value != null && value > 0 ? value : null;
 
 const normalizeStopAfterOccurrences = (value?: number | null) =>
-  value != null && value > 0 ? value : null;
+  value != null && value >= 0 ? value : null;
 
 const normalizeStopAfterAge = (value?: number | null) =>
   value != null && value >= 0 ? value : null;
