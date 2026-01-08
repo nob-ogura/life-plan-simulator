@@ -4,6 +4,7 @@ export {
   type SimulationMonthlySummaryInput,
   type SimulationSummaryMetrics,
 } from "./analytics";
+export { isSimulationReady } from "./guard";
 export {
   calculateMortgagePrincipal,
   calculateRealEstateTaxMonthly,

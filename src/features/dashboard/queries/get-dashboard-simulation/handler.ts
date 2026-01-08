@@ -1,4 +1,8 @@
-import { type SimulationInputDomain, simulateLifePlan } from "@/shared/domain/simulation";
+import {
+  isSimulationReady,
+  type SimulationInputDomain,
+  simulateLifePlan,
+} from "@/shared/domain/simulation";
 import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
 import type { Tables } from "@/types/supabase";
 
@@ -37,21 +41,19 @@ export type GetDashboardSimulationRepository = {
   fetch: (query: GetDashboardSimulationQuery) => Promise<DashboardSimulationInputs>;
 };
 
-const hasRequiredProfile = (profile: Tables<"profiles"> | null): profile is Tables<"profiles"> =>
-  Boolean(profile && profile.birth_year != null && profile.birth_month != null);
-
 const buildSimulationInput = (
   data: DashboardSimulationInputs,
   currentYearMonth: YearMonth,
 ): SimulationInputDomain | null => {
-  if (!hasRequiredProfile(data.profile) || data.simulationSettings == null) {
+  const readiness = { profile: data.profile, settings: data.simulationSettings };
+  if (!isSimulationReady(readiness)) {
     return null;
   }
 
   return {
     currentYearMonth,
-    profiles: toSimulationProfile(data.profile),
-    simulationSettings: toSimulationSettings(data.simulationSettings),
+    profiles: toSimulationProfile(readiness.profile),
+    simulationSettings: toSimulationSettings(readiness.settings),
     children: data.children.map(toSimulationChild),
     incomeStreams: data.incomeStreams.map(toSimulationIncomeStream),
     expenses: data.expenses.map(toSimulationExpense),
