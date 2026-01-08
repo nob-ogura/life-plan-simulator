@@ -1,3 +1,4 @@
+import { normalizeLifeEventRepeat } from "@/shared/domain/life-events/repeat";
 import { BirthDate } from "@/shared/domain/value-objects/BirthDate";
 import { Money } from "@/shared/domain/value-objects/Money";
 import type { YearMonth } from "@/shared/domain/value-objects/YearMonth";
@@ -99,10 +100,8 @@ export const expandLifeEvents = ({
       : null;
 
   for (const event of lifeEvents) {
-    const intervalYears = event.repeat_interval_years;
+    const { intervalYears, stopAfterOccurrences, stopAfterAge } = normalizeLifeEventRepeat(event);
     const intervalMonths = intervalYears != null ? intervalYears * 12 : null;
-    const stopAfter = event.stop_after_occurrences;
-    const stopAfterAge = event.stop_after_age;
     let occurrences = 0;
     let currentYearMonth = event.year_month;
 
@@ -127,7 +126,7 @@ export const expandLifeEvents = ({
       if (intervalMonths == null || intervalMonths <= 0) {
         break;
       }
-      if (stopAfter != null && occurrences >= stopAfter) {
+      if (stopAfterOccurrences != null && occurrences >= stopAfterOccurrences) {
         break;
       }
       currentYearMonth = currentYearMonth.addMonths(intervalMonths);
