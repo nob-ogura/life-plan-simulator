@@ -1,4 +1,5 @@
 import type { Money } from "@/shared/domain/value-objects/Money";
+import type { YearMonth } from "@/shared/domain/value-objects/YearMonth";
 import type { Tables } from "@/types/supabase";
 
 export type YearMonthString = string;
@@ -73,7 +74,7 @@ export type SimulationLifeEvent = Pick<
   | "down_payment"
 >;
 
-export type SimulationInput = {
+export type SimulationInputDto = {
   currentYearMonth: YearMonthString;
   profiles: SimulationProfile;
   simulationSettings: SimulationSettings;
@@ -86,7 +87,7 @@ export type SimulationInput = {
   lifeEvents: SimulationLifeEvent[];
 };
 
-export type SimulationMonthlyResult = {
+export type SimulationMonthlyResultDto = {
   yearMonth: YearMonthString;
   age: number;
   spouseAge: number | null;
@@ -99,7 +100,80 @@ export type SimulationMonthlyResult = {
   totalBalance: Money;
 };
 
-export type SimulationResult = {
-  months: SimulationMonthlyResult[];
+export type SimulationResultDto = {
+  months: SimulationMonthlyResultDto[];
   depletionYearMonth: YearMonthString | null;
+};
+
+export type SimulationInput = SimulationInputDto;
+export type SimulationMonthlyResult = SimulationMonthlyResultDto;
+export type SimulationResult = SimulationResultDto;
+
+export type SimulationChildDomain = {
+  birth_year_month: YearMonth | null;
+  due_year_month: YearMonth | null;
+};
+
+export type SimulationIncomeStreamDomain = Omit<
+  SimulationIncomeStream,
+  "change_year_month" | "start_year_month" | "end_year_month"
+> & {
+  change_year_month: YearMonth | null;
+  start_year_month: YearMonth;
+  end_year_month: YearMonth | null;
+};
+
+export type SimulationExpenseDomain = Omit<
+  SimulationExpense,
+  "start_year_month" | "end_year_month"
+> & {
+  start_year_month: YearMonth;
+  end_year_month: YearMonth | null;
+};
+
+export type SimulationRentalDomain = Omit<
+  SimulationRental,
+  "start_year_month" | "end_year_month"
+> & {
+  start_year_month: YearMonth;
+  end_year_month: YearMonth | null;
+};
+
+export type SimulationMortgageDomain = Omit<SimulationMortgage, "start_year_month"> & {
+  start_year_month: YearMonth;
+};
+
+export type SimulationLifeEventDomain = Omit<SimulationLifeEvent, "year_month"> & {
+  year_month: YearMonth;
+};
+
+export type SimulationInputDomain = {
+  currentYearMonth: YearMonth;
+  profiles: SimulationProfile;
+  simulationSettings: SimulationSettings;
+  children: SimulationChildDomain[];
+  incomeStreams: SimulationIncomeStreamDomain[];
+  expenses: SimulationExpenseDomain[];
+  rentals: SimulationRentalDomain[];
+  assets: SimulationAsset[];
+  mortgages: SimulationMortgageDomain[];
+  lifeEvents: SimulationLifeEventDomain[];
+};
+
+export type SimulationMonthlyResultDomain = {
+  yearMonth: YearMonth;
+  age: number;
+  spouseAge: number | null;
+  totalIncome: Money;
+  totalExpense: Money;
+  eventAmount: Money;
+  netCashflow: Money;
+  cashBalance: Money;
+  investmentBalance: Money;
+  totalBalance: Money;
+};
+
+export type SimulationResultDomain = {
+  months: SimulationMonthlyResultDomain[];
+  depletionYearMonth: YearMonth | null;
 };
