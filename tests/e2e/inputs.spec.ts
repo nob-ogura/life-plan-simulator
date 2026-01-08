@@ -166,7 +166,7 @@ test("housing section accepts input and updates summary", async ({ authenticated
   await housingSection.getByLabel("頭金").fill("5000000");
   await housingSection.getByLabel("返済年数").fill("35");
   await housingSection.getByLabel("金利").fill("0.015");
-  await housingSection.getByLabel("借入額").fill("32000000");
+  await expect(housingSection.getByLabel("借入額")).toHaveValue("33110000");
   await housingSection.getByLabel("借入開始年月").fill("2025-04");
 
   await housingSection.getByRole("button", { name: "追加" }).first().click();

@@ -210,7 +210,9 @@ export default async function InputsPage() {
   const incomeSectionDefaults = buildIncomeSectionDefaults(data.incomeStreams);
   const bonusSectionDefaults = buildBonusSectionDefaults(data.incomeStreams);
   const expenseSectionDefaults = buildExpenseSectionDefaults(data.expenses);
-  const housingSectionDefaults = buildHousingSectionDefaults(data.mortgages, data.rentals);
+  const housingSectionDefaults = buildHousingSectionDefaults(data.mortgages, data.rentals, {
+    transactionCostRate: data.simulationSettings?.mortgage_transaction_cost_rate ?? null,
+  });
   const retirementSectionDefaults = buildRetirementSectionDefaults(retirementBonuses);
   const pensionSectionDefaults = buildPensionSectionDefaults(profile, data.simulationSettings);
   const assetSectionDefaults = buildAssetFormDefaults(data.assets);
@@ -293,7 +295,12 @@ export default async function InputsPage() {
         { label: "住宅購入", value: formatCount(data.mortgages.length) },
       ],
       note: "賃貸・住宅購入の情報を登録します",
-      form: <HousingForm defaultValues={housingSectionDefaults} />,
+      form: (
+        <HousingForm
+          defaultValues={housingSectionDefaults}
+          mortgageTransactionCostRate={data.simulationSettings?.mortgage_transaction_cost_rate}
+        />
+      ),
     },
     {
       id: "events",

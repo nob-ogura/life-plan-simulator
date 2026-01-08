@@ -5,7 +5,11 @@ import {
 } from "@/shared/domain/life-events/categories";
 import { Money } from "@/shared/domain/value-objects/Money";
 import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
-import { deriveHousingPurchaseMetrics, expandLifeEvents } from "./life-events";
+import {
+  calculateMortgagePrincipal,
+  deriveHousingPurchaseMetrics,
+  expandLifeEvents,
+} from "./life-events";
 import { generateMonthlyTimeline } from "./timeline";
 import type {
   SimulationAsset,
@@ -13,8 +17,10 @@ import type {
   SimulationIncomeStreamDomain,
   SimulationInputDomain,
   SimulationLifeEventDomain,
+  SimulationMortgageDomain,
   SimulationRentalDomain,
   SimulationResultDomain,
+  SimulationSettings,
 } from "./types";
 
 type TimelineMonth = ReturnType<typeof generateMonthlyTimeline>[number];
@@ -35,11 +41,18 @@ type BalanceState = {
   depletionYearMonth: YearMonth | null;
 };
 
+type MortgagePaymentPlan = {
+  mortgage: SimulationMortgageDomain;
+  monthlyPayment: Money;
+  totalMonths: number;
+};
+
 type SimulationContext = {
   input: SimulationInputDomain;
   expandedLifeEvents: SimulationLifeEventDomain[];
   housingPurchases: HousingPurchaseMetrics[];
   rentals: SimulationRentalDomain[];
+  mortgagePayments: MortgagePaymentPlan[];
 };
 
 const isYearMonthWithinRange = (
@@ -189,11 +202,51 @@ const aggregateAssets = (assets: SimulationAsset[]) => {
   };
 };
 
+const toLoanMonths = (years: number): number => {
+  if (!Number.isFinite(years)) {
+    return 0;
+  }
+  return Math.max(0, Math.trunc(years * 12));
+};
+
+const calculateMortgageMonthlyPayment = (
+  mortgage: SimulationMortgageDomain,
+  settings: SimulationSettings,
+): Money => {
+  const principal = calculateMortgagePrincipal({
+    buildingPrice: mortgage.building_price,
+    landPrice: mortgage.land_price,
+    downPayment: mortgage.down_payment,
+    transactionCostRate: settings.mortgage_transaction_cost_rate,
+  }).toRoundedNumber("round");
+  const totalMonths = toLoanMonths(mortgage.years);
+  if (principal <= 0 || totalMonths <= 0) {
+    return Money.of(0);
+  }
+  const annualRate = mortgage.annual_rate ?? 0;
+  const monthlyRate = annualRate / 12;
+  if (monthlyRate === 0) {
+    return Money.fromFloat(principal / totalMonths, "round");
+  }
+  const factor = (1 + monthlyRate) ** totalMonths;
+  if (!Number.isFinite(factor) || factor === 1) {
+    return Money.of(0);
+  }
+  const payment = (principal * monthlyRate * factor) / (factor - 1);
+  return Money.fromFloat(payment, "round");
+};
+
+const isMortgageActive = (plan: MortgagePaymentPlan, yearMonth: YearMonth): boolean => {
+  const elapsedMonths =
+    yearMonth.toElapsedMonths() - plan.mortgage.start_year_month.toElapsedMonths();
+  return elapsedMonths >= 0 && elapsedMonths < plan.totalMonths;
+};
+
 const calculateMonthlyCashFlow = (
   context: SimulationContext,
   month: TimelineMonth,
 ): MonthlyCashFlow => {
-  const { input, expandedLifeEvents, housingPurchases, rentals } = context;
+  const { input, expandedLifeEvents, housingPurchases, rentals, mortgagePayments } = context;
 
   const incomeFromStreams = input.incomeStreams.reduce(
     (total, stream) => total.add(calculateIncomeForStream(stream, month.yearMonth)),
@@ -223,6 +276,15 @@ const calculateMonthlyCashFlow = (
     (total, rental) => total.add(calculateRentForRental(rental, month.yearMonth)),
     Money.of(0),
   );
+  const mortgageExpense = mortgagePayments.reduce((total, plan) => {
+    if (plan.totalMonths <= 0 || plan.monthlyPayment.toNumber() === 0) {
+      return total;
+    }
+    if (!isMortgageActive(plan, month.yearMonth)) {
+      return total;
+    }
+    return total.add(plan.monthlyPayment);
+  }, Money.of(0));
   const monthValue = month.yearMonth;
   const realEstateTax = housingPurchases.reduce((total, purchase) => {
     if (monthValue.isBefore(purchase.event.year_month)) {
@@ -239,7 +301,7 @@ const calculateMonthlyCashFlow = (
     }
     return total.add(Money.of(event.amount));
   }, Money.of(0));
-  const totalExpense = baseExpense.add(rentExpense).add(realEstateTax);
+  const totalExpense = baseExpense.add(rentExpense).add(mortgageExpense).add(realEstateTax);
 
   return {
     yearMonth: month.yearMonth,
@@ -320,12 +382,18 @@ export const simulateLifePlan = (input: SimulationInputDomain): SimulationResult
     .filter((event) => isHousingPurchase(event.category as LifeEventCategory))
     .map((event) => deriveHousingPurchaseMetrics(event, input.simulationSettings));
   const rentals = applyAutoToggleToRentals(input.rentals, expandedLifeEvents);
+  const mortgagePayments = input.mortgages.map((mortgage) => ({
+    mortgage,
+    totalMonths: toLoanMonths(mortgage.years),
+    monthlyPayment: calculateMortgageMonthlyPayment(mortgage, input.simulationSettings),
+  }));
 
   const context: SimulationContext = {
     input,
     expandedLifeEvents,
     housingPurchases,
     rentals,
+    mortgagePayments,
   };
   const monthlyCashFlows = timeline.map((month) => calculateMonthlyCashFlow(context, month));
 

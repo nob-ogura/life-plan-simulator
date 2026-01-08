@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import {
   Form,
@@ -23,6 +23,7 @@ import { updateRentalAction } from "@/features/inputs/rentals/commands/update-re
 import { zodResolver } from "@/lib/zod-resolver";
 import { UI_TEXT } from "@/shared/constants/messages";
 import { useAuth } from "@/shared/cross-cutting/auth";
+import { calculateMortgagePrincipal } from "@/shared/domain/simulation/life-events";
 import { toHousingPayloads } from "./mapper";
 import {
   type HousingSectionInput,
@@ -32,9 +33,38 @@ import {
 
 type HousingFormProps = {
   defaultValues: HousingSectionInput;
+  mortgageTransactionCostRate?: number | null;
 };
 
-export function HousingForm({ defaultValues }: HousingFormProps) {
+const parseNumericInput = (value?: string): number | null => {
+  if (value == null) return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  const parsed = Number(trimmed);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const derivePrincipalInput = (
+  mortgage: NonNullable<HousingSectionInput["mortgages"]>[number] | undefined,
+  transactionCostRate?: number | null,
+): string => {
+  if (!mortgage) return "";
+  const buildingPrice = parseNumericInput(mortgage.building_price);
+  const landPrice = parseNumericInput(mortgage.land_price);
+  const downPayment = parseNumericInput(mortgage.down_payment);
+  if (buildingPrice == null || landPrice == null || downPayment == null) {
+    return "";
+  }
+  const principal = calculateMortgagePrincipal({
+    buildingPrice,
+    landPrice,
+    downPayment,
+    transactionCostRate,
+  }).toRoundedNumber("round");
+  return String(principal);
+};
+
+export function HousingForm({ defaultValues, mortgageTransactionCostRate }: HousingFormProps) {
   const router = useRouter();
   const { session, isReady } = useAuth();
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -51,6 +81,10 @@ export function HousingForm({ defaultValues }: HousingFormProps) {
     control: form.control,
     name: "mortgages",
     keyName: "fieldKey",
+  });
+  const watchedMortgages = useWatch({
+    control: form.control,
+    name: "mortgages",
   });
   const {
     fields: rentalFields,
@@ -79,6 +113,19 @@ export function HousingForm({ defaultValues }: HousingFormProps) {
       .filter(Boolean) as string[];
   }, [defaultValues, form]);
 
+  useEffect(() => {
+    const mortgages = watchedMortgages ?? [];
+    mortgages.forEach((mortgage, index) => {
+      const derived = derivePrincipalInput(mortgage, mortgageTransactionCostRate);
+      const current = mortgage?.principal ?? "";
+      if (derived === current) return;
+      form.setValue(`mortgages.${index}.principal`, derived, {
+        shouldValidate: true,
+        shouldDirty: false,
+      });
+    });
+  }, [form, mortgageTransactionCostRate, watchedMortgages]);
+
   const onSubmit = form.handleSubmit(async (value) => {
     setSubmitError(null);
     if (!isReady || !session?.user?.id) {
@@ -88,7 +135,9 @@ export function HousingForm({ defaultValues }: HousingFormProps) {
 
     const parsedResult = HousingSectionSchema.safeParse(value);
     const parsed = (parsedResult.success ? parsedResult.data : value) as HousingSectionPayload;
-    const payloads = toHousingPayloads(parsed);
+    const payloads = toHousingPayloads(parsed, {
+      transactionCostRate: mortgageTransactionCostRate,
+    });
     const currentMortgageIds = new Set(
       parsed.mortgages.map((mortgage) => mortgage.id).filter(Boolean) as string[],
     );
@@ -393,10 +442,19 @@ export function HousingForm({ defaultValues }: HousingFormProps) {
                       name={`mortgages.${index}.principal` as const}
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>借入額</FormLabel>
+                          <FormLabel>借入額（自動計算）</FormLabel>
                           <FormControl>
-                            <Input {...field} inputMode="numeric" placeholder="例: 32000000" />
+                            <Input
+                              {...field}
+                              inputMode="numeric"
+                              placeholder="例: 32000000"
+                              readOnly
+                              aria-readonly
+                            />
                           </FormControl>
+                          <p className="text-xs text-muted-foreground">
+                            建物価格・土地価格・頭金から自動計算されます
+                          </p>
                           <FormMessage />
                         </FormItem>
                       )}

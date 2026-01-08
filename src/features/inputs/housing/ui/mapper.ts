@@ -1,5 +1,6 @@
 import type { CreateMortgageRequest } from "@/features/inputs/mortgages/commands/create-mortgage/request";
 import type { CreateRentalRequest } from "@/features/inputs/rentals/commands/create-rental/request";
+import { calculateMortgagePrincipal } from "@/shared/domain/simulation/life-events";
 import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
 import type { Tables } from "@/types/supabase";
 
@@ -10,10 +11,20 @@ const toNumberInput = (value?: number | null) => (value == null ? "" : String(va
 export const buildHousingSectionDefaults = (
   mortgages: Array<Tables<"mortgages">>,
   rentals: Array<Tables<"rentals">>,
+  options?: { transactionCostRate?: number | null },
 ): HousingSectionInput => ({
   mortgages: mortgages.map((mortgage) => ({
     id: mortgage.id,
-    principal: toNumberInput(mortgage.principal),
+    principal: toNumberInput(
+      options?.transactionCostRate == null
+        ? mortgage.principal
+        : calculateMortgagePrincipal({
+            buildingPrice: mortgage.building_price,
+            landPrice: mortgage.land_price,
+            downPayment: mortgage.down_payment,
+            transactionCostRate: options.transactionCostRate,
+          }).toRoundedNumber("round"),
+    ),
     annual_rate: toNumberInput(mortgage.annual_rate),
     years: toNumberInput(mortgage.years),
     start_year_month: mortgage.start_year_month
@@ -37,12 +48,27 @@ export const buildHousingSectionDefaults = (
 
 export const toHousingPayloads = (
   value: HousingSectionPayload,
+  options?: { transactionCostRate?: number | null },
 ): {
   mortgages: CreateMortgageRequest[];
   rentals: CreateRentalRequest[];
 } => ({
   mortgages: value.mortgages.map((mortgage) => ({
-    principal: mortgage.principal,
+    principal:
+      options?.transactionCostRate == null
+        ? (mortgage.principal ??
+          calculateMortgagePrincipal({
+            buildingPrice: mortgage.building_price,
+            landPrice: mortgage.land_price,
+            downPayment: mortgage.down_payment,
+            transactionCostRate: options?.transactionCostRate,
+          }).toRoundedNumber("round"))
+        : calculateMortgagePrincipal({
+            buildingPrice: mortgage.building_price,
+            landPrice: mortgage.land_price,
+            downPayment: mortgage.down_payment,
+            transactionCostRate: options.transactionCostRate,
+          }).toRoundedNumber("round"),
     annual_rate: mortgage.annual_rate,
     years: mortgage.years,
     start_year_month: YearMonth.toMonthStartDateFromInput(mortgage.start_year_month),

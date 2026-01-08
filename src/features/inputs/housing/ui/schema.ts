@@ -10,7 +10,7 @@ import {
 
 const MortgageFormSchema = z.object({
   id: z.string().optional(),
-  principal: requiredNumericString,
+  principal: optionalNumericString,
   annual_rate: optionalNumericString,
   years: requiredNumericString,
   start_year_month: requiredYearMonth,
