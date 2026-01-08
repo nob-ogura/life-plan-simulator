@@ -1,15 +1,10 @@
 import { BirthDate } from "@/shared/domain/value-objects/BirthDate";
 import { Money } from "@/shared/domain/value-objects/Money";
-import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
-import type {
-  SimulationLifeEvent,
-  SimulationProfile,
-  SimulationSettings,
-  YearMonthString,
-} from "./types";
+import type { YearMonth } from "@/shared/domain/value-objects/YearMonth";
+import type { SimulationLifeEventDomain, SimulationProfile, SimulationSettings } from "./types";
 
 export type HousingPurchaseMetrics = {
-  event: SimulationLifeEvent;
+  event: SimulationLifeEventDomain;
   principal: Money;
   realEstateTaxMonthly: Money;
 };
@@ -49,7 +44,7 @@ export const calculateRealEstateTaxMonthly = ({
   return annualTax.divideAndRound(12, "ceil");
 };
 
-const requireHousingPurchaseFields = (event: SimulationLifeEvent) => {
+const requireHousingPurchaseFields = (event: SimulationLifeEventDomain) => {
   if (event.building_price == null || event.land_price == null || event.down_payment == null) {
     throw new Error("Housing purchase event requires building_price, land_price, down_payment.");
   }
@@ -61,7 +56,7 @@ const requireHousingPurchaseFields = (event: SimulationLifeEvent) => {
 };
 
 export const deriveHousingPurchaseMetrics = (
-  event: SimulationLifeEvent,
+  event: SimulationLifeEventDomain,
   settings: SimulationSettings,
 ): HousingPurchaseMetrics => {
   const { buildingPrice, landPrice, downPayment } = requireHousingPurchaseFields(event);
@@ -90,14 +85,14 @@ export const expandLifeEvents = ({
   endYearMonth,
   profile,
 }: {
-  lifeEvents: SimulationLifeEvent[];
-  startYearMonth: YearMonthString;
-  endYearMonth: YearMonthString;
+  lifeEvents: SimulationLifeEventDomain[];
+  startYearMonth: YearMonth;
+  endYearMonth: YearMonth;
   profile: SimulationProfile;
-}): SimulationLifeEvent[] => {
-  const startIndex = YearMonth.create(startYearMonth).toElapsedMonths();
-  const endIndex = YearMonth.create(endYearMonth).toElapsedMonths();
-  const expanded: SimulationLifeEvent[] = [];
+}): SimulationLifeEventDomain[] => {
+  const startIndex = startYearMonth.toElapsedMonths();
+  const endIndex = endYearMonth.toElapsedMonths();
+  const expanded: SimulationLifeEventDomain[] = [];
   const birthDate =
     profile.birth_year != null && profile.birth_month != null
       ? BirthDate.fromYearMonth(profile.birth_year, profile.birth_month)
@@ -109,7 +104,7 @@ export const expandLifeEvents = ({
     const stopAfter = event.stop_after_occurrences;
     const stopAfterAge = event.stop_after_age;
     let occurrences = 0;
-    let currentYearMonth = YearMonth.create(event.year_month);
+    let currentYearMonth = event.year_month;
 
     while (true) {
       const currentIndex = currentYearMonth.toElapsedMonths();
@@ -127,7 +122,7 @@ export const expandLifeEvents = ({
       }
       occurrences += 1;
       if (currentIndex >= startIndex) {
-        expanded.push({ ...event, year_month: currentYearMonth.toString() });
+        expanded.push({ ...event, year_month: currentYearMonth });
       }
       if (intervalMonths == null || intervalMonths <= 0) {
         break;
@@ -140,8 +135,6 @@ export const expandLifeEvents = ({
   }
 
   return expanded.sort(
-    (left, right) =>
-      YearMonth.create(left.year_month).toElapsedMonths() -
-      YearMonth.create(right.year_month).toElapsedMonths(),
+    (left, right) => left.year_month.toElapsedMonths() - right.year_month.toElapsedMonths(),
   );
 };

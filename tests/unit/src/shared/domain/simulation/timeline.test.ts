@@ -5,27 +5,30 @@ import {
   generateMonthlyTimeline,
   yearMonthToElapsedMonths,
 } from "@/shared/domain/simulation";
+import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
 
 describe("year-month utilities", () => {
   it("round-trips year-month values through elapsed months", () => {
     const samples = ["1990-01", "1990-12", "2025-06", "2030-11"];
 
     for (const sample of samples) {
-      expect(elapsedMonthsToYearMonth(yearMonthToElapsedMonths(sample))).toBe(sample);
+      const yearMonth = YearMonth.create(sample);
+      expect(elapsedMonthsToYearMonth(yearMonthToElapsedMonths(yearMonth)).toString()).toBe(sample);
     }
   });
 
   it("adds months without relying on Date", () => {
-    expect(addMonths("2025-01", 1)).toBe("2025-02");
-    expect(addMonths("2025-01", 12)).toBe("2026-01");
-    expect(addMonths("2025-01", -1)).toBe("2024-12");
+    const base = YearMonth.create("2025-01");
+    expect(addMonths(base, 1).toString()).toBe("2025-02");
+    expect(addMonths(base, 12).toString()).toBe("2026-01");
+    expect(addMonths(base, -1).toString()).toBe("2024-12");
   });
 });
 
 describe("generateMonthlyTimeline", () => {
   it("starts from current + offset and ends at the month reaching end age", () => {
     const timeline = generateMonthlyTimeline({
-      currentYearMonth: "2025-01",
+      currentYearMonth: YearMonth.create("2025-01"),
       startOffsetMonths: 1,
       endAge: 36,
       profile: {
@@ -37,21 +40,17 @@ describe("generateMonthlyTimeline", () => {
       },
     });
 
-    expect(timeline[0]).toEqual({
-      yearMonth: "2025-02",
-      age: 34,
-      spouseAge: null,
-    });
+    expect(timeline[0]?.yearMonth.toString()).toBe("2025-02");
+    expect(timeline[0]?.age).toBe(34);
+    expect(timeline[0]?.spouseAge).toBeNull();
 
     const last = timeline[timeline.length - 1];
 
-    expect(last).toEqual({
-      yearMonth: "2026-06",
-      age: 36,
-      spouseAge: null,
-    });
+    expect(last?.yearMonth.toString()).toBe("2026-06");
+    expect(last?.age).toBe(36);
+    expect(last?.spouseAge).toBeNull();
 
-    const birthdayMonth = timeline.find((month) => month.yearMonth === "2025-06");
+    const birthdayMonth = timeline.find((month) => month.yearMonth.toString() === "2025-06");
     expect(birthdayMonth?.age).toBe(35);
   });
 });

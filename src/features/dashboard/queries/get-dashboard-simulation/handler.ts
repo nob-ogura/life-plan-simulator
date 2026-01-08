@@ -1,8 +1,4 @@
-import {
-  type SimulationInput,
-  type SimulationInputDomain,
-  simulateLifePlan,
-} from "@/shared/domain/simulation";
+import { type SimulationInputDomain, simulateLifePlan } from "@/shared/domain/simulation";
 import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
 import type { Tables } from "@/types/supabase";
 
@@ -69,41 +65,6 @@ const buildSimulationInput = (
 const toYearMonthString = (value: YearMonth | null): string | null =>
   value ? value.toString() : null;
 
-const toSimulationInputDto = (input: SimulationInputDomain): SimulationInput => ({
-  currentYearMonth: input.currentYearMonth.toString(),
-  profiles: input.profiles,
-  simulationSettings: input.simulationSettings,
-  children: input.children.map((child) => ({
-    birth_year_month: toYearMonthString(child.birth_year_month),
-    due_year_month: toYearMonthString(child.due_year_month),
-  })),
-  incomeStreams: input.incomeStreams.map((stream) => ({
-    ...stream,
-    change_year_month: toYearMonthString(stream.change_year_month),
-    start_year_month: stream.start_year_month.toString(),
-    end_year_month: toYearMonthString(stream.end_year_month),
-  })),
-  expenses: input.expenses.map((expense) => ({
-    ...expense,
-    start_year_month: expense.start_year_month.toString(),
-    end_year_month: toYearMonthString(expense.end_year_month),
-  })),
-  rentals: input.rentals.map((rental) => ({
-    ...rental,
-    start_year_month: rental.start_year_month.toString(),
-    end_year_month: toYearMonthString(rental.end_year_month),
-  })),
-  assets: input.assets,
-  mortgages: input.mortgages.map((mortgage) => ({
-    ...mortgage,
-    start_year_month: mortgage.start_year_month.toString(),
-  })),
-  lifeEvents: input.lifeEvents.map((event) => ({
-    ...event,
-    year_month: event.year_month.toString(),
-  })),
-});
-
 export class GetDashboardSimulationQueryHandler {
   constructor(private readonly repository: GetDashboardSimulationRepository) {}
 
@@ -115,7 +76,7 @@ export class GetDashboardSimulationQueryHandler {
       return { result: null };
     }
 
-    const result = simulateLifePlan(toSimulationInputDto(input));
+    const result = simulateLifePlan(input);
     return { result: toDashboardSimulationResult(result) };
   }
 }
@@ -123,9 +84,9 @@ export class GetDashboardSimulationQueryHandler {
 const toDashboardSimulationResult = (
   result: ReturnType<typeof simulateLifePlan>,
 ): DashboardSimulationResult => ({
-  depletionYearMonth: result.depletionYearMonth,
+  depletionYearMonth: toYearMonthString(result.depletionYearMonth),
   months: result.months.map<DashboardSimulationMonthlyResult>((month) => ({
-    yearMonth: month.yearMonth,
+    yearMonth: month.yearMonth.toString(),
     age: month.age,
     spouseAge: month.spouseAge,
     totalIncome: month.totalIncome.toNumber(),

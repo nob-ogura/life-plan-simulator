@@ -59,21 +59,21 @@ const clearUserData = async (
 };
 
 const buildHousingPurchaseSeed = (currentYearMonth: string) => {
-  const startYearMonth = currentYearMonth;
+  const startYearMonth = YearMonth.create(currentYearMonth);
   const purchaseYearMonth = addMonths(startYearMonth, 3);
   const stopYearMonth = addMonths(purchaseYearMonth, -1);
   const rentMonthly = 100000;
 
   return {
-    startYearMonth,
-    purchaseYearMonth,
-    stopYearMonth,
+    startYearMonth: startYearMonth.toString(),
+    purchaseYearMonth: purchaseYearMonth.toString(),
+    stopYearMonth: stopYearMonth.toString(),
     rentMonthly,
   };
 };
 
 const buildRepeatStopSeed = (currentYearMonth: string) => {
-  const startYearMonth = currentYearMonth;
+  const startYearMonth = YearMonth.create(currentYearMonth);
   const repeatIntervalYears = 1;
   const stopAfterOccurrences = 2;
   const eventAmount = 50000;
@@ -82,12 +82,12 @@ const buildRepeatStopSeed = (currentYearMonth: string) => {
   const afterStopYearMonth = addMonths(startYearMonth, intervalMonths * stopAfterOccurrences);
 
   return {
-    startYearMonth,
+    startYearMonth: startYearMonth.toString(),
     repeatIntervalYears,
     stopAfterOccurrences,
     eventAmount,
-    eventYearMonth,
-    afterStopYearMonth,
+    eventYearMonth: eventYearMonth.toString(),
+    afterStopYearMonth: afterStopYearMonth.toString(),
   };
 };
 

@@ -4,17 +4,18 @@ import {
   calculateMortgagePrincipal,
   calculateRealEstateTaxMonthly,
   deriveHousingPurchaseMetrics,
-  type SimulationInput,
-  type SimulationLifeEvent,
+  type SimulationInputDomain,
+  type SimulationLifeEventDomain,
   type SimulationSettings,
   simulateLifePlan,
 } from "@/shared/domain/simulation";
+import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
 
 const travelCategory: LifeEventCategory = "travel";
 const housingPurchaseCategory: LifeEventCategory = "housing_purchase";
 
-const createBaseInput = (): SimulationInput => ({
-  currentYearMonth: "2025-01",
+const createBaseInput = (): SimulationInputDomain => ({
+  currentYearMonth: YearMonth.create("2025-01"),
   profiles: {
     birth_year: 1990,
     birth_month: 1,
@@ -40,9 +41,9 @@ const createBaseInput = (): SimulationInput => ({
   lifeEvents: [],
 });
 
-const getMonth = (input: SimulationInput, yearMonth: string) => {
+const getMonth = (input: SimulationInputDomain, yearMonth: string) => {
   const result = simulateLifePlan(input);
-  const month = result.months.find((entry) => entry.yearMonth === yearMonth);
+  const month = result.months.find((entry) => entry.yearMonth.toString() === yearMonth);
   if (!month) {
     throw new Error(`Missing month ${yearMonth}`);
   }
@@ -64,7 +65,7 @@ describe("life events", () => {
     input.lifeEvents = [
       {
         amount: 10000,
-        year_month: "2025-01",
+        year_month: YearMonth.create("2025-01"),
         repeat_interval_years: 1,
         stop_after_age: null,
         stop_after_occurrences: 3,
@@ -87,7 +88,7 @@ describe("life events", () => {
     input.lifeEvents = [
       {
         amount: 10000,
-        year_month: "2025-01",
+        year_month: YearMonth.create("2025-01"),
         repeat_interval_years: 1,
         stop_after_age: 36,
         stop_after_occurrences: null,
@@ -109,7 +110,7 @@ describe("life events", () => {
     input.lifeEvents = [
       {
         amount: 10000,
-        year_month: "2025-01",
+        year_month: YearMonth.create("2025-01"),
         repeat_interval_years: 1,
         stop_after_age: 35,
         stop_after_occurrences: 5,
@@ -146,9 +147,9 @@ describe("life events", () => {
   });
 
   it("derives housing purchase metrics from simulation settings", () => {
-    const event: SimulationLifeEvent = {
+    const event: SimulationLifeEventDomain = {
       amount: 0,
-      year_month: "2025-03",
+      year_month: YearMonth.create("2025-03"),
       repeat_interval_years: null,
       stop_after_age: null,
       stop_after_occurrences: null,
@@ -175,9 +176,9 @@ describe("life events", () => {
   });
 
   it("updates housing purchase metrics when settings change", () => {
-    const event: SimulationLifeEvent = {
+    const event: SimulationLifeEventDomain = {
       amount: 0,
-      year_month: "2025-03",
+      year_month: YearMonth.create("2025-03"),
       repeat_interval_years: null,
       stop_after_age: null,
       stop_after_occurrences: null,
@@ -221,7 +222,7 @@ describe("life events", () => {
     input.lifeEvents = [
       {
         amount: 0,
-        year_month: "2025-03",
+        year_month: YearMonth.create("2025-03"),
         repeat_interval_years: null,
         stop_after_age: null,
         stop_after_occurrences: null,
@@ -243,7 +244,7 @@ describe("life events", () => {
     input.lifeEvents = [
       {
         amount: 0,
-        year_month: "2025-03",
+        year_month: YearMonth.create("2025-03"),
         repeat_interval_years: null,
         stop_after_age: null,
         stop_after_occurrences: null,

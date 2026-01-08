@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { type SimulationInput, simulateLifePlan } from "@/shared/domain/simulation";
+import { type SimulationInputDomain, simulateLifePlan } from "@/shared/domain/simulation";
+import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
 
-const createRegressionInput = (): SimulationInput => ({
-  currentYearMonth: "2025-01",
+const createRegressionInput = (): SimulationInputDomain => ({
+  currentYearMonth: YearMonth.create("2025-01"),
   profiles: {
     birth_year: 1990,
     birth_month: 6,
@@ -25,10 +26,10 @@ const createRegressionInput = (): SimulationInput => ({
       take_home_monthly: 320000,
       bonus_months: [6, 12],
       bonus_amount: 400000,
-      change_year_month: "2026-01",
+      change_year_month: YearMonth.create("2026-01"),
       bonus_amount_after: 450000,
       raise_rate: 0.025,
-      start_year_month: "2024-07",
+      start_year_month: YearMonth.create("2024-07"),
       end_year_month: null,
     },
     {
@@ -38,8 +39,8 @@ const createRegressionInput = (): SimulationInput => ({
       change_year_month: null,
       bonus_amount_after: null,
       raise_rate: 0.015,
-      start_year_month: "2025-04",
-      end_year_month: "2026-12",
+      start_year_month: YearMonth.create("2025-04"),
+      end_year_month: YearMonth.create("2026-12"),
     },
   ],
   expenses: [
@@ -47,22 +48,22 @@ const createRegressionInput = (): SimulationInput => ({
       amount_monthly: 210000,
       inflation_rate: 0.018,
       category: "living",
-      start_year_month: "2024-01",
+      start_year_month: YearMonth.create("2024-01"),
       end_year_month: null,
     },
     {
       amount_monthly: 50000,
       inflation_rate: 0,
       category: "education",
-      start_year_month: "2025-07",
-      end_year_month: "2026-06",
+      start_year_month: YearMonth.create("2025-07"),
+      end_year_month: YearMonth.create("2026-06"),
     },
   ],
   rentals: [
     {
       id: "rental-1",
       rent_monthly: 95000,
-      start_year_month: "2024-01",
+      start_year_month: YearMonth.create("2024-01"),
       end_year_month: null,
     },
   ],
@@ -72,7 +73,7 @@ const createRegressionInput = (): SimulationInput => ({
       principal: 28000000,
       annual_rate: 0.012,
       years: 35,
-      start_year_month: "2026-03",
+      start_year_month: YearMonth.create("2026-03"),
       building_price: 23500000,
       land_price: 7250000,
       down_payment: 4000000,
@@ -81,7 +82,7 @@ const createRegressionInput = (): SimulationInput => ({
   lifeEvents: [
     {
       amount: 300000,
-      year_month: "2025-08",
+      year_month: YearMonth.create("2025-08"),
       repeat_interval_years: 1,
       stop_after_age: null,
       stop_after_occurrences: 2,
@@ -93,7 +94,7 @@ const createRegressionInput = (): SimulationInput => ({
     },
     {
       amount: 2000000,
-      year_month: "2026-03",
+      year_month: YearMonth.create("2026-03"),
       repeat_interval_years: null,
       stop_after_age: null,
       stop_after_occurrences: null,
@@ -105,7 +106,7 @@ const createRegressionInput = (): SimulationInput => ({
     },
     {
       amount: 500000,
-      year_month: "2026-12",
+      year_month: YearMonth.create("2026-12"),
       repeat_interval_years: null,
       stop_after_age: null,
       stop_after_occurrences: null,
@@ -123,9 +124,9 @@ describe("simulation regression", () => {
     const result = simulateLifePlan(createRegressionInput());
 
     const serialized = {
-      depletionYearMonth: result.depletionYearMonth,
+      depletionYearMonth: result.depletionYearMonth?.toString() ?? null,
       months: result.months.map((month) => ({
-        yearMonth: month.yearMonth,
+        yearMonth: month.yearMonth.toString(),
         age: month.age,
         spouseAge: month.spouseAge,
         totalIncome: month.totalIncome.toNumber(),

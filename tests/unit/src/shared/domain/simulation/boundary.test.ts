@@ -2,16 +2,17 @@ import { describe, expect, it } from "vitest";
 import type { LifeEventCategory } from "@/shared/domain/life-events/categories";
 import {
   deriveHousingPurchaseMetrics,
-  type SimulationInput,
+  type SimulationInputDomain,
   simulateLifePlan,
 } from "@/shared/domain/simulation";
+import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
 
 const travelCategory: LifeEventCategory = "travel";
 const housingPurchaseCategory: LifeEventCategory = "housing_purchase";
 const retirementBonusCategory: LifeEventCategory = "retirement_bonus";
 
-const createBaseInput = (): SimulationInput => ({
-  currentYearMonth: "2025-01",
+const createBaseInput = (): SimulationInputDomain => ({
+  currentYearMonth: YearMonth.create("2025-01"),
   profiles: {
     birth_year: 1990,
     birth_month: 1,
@@ -37,9 +38,9 @@ const createBaseInput = (): SimulationInput => ({
   lifeEvents: [],
 });
 
-const getMonth = (input: SimulationInput, yearMonth: string) => {
+const getMonth = (input: SimulationInputDomain, yearMonth: string) => {
   const result = simulateLifePlan(input);
-  const month = result.months.find((entry) => entry.yearMonth === yearMonth);
+  const month = result.months.find((entry) => entry.yearMonth.toString() === yearMonth);
   if (!month) {
     throw new Error(`Missing month ${yearMonth}`);
   }
@@ -63,10 +64,10 @@ describe("simulation boundary cases", () => {
         take_home_monthly: 100000,
         bonus_months: [6],
         bonus_amount: 20000,
-        change_year_month: "2025-06",
+        change_year_month: YearMonth.create("2025-06"),
         bonus_amount_after: 50000,
         raise_rate: 0,
-        start_year_month: "2025-01",
+        start_year_month: YearMonth.create("2025-01"),
         end_year_month: null,
       },
     ];
@@ -80,7 +81,7 @@ describe("simulation boundary cases", () => {
     input.lifeEvents = [
       {
         amount: 12000,
-        year_month: "2025-01",
+        year_month: YearMonth.create("2025-01"),
         repeat_interval_years: 2,
         stop_after_age: null,
         stop_after_occurrences: 2,
@@ -103,14 +104,14 @@ describe("simulation boundary cases", () => {
       {
         id: "rental-1",
         rent_monthly: 80000,
-        start_year_month: "2025-01",
+        start_year_month: YearMonth.create("2025-01"),
         end_year_month: null,
       },
     ];
     input.lifeEvents = [
       {
         amount: 0,
-        year_month: "2025-06",
+        year_month: YearMonth.create("2025-06"),
         repeat_interval_years: null,
         stop_after_age: null,
         stop_after_occurrences: null,
@@ -122,7 +123,7 @@ describe("simulation boundary cases", () => {
       },
       {
         amount: 0,
-        year_month: "2025-04",
+        year_month: YearMonth.create("2025-04"),
         repeat_interval_years: null,
         stop_after_age: null,
         stop_after_occurrences: null,
@@ -146,7 +147,7 @@ describe("simulation boundary cases", () => {
         amount_monthly: 1200,
         inflation_rate: 0,
         category: "living",
-        start_year_month: "2025-01",
+        start_year_month: YearMonth.create("2025-01"),
         end_year_month: null,
       },
     ];
@@ -175,7 +176,7 @@ describe("simulation boundary cases", () => {
     }
 
     expect({
-      yearMonth: last.yearMonth,
+      yearMonth: last.yearMonth.toString(),
       age: last.age,
       spouseAge: last.spouseAge,
       totalIncome: last.totalIncome.toNumber(),
@@ -197,7 +198,7 @@ describe("simulation boundary cases", () => {
       investmentBalance: 0,
       totalBalance: 0,
     });
-    expect(result.months.some((month) => month.yearMonth === "2070-02")).toBe(false);
+    expect(result.months.some((month) => month.yearMonth.toString() === "2070-02")).toBe(false);
   });
 
   it("uses pension amounts from settings and counts retirement bonus once", () => {
@@ -216,7 +217,7 @@ describe("simulation boundary cases", () => {
     input.lifeEvents = [
       {
         amount: 200000,
-        year_month: "2025-02",
+        year_month: YearMonth.create("2025-02"),
         repeat_interval_years: null,
         stop_after_age: null,
         stop_after_occurrences: null,
@@ -245,7 +246,7 @@ describe("simulation boundary cases", () => {
     };
     const event = {
       amount: 0,
-      year_month: "2030-01",
+      year_month: YearMonth.create("2030-01"),
       repeat_interval_years: null,
       stop_after_age: null,
       stop_after_occurrences: null,

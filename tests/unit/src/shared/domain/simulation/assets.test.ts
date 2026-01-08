@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { type SimulationInput, simulateLifePlan } from "@/shared/domain/simulation";
+import { type SimulationInputDomain, simulateLifePlan } from "@/shared/domain/simulation";
+import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
 
-const createBaseInput = (): SimulationInput => ({
-  currentYearMonth: "2025-01",
+const createBaseInput = (): SimulationInputDomain => ({
+  currentYearMonth: YearMonth.create("2025-01"),
   profiles: {
     birth_year: 1990,
     birth_month: 1,
@@ -28,9 +29,9 @@ const createBaseInput = (): SimulationInput => ({
   lifeEvents: [],
 });
 
-const getMonth = (input: SimulationInput, yearMonth: string) => {
+const getMonth = (input: SimulationInputDomain, yearMonth: string) => {
   const result = simulateLifePlan(input);
-  const month = result.months.find((entry) => entry.yearMonth === yearMonth);
+  const month = result.months.find((entry) => entry.yearMonth.toString() === yearMonth);
   if (!month) {
     throw new Error(`Missing month ${yearMonth}`);
   }
@@ -55,7 +56,7 @@ describe("asset balances", () => {
         amount_monthly: 200,
         inflation_rate: 0,
         category: "living",
-        start_year_month: "2025-02",
+        start_year_month: YearMonth.create("2025-02"),
         end_year_month: null,
       },
     ];
@@ -80,13 +81,13 @@ describe("asset balances", () => {
         amount_monthly: 100,
         inflation_rate: 0,
         category: "living",
-        start_year_month: "2025-02",
+        start_year_month: YearMonth.create("2025-02"),
         end_year_month: null,
       },
     ];
 
     const result = simulateLifePlan(input);
-    expect(result.depletionYearMonth).toBe("2025-02");
+    expect(result.depletionYearMonth?.toString()).toBe("2025-02");
     expect(getMonth(input, "2025-01").totalBalance).toBeCloseTo(50);
     expect(getMonth(input, "2025-02").totalBalance).toBeLessThan(0);
   });
