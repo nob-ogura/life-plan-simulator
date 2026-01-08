@@ -6,16 +6,17 @@ import {
   optionalYearMonth,
   requiredNumericString,
 } from "@/features/inputs/shared/form-utils";
+import { VALIDATION_MESSAGES } from "@/features/inputs/shared/validation-messages";
 
-const requiredString = z.string().trim().min(1, { message: "必須項目です" });
+const requiredString = z.string().trim().min(1, { message: VALIDATION_MESSAGES.REQUIRED });
 
 const bonusMonthsSchema = z
   .array(
     z
-      .number({ error: "数値で入力してください" })
-      .int({ message: "整数で入力してください" })
-      .min(1, { message: "1〜12 の範囲で入力してください" })
-      .max(12, { message: "1〜12 の範囲で入力してください" }),
+      .number({ error: VALIDATION_MESSAGES.NUMERIC })
+      .int({ message: VALIDATION_MESSAGES.INTEGER })
+      .min(1, { message: VALIDATION_MESSAGES.MONTH_RANGE_1_12 })
+      .max(12, { message: VALIDATION_MESSAGES.MONTH_RANGE_1_12 }),
   )
   .optional();
 
