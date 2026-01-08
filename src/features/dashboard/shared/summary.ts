@@ -1,5 +1,6 @@
 import type { DashboardSimulationMonthlyResult } from "@/features/dashboard/queries/get-dashboard-simulation/response";
 import type { YearMonthString } from "@/shared/domain/simulation";
+import { Money } from "@/shared/domain/value-objects/Money";
 
 type DashboardSummaryMetrics = {
   cumulativeCashflow: number;
@@ -22,4 +23,5 @@ export const calculateSummaryMetrics = (
 
 export const findDepletionYearMonth = (
   months: DashboardSimulationMonthlyResult[],
-): YearMonthString | null => months.find((month) => month.totalBalance < 0)?.yearMonth ?? null;
+): YearMonthString | null =>
+  months.find((month) => Money.of(month.totalBalance).isNegative())?.yearMonth ?? null;
