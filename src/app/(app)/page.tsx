@@ -9,6 +9,7 @@ export default async function Home() {
     : null;
   const simulationResult = dashboardSimulation?.result ?? null;
   const simulationMonths = simulationResult?.months ?? [];
+  const depletionYearMonth = simulationResult?.depletionYearMonth ?? null;
   return (
     <div className="space-y-10">
       <section>
@@ -21,7 +22,7 @@ export default async function Home() {
         </p>
       </section>
 
-      <DashboardSimulationView months={simulationMonths} />
+      <DashboardSimulationView months={simulationMonths} depletionYearMonth={depletionYearMonth} />
     </div>
   );
 }

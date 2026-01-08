@@ -10,15 +10,14 @@ import {
   displayRangeOptions,
   filterSimulationMonthsByRange,
 } from "@/features/dashboard/shared/display-range";
-import {
-  calculateSummaryMetrics,
-  findDepletionYearMonth,
-} from "@/features/dashboard/shared/summary";
 import { AssetTrendChart } from "@/features/dashboard/ui/AssetTrendChart";
+import type { YearMonthString } from "@/shared/domain/simulation";
+import { calculateSummaryMetrics, findDepletionYearMonth } from "@/shared/domain/simulation";
 import { Money } from "@/shared/domain/value-objects/Money";
 
 type DashboardSimulationViewProps = {
   months: DashboardSimulationMonthlyResult[];
+  depletionYearMonth: YearMonthString | null;
 };
 
 const summaryCardDefinitions = [
@@ -46,7 +45,10 @@ const CASHFLOW_OVERSCAN = 6;
 
 const formatAmount = (value: number) => Money.of(value).formatYen();
 
-export function DashboardSimulationView({ months }: DashboardSimulationViewProps) {
+export function DashboardSimulationView({
+  months,
+  depletionYearMonth,
+}: DashboardSimulationViewProps) {
   const [displayRange, setDisplayRange] = useState<DashboardDisplayRange>(DEFAULT_DISPLAY_RANGE);
   const [cashflowScrollbarWidth, setCashflowScrollbarWidth] = useState(0);
   const filteredMonths = useMemo(
@@ -55,7 +57,6 @@ export function DashboardSimulationView({ months }: DashboardSimulationViewProps
   );
   const hasSimulation = months.length > 0;
   const summaryMetrics = useMemo(() => calculateSummaryMetrics(filteredMonths), [filteredMonths]);
-  const depletionYearMonth = useMemo(() => findDepletionYearMonth(months), [months]);
   const depletionYearMonthInRange = useMemo(
     () => findDepletionYearMonth(filteredMonths),
     [filteredMonths],

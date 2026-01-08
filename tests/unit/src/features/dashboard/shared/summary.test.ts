@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { DashboardSimulationMonthlyResult } from "@/features/dashboard/queries/get-dashboard-simulation/response";
-import {
-  calculateSummaryMetrics,
-  findDepletionYearMonth,
-} from "@/features/dashboard/shared/summary";
+import { calculateSummaryMetrics, findDepletionYearMonth } from "@/shared/domain/simulation";
 
 const createMonth = (
   overrides: Partial<DashboardSimulationMonthlyResult> &

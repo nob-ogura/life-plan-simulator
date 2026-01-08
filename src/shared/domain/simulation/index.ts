@@ -1,4 +1,10 @@
 export {
+  calculateSummaryMetrics,
+  findDepletionYearMonth,
+  type SimulationMonthlySummaryInput,
+  type SimulationSummaryMetrics,
+} from "./analytics";
+export {
   calculateMortgagePrincipal,
   calculateRealEstateTaxMonthly,
   deriveHousingPurchaseMetrics,
