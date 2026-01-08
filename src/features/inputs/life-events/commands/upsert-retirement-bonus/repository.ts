@@ -6,10 +6,6 @@ import {
 } from "@/features/inputs/shared/infrastructure/user-owned-supabase";
 import { unwrapSupabaseData } from "@/shared/cross-cutting/infrastructure/supabase-result";
 import type { Database } from "@/types/supabase";
-import {
-  canRetryWithoutStopAfterAge,
-  omitStopAfterAge,
-} from "../../infrastructure/stop-after-age-compat";
 import type { UpsertRetirementBonusCommand, UpsertRetirementBonusRepository } from "./handler";
 import type { UpsertRetirementBonusResponse } from "./response";
 
@@ -42,16 +38,6 @@ export class SupabaseUpsertRetirementBonusRepository implements UpsertRetirement
       .select()
       .single();
 
-    if (canRetryWithoutStopAfterAge(insertError, payload.stop_after_age)) {
-      const { data: retryData, error: retryError } = await this.client
-        .from("life_events")
-        .insert(omitStopAfterAge(toUserOwnedInsert({ userId, ...payload })))
-        .select()
-        .single();
-
-      return unwrapSupabaseData(retryData, retryError);
-    }
-
     if (isUniqueViolation(insertError)) {
       const { data: updated, error: updateError } = await scopeByUserId(
         this.client.from("life_events").update(payload).eq("category", "retirement_bonus"),
@@ -59,20 +45,6 @@ export class SupabaseUpsertRetirementBonusRepository implements UpsertRetirement
       )
         .select()
         .single();
-
-      if (canRetryWithoutStopAfterAge(updateError, payload.stop_after_age)) {
-        const { data: retryData, error: retryError } = await scopeByUserId(
-          this.client
-            .from("life_events")
-            .update(omitStopAfterAge(payload))
-            .eq("category", "retirement_bonus"),
-          userId,
-        )
-          .select()
-          .single();
-
-        return unwrapSupabaseData(retryData, retryError);
-      }
 
       return unwrapSupabaseData(updated, updateError);
     }

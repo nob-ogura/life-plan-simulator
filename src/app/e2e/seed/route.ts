@@ -2,10 +2,6 @@ import "server-only";
 
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
-import {
-  canRetryWithoutStopAfterAge,
-  omitStopAfterAge,
-} from "@/features/inputs/life-events/infrastructure/stop-after-age-compat";
 import { createServerSupabaseClient } from "@/shared/cross-cutting/infrastructure/supabase.server";
 import type { LifeEventCategory } from "@/shared/domain/life-events/categories";
 import { YearMonth } from "@/shared/domain/value-objects/YearMonth";
@@ -95,12 +91,6 @@ const insertLifeEvent = async (
   payload: LifeEventInsert,
 ) => {
   const { error } = await client.from("life_events").insert(payload);
-  if (canRetryWithoutStopAfterAge(error, payload.stop_after_age)) {
-    const { error: retryError } = await client
-      .from("life_events")
-      .insert(omitStopAfterAge(payload));
-    return retryError ?? null;
-  }
   return error ?? null;
 };
 
