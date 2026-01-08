@@ -1,14 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import {
-  scopeByUserAndId,
   scopeByUserId,
   toUserOwnedInsert,
 } from "@/features/inputs/shared/infrastructure/user-owned-supabase";
-import {
-  throwIfSupabaseError,
-  unwrapSupabaseData,
-} from "@/shared/cross-cutting/infrastructure/supabase-result";
+import { unwrapSupabaseData } from "@/shared/cross-cutting/infrastructure/supabase-result";
 import type { Database } from "@/types/supabase";
 import {
   canRetryWithoutStopAfterAge,
@@ -16,6 +12,8 @@ import {
 } from "../../infrastructure/stop-after-age-compat";
 import type { UpsertRetirementBonusCommand, UpsertRetirementBonusRepository } from "./handler";
 import type { UpsertRetirementBonusResponse } from "./response";
+
+const isUniqueViolation = (error: { code?: string } | null): boolean => error?.code === "23505";
 
 export class SupabaseUpsertRetirementBonusRepository implements UpsertRetirementBonusRepository {
   constructor(private readonly client: SupabaseClient<Database>) {}
@@ -36,64 +34,11 @@ export class SupabaseUpsertRetirementBonusRepository implements UpsertRetirement
       down_payment: null,
     };
 
-    const { data, error } = await scopeByUserId(
-      this.client.from("life_events").select("id").eq("category", "retirement_bonus"),
-      userId,
-    ).order("year_month", { ascending: false });
-
-    throwIfSupabaseError(error);
-
-    const existing = data ?? [];
-    const primary = existing[0] ?? null;
-    const duplicateIds = existing.slice(1).map((row) => row.id);
-
-    if (primary) {
-      const { data: updated, error: updateError } = await scopeByUserAndId(
-        this.client.from("life_events").update(payload),
-        userId,
-        primary.id,
-      )
-        .select()
-        .single();
-
-      if (canRetryWithoutStopAfterAge(updateError, payload.stop_after_age)) {
-        const { data: retryData, error: retryError } = await scopeByUserAndId(
-          this.client.from("life_events").update(omitStopAfterAge(payload)),
-          userId,
-          primary.id,
-        )
-          .select()
-          .single();
-
-        const result = unwrapSupabaseData(retryData, retryError);
-
-        if (duplicateIds.length > 0) {
-          const { error: deleteError } = await scopeByUserId(
-            this.client.from("life_events").delete().in("id", duplicateIds),
-            userId,
-          );
-          throwIfSupabaseError(deleteError);
-        }
-
-        return result;
-      }
-
-      const result = unwrapSupabaseData(updated, updateError);
-
-      if (duplicateIds.length > 0) {
-        const { error: deleteError } = await scopeByUserId(
-          this.client.from("life_events").delete().in("id", duplicateIds),
-          userId,
-        );
-        throwIfSupabaseError(deleteError);
-      }
-
-      return result;
-    }
+    const insertPayload = toUserOwnedInsert({ userId, ...payload });
 
     const { data: created, error: insertError } = await this.client
       .from("life_events")
-      .insert(toUserOwnedInsert({ userId, ...payload }))
+      .insert(insertPayload)
       .select()
       .single();
 
@@ -105,6 +50,31 @@ export class SupabaseUpsertRetirementBonusRepository implements UpsertRetirement
         .single();
 
       return unwrapSupabaseData(retryData, retryError);
+    }
+
+    if (isUniqueViolation(insertError)) {
+      const { data: updated, error: updateError } = await scopeByUserId(
+        this.client.from("life_events").update(payload).eq("category", "retirement_bonus"),
+        userId,
+      )
+        .select()
+        .single();
+
+      if (canRetryWithoutStopAfterAge(updateError, payload.stop_after_age)) {
+        const { data: retryData, error: retryError } = await scopeByUserId(
+          this.client
+            .from("life_events")
+            .update(omitStopAfterAge(payload))
+            .eq("category", "retirement_bonus"),
+          userId,
+        )
+          .select()
+          .single();
+
+        return unwrapSupabaseData(retryData, retryError);
+      }
+
+      return unwrapSupabaseData(updated, updateError);
     }
 
     return unwrapSupabaseData(created, insertError);
