@@ -1,7 +1,10 @@
-import type { IncomeStreamInsertPayload, IncomeStreamUpdateItem } from "./domain/diff";
-import { diffIncomeStreams } from "./domain/diff";
 import type { BulkSaveIncomeStreamsRequest } from "./request";
 import type { BulkSaveIncomeStreamsResponse } from "./response";
+import type {
+  IncomeStreamInsertPayload,
+  IncomeStreamUpdateItem,
+} from "./services/diff-income-streams";
+import { diffIncomeStreams } from "./services/diff-income-streams";
 
 export type BulkSaveIncomeStreamsCommand = BulkSaveIncomeStreamsRequest & { userId: string };
 

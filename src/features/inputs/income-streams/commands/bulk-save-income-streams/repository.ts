@@ -2,9 +2,11 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { throwIfSupabaseError } from "@/shared/cross-cutting/infrastructure/supabase-result";
 import type { Database } from "@/types/supabase";
-
-import type { IncomeStreamInsertPayload, IncomeStreamUpdateItem } from "./domain/diff";
 import type { BulkSaveIncomeStreamsRepository } from "./handler";
+import type {
+  IncomeStreamInsertPayload,
+  IncomeStreamUpdateItem,
+} from "./services/diff-income-streams";
 
 export class SupabaseBulkSaveIncomeStreamsRepository implements BulkSaveIncomeStreamsRepository {
   constructor(private readonly client: SupabaseClient<Database>) {}
