@@ -26,7 +26,10 @@ export const calculateMortgagePrincipal = ({
   landPrice: number;
   downPayment: number;
   transactionCostRate: number | null | undefined;
-}): Money => Money.of((buildingPrice + landPrice) * toNumber(transactionCostRate, 1) - downPayment);
+}): Money => {
+  const totalValue = Money.of(buildingPrice).add(Money.of(landPrice));
+  return totalValue.multiply(toNumber(transactionCostRate, 1)).minus(Money.of(downPayment));
+};
 
 export const calculateRealEstateTaxMonthly = ({
   buildingPrice,
@@ -38,8 +41,13 @@ export const calculateRealEstateTaxMonthly = ({
   landPrice: number;
   evaluationRate: number | null | undefined;
   taxRate: number | null | undefined;
-}): Money =>
-  Money.of(((buildingPrice + landPrice) * toNumber(evaluationRate, 0) * toNumber(taxRate, 0)) / 12);
+}): Money => {
+  const totalValue = Money.of(buildingPrice).add(Money.of(landPrice));
+  // 評価額・年税額は切り捨て、月割りは不足回避のため切り上げる。
+  const assessedValue = totalValue.multiplyAndRound(toNumber(evaluationRate, 0), "trunc");
+  const annualTax = assessedValue.multiplyAndRound(toNumber(taxRate, 0), "trunc");
+  return annualTax.divideAndRound(12, "ceil");
+};
 
 const requireHousingPurchaseFields = (event: SimulationLifeEvent) => {
   if (event.building_price == null || event.land_price == null || event.down_payment == null) {

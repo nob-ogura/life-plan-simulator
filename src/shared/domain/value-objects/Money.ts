@@ -75,4 +75,17 @@ export class Money {
     assertFiniteNumber(factor);
     return new Money(this.value * factor);
   }
+
+  multiplyAndRound(factor: number, mode: MoneyRoundingMode): Money {
+    assertFiniteNumber(factor);
+    return Money.fromFloat(this.value * factor, mode);
+  }
+
+  divideAndRound(divisor: number, mode: MoneyRoundingMode): Money {
+    assertFiniteNumber(divisor);
+    if (divisor === 0) {
+      throw new Error("Money divisor must not be zero.");
+    }
+    return Money.fromFloat(this.value / divisor, mode);
+  }
 }
