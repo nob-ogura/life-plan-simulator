@@ -135,6 +135,7 @@ pnpm supabase:gen-types
 - `src/shared`: 横断ユーティリティや共通 UI/ロジック。
 - `src/lib`: 補助ヘルパー群。
 - `src/types`: 共有型（Supabase 型は `src/types/supabase.ts` を自動生成）。
+- `tests/unit`: Vitest ユニットテスト。
 - `tests/integration`: Vitest 統合テスト。
 - `tests/e2e`: Playwright E2E。
 - `supabase/migrations`: DB マイグレーション。

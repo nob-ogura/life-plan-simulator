@@ -87,7 +87,7 @@ describe("LoginPage", () => {
 
     render(<LoginPage />);
 
-    const button = await screen.findByRole("button", { name: "Continue with GitHub" });
+    const button = await screen.findByRole("button", { name: "GitHub アカウントでサインイン" });
     fireEvent.click(button);
 
     await waitFor(() => {

@@ -42,13 +42,11 @@ function LoginPageContent() {
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             Authentication
           </p>
-          <h1 className="text-2xl font-semibold tracking-tight">Log in to continue</h1>
-          <p className="text-sm text-muted-foreground">
-            Sign in with GitHub to access your dashboard.
-          </p>
+          <h1 className="text-2xl font-semibold tracking-tight">Life Plan Simulator</h1>
+          <p className="text-sm text-muted-foreground">生活設計診断</p>
         </div>
         <Button className="w-full" size="lg" onClick={handleLogin} disabled={isSubmitting}>
-          Continue with GitHub
+          GitHub アカウントでサインイン
         </Button>
       </div>
     </div>
