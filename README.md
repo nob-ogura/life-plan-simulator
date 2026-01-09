@@ -17,7 +17,7 @@
 - 実装: `docs/Plan.md`
   - ガイドライン: `docs/Guideline.md`
 - デプロイ: `docs/Vercel.md`
-- オンボーディング: `docs/OnBoarding.md`
+- オンボーディング: `docs/Onboarding.md`
 
 ## 技術スタック
 
