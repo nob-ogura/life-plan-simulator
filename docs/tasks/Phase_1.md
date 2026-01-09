@@ -19,17 +19,17 @@
 - 作業内容:
   - `src/features/<module>/<slice>/` 形式のスライス配置ルールを用意する。
   - `src/shared` に横断関心と共有ドメイン（シミュレーション等）を置く方針を明示する。
-  - RER 雛形（request/endpoint/response）を作成し、1エンドポイント=1クラスのルールに従う構成を整える。
+  - REPR 雛形（request/endpoint/response）を作成し、1エンドポイント=1クラスのルールに従う構成を整える。
 - 受入基準（Gherkin）:
   - シナリオ: VSA 構成の骨格が存在する
-    - 前提: `docs/Guideline.md` に VSA と RER の方針が定義されている
+    - 前提: `docs/Guideline.md` に VSA と REPR の方針が定義されている
     - もし: `src` 配下の構成を確認する
     - ならば: `src/features/<module>/<slice>/` の雛形が存在する
     - かつ: `src/shared` に横断関心と共有ドメインの配置方針が示されている
-    - かつ: RER の request/endpoint/response の雛形が確認できる
+    - かつ: REPR の request/endpoint/response の雛形が確認できる
 
 ## Task 3: Transport と Application の責務分離の指針整備
-- 目的: Endpoint と Handler の責務を明確化し、RER 構成を破綻させない。
+- 目的: Endpoint と Handler の責務を明確化し、REPR 構成を破綻させない。
 - 作業内容:
   - Endpoint は入力受付と認証に限定し、ビジネスロジックは Handler に委譲する方針を明文化する。
   - 1エンドポイント=1クラスの運用例を最小限で示す（雛形レベル）。

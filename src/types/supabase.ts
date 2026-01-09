@@ -107,7 +107,7 @@ export type Database = {
           user_id: string;
         };
         Insert: {
-          bonus_amount: number;
+          bonus_amount?: number;
           bonus_amount_after?: number | null;
           bonus_months?: number[];
           change_year_month?: string | null;
@@ -323,7 +323,7 @@ export type Database = {
     };
     Functions: {
       reset_simulation_settings_defaults: {
-        Args: Record<PropertyKey, never>;
+        Args: never;
         Returns: {
           created_at: string;
           end_age: number;
@@ -336,6 +336,12 @@ export type Database = {
           start_offset_months: number;
           updated_at: string;
           user_id: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "simulation_settings";
+          isOneToOne: true;
+          isSetofReturn: false;
         };
       };
     };

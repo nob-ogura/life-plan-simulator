@@ -9,6 +9,16 @@
 - Supabase を用いた認証とデータ永続化。
 - 仕様・設計ドキュメントは `docs/` に集約。
 
+## ドキュメント
+
+- 要件: `docs/Requirements.md`
+- 設計: `docs/Design.md`
+  - 図解: `docs/Diagrams.md`
+- 実装: `docs/Plan.md`
+  - ガイドライン: `docs/Guideline.md`
+- デプロイ: `docs/Vercel.md`
+- オンボーディング: `docs/OnBoarding.md`
+
 ## 技術スタック
 
 - Next.js (App Router) / TypeScript
@@ -74,7 +84,7 @@ pnpm dev
 Playwright は以下のサーバー専用エンドポイントで認証できます。
 
 - ルート: `POST /__e2e/login`
-- 有効条件: `NODE_ENV === "test"` または `E2E_ENABLED === "true"`
+- 有効条件: `E2E_ENABLED === "true"`
 - ボディ: `{ "email": "optional@example.com" }` (省略時: `e2e@example.com`)
 - 実装: `src/app/e2e/login/route.ts` (rewrite 経由)
 
@@ -129,11 +139,3 @@ pnpm supabase:gen-types
 - `tests/e2e`: Playwright E2E。
 - `supabase/migrations`: DB マイグレーション。
 - `docs`: 仕様/設計ドキュメント。
-
-## ドキュメント
-
-- 要件: `docs/Requirements.md`
-- 設計/方針: `docs/Plan.md`, `docs/Design.md`, `docs/Guideline.md`
-- 図解: `docs/Diagrams.md`
-- ドメイン定義: `docs/LifeEventCategories.md`, `docs/ExpenseCategories.md`
-- デプロイ: `docs/Vercel.md`

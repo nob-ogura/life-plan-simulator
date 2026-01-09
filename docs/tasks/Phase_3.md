@@ -52,16 +52,16 @@
     - ならば: CRUD が成功する
     - かつ: 他ユーザーの `user_id` を指定した操作は拒否される
 
-## Task 5: CRUD スライスの実装（RER + CQRS）
+## Task 5: CRUD スライスの実装（REPR + CQRS）
 - 目的: 入力データの取得・更新をスライス単位で提供する。
 - 作業内容:
-  - 各テーブルに対して Request/Endpoint/Response の RER 構成を用意する。
+  - 各テーブルに対して Request/Endpoint/Response の REPR 構成を用意する。
   - Endpoint は入力受付と認証のみ、Handler がオーケストレーションを担う。
   - CQRS を採用し、書き込みは Command、読み取りは Query に分離する。
   - データアクセスは各スライス内の Repository/Infrastructure に限定する。
 - 受入基準（Gherkin）:
   - シナリオ: CRUD がスライス構成で分離されている
-    - 前提: 各スライスに RER と Handler が実装されている
+    - 前提: 各スライスに REPR と Handler が実装されている
     - もし: コマンドとクエリのコードを確認する
     - ならば: Endpoint は処理委譲のみでビジネスロジックを持たない
     - かつ: データアクセスはスライス内に閉じている

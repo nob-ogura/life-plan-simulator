@@ -27,7 +27,7 @@
 - TypeScript + Next.js App Router, Tailwind CSS.
 - Biome formatting: 2-space indentation, 100-char line width (run `pnpm format`).
 - CQRS pattern: write paths in `commands/`, read paths in `queries/`.
-- Endpoint slices follow RER layout: `request.ts`, `endpoint.ts`, `response.ts`, plus `handler.ts`, `action.ts`, `repository.ts` when needed.
+- Endpoint slices follow REPR layout: `request.ts`, `endpoint.ts`, `response.ts`, plus `handler.ts`, `action.ts`, `repository.ts` when needed.
 - UI should call server actions (`action.ts`) rather than using `supabaseClient` directly.
 
 ## Testing Guidelines

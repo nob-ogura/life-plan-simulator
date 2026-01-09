@@ -12,8 +12,8 @@
 ## フェーズ1: 基盤セットアップ
 - 目的: Next.js 14 + TypeScript + Tailwind CSS + shadcn/ui + Supabase クライアントの開発基盤を整備し、VSA で拡張しやすい骨格を作る。
 - 実装内容:
-  - App Router 構成でプロジェクト初期化、`src/features/<module>/<slice>/` で機能を束ねるフォルダ構成と RER 雛形（request/endpoint/response）を準備。横断関心とドメイン核（シミュレーションなど共通ドメイン）は `src/shared` に配置する。
-  - RER では「1エンドポイント = 1クラス」の構成を徹底し、Transport と Application の責務を明確に分離する。
+  - App Router 構成でプロジェクト初期化、`src/features/<module>/<slice>/` で機能を束ねるフォルダ構成と REPR 雛形（request/endpoint/response）を準備。横断関心とドメイン核（シミュレーションなど共通ドメイン）は `src/shared` に配置する。
+  - REPR では「1エンドポイント = 1クラス」の構成を徹底し、Transport と Application の責務を明確に分離する。
   - Tailwind/shadcn/ui の導入とテーマ設定、グローバルレイアウト/ヘッダー/トーストを整備。
 - Supabase JS クライアント、環境変数テンプレート `.env.example` 整備、型生成（`supabase gen types typescript`）。
   - Lint/Format/Test (Biome/Vitest) 設定。テストは unit を `pnpm test:unit`、Supabase 依存の integration/E2E は後続フェーズのコマンドに分離し、GitHub Actions では最小CI（lint + typecheck + unit）のみを必須として走らせる。Supabase ローカルを `supabase start` で起動するスモーク＋`pnpm test:integration` を try-job（allow-failure）として置き、Phase3 でスキーマが揃い次第必須化する方針を記載。
@@ -41,7 +41,7 @@
   - 制約/標準化: すべての日付は月初 (`YYYY-MM-01`) に正規化、金額は `amount >= 0`、`repeat_interval_years > 0`、`children` は `birth_year_month` または `due_year_month` のどちらか必須、`life_events(year_month)` にインデックスを付与。`profiles` には本人/配偶者いずれかの生年月入力が必須になるようチェックを検討。
   - パフォーマンス: 全テーブルの `user_id` に BTREE インデックスを付与し、RLS 下でもクエリ性能を維持する。
   - セキュリティ: 本フェーズで作成する全テーブルに対し migration で `enable row level security;` と `auth.uid() = user_id` ポリシーを付与する。
-  - 各スライスで RER 構成の API エンドポイント/サーバーアクションを用意し、zod で入出力バリデーションを実装。Endpoint は入出力/認証のみ、Handler がオーケストレーション、計算や整合性ルールは Entity/ValueObject に寄せる。
+  - 各スライスで REPR 構成の API エンドポイント/サーバーアクションを用意し、zod で入出力バリデーションを実装。Endpoint は入出力/認証のみ、Handler がオーケストレーション、計算や整合性ルールは Entity/ValueObject に寄せる。
   - CQRS を明示採用: 書き込みは Command Handler、読み取りは Query Handler とし、Query は Supabase の非トラッキング/軽量プロジェクションで最適化。
   - データアクセスはスライス内の小さな Repository/Infrastructure クラスに限定し、他スライスからの直接参照は禁止。
   - 共通 DTO/型は shared ではなくスライス内に保持（計算で共有するドメイン型のみ `shared/domain` に配置）。同種のグルーコードが 3 回以上重複した場合のみ shared への抽出を検討（Rule of Three）。

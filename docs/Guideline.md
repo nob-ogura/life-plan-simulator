@@ -18,9 +18,9 @@
 ### 2.1 機能のグループ化
 フラットに機能が並びすぎないよう、ドメイン領域（Module）ごとに親フォルダを作成し、その配下に各スライス（機能）を配置します。
 
-### 2.2 RER (Request-Endpoint-Response) 構成の採用
+### 2.2 REPR (Request-Endpoint-Response) 構成の採用
 *   Web API層では「1つのエンドポイント = 1つのクラス」として定義することを基本とします。
-*   RER構成: Request（入力定義）、Endpoint（HTTPの接点）、Response（出力定義）を同一スライス内に定義し、ファイルを行き来する認知負荷を最小化してください。
+*   REPR構成: Request（入力定義）、Endpoint（HTTPの接点）、Response（出力定義）を同一スライス内に定義し、ファイルを行き来する認知負荷を最小化してください。
 
 ## 3. 実装ルールとCQRSの適用
 
