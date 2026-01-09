@@ -399,7 +399,7 @@ export default async function InputsPage() {
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           Inputs
         </p>
-        <h1 className="text-3xl font-semibold tracking-tight">基本情報の登録</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">基本情報登録</h1>
         <p className="max-w-2xl text-sm text-muted-foreground">
           収入・支出・家族構成など、生活設計に必要な情報をセクションごとに登録します
         </p>
